@@ -1,3 +1,4 @@
 *.pyc
 *.ropeproject
 *env/
+swag/
