@@ -1,0 +1,3 @@
+*.pyc
+*.ropeproject
+*env/
