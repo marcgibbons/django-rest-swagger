@@ -1,7 +1,7 @@
 from rest_framework.views import Response
 from urlparser import UrlParser
 from apidocview import APIDocView
-
+from docgenerator import DocumentationGenerator
 
 class SwaggerResourcesView(APIDocView):
 
@@ -34,51 +34,12 @@ class SwaggerApiView(APIDocView):
 
     def get(self, request, path):
         apis = self.get_api_for_resource(path)
-        api_data = []
+        generator = DocumentationGenerator()
 
-        for api in apis:
-            api_data.append(
-                {
-                    "description": "Poop",
-                    "operations": [
-                        {
-                            "httpMethod": "GET",
-                            "nickname": "poopie balls" + api['path'],
-                            "notes": "Big poop",
-                            "summary": "Poop",
-                            "responseClass": "Fuck tard"
-                        }
-                    ],
-                    "path": api['path']
-                }
-            )
-        return Response(
-            {
-                "basePath": "http://localhost:8000/api",
-                "apis": api_data
-            }
-        )
-#        return Response(
-#            {
-#                "basePath": "http://localhost:8000/api",
-#                "apis": [
-#                    {
-#                        "description": "Operations about pets",
-#                        "operations": [
-#                            {
-#                                "httpMethod": "GET",
-#                                "nickname": "getPetById",
-#                                "notes": "Only Pets which you have permission to see will be returned",
-#                                "responseClass": "Pet",
-#                                "summary": "Find pet by its unique ID"
-#                            }
-#                        ],
-#                        "path": "/" + path
-#                    }
-#                ]
-#            }
-#        )
-#
+        return Response({
+            'apis': generator.generate(apis)
+        })
+
     def get_api_for_resource(self, filter_path):
         urlparser = UrlParser()
         return urlparser.get_apis(filter_path=filter_path)

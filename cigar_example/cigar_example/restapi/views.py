@@ -16,7 +16,9 @@ class CigarList(ListCreateAPIView):
 
 class CigarDetails(RetrieveUpdateDestroyAPIView):
     """
-    Gets a detailed view of an individual cigar record. Can be updated and deleted. Each cigar must
+    Detailed view of an individual cigar record.
+
+    Can be updated and deleted. Each cigar must
     be assigned to a manufacturer
     """
     model = Cigar
