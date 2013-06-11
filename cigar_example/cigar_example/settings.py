@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     'cigar_example.restapi',
     'rest_framework',
     'rest_framework_docs',
+    'rest_framework_swagger',
     'django.contrib.admin',
 )
 

@@ -2,13 +2,14 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
-
 from rest_framework.views import APIView
+
+from apidocview import APIDocView
 
 
 class UrlParser(object):
 
-    def get_apis(self, patterns=None, exclude_namespaces=[]):
+    def get_apis(self, patterns=None, filter_path=None, exclude_namespaces=[]):
         """
         Returns all the DRF APIViews found in the project URLs
 
@@ -19,7 +20,10 @@ class UrlParser(object):
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
-        patterns = self.__flatten_patterns_tree__(patterns, exclude_namespaces=exclude_namespaces)
+        patterns = self.__flatten_patterns_tree__(
+            patterns,
+            filter_path=filter_path,
+            exclude_namespaces=exclude_namespaces)
 
         return patterns
 
@@ -55,7 +59,7 @@ class UrlParser(object):
             'base_path': base_path
         }
 
-    def __assemble_endpoint_data__(self, pattern, prefix=''):
+    def __assemble_endpoint_data__(self, pattern, prefix='', filter_path=None):
         """
         Creates a dictionary for matched API urls
 
@@ -67,13 +71,22 @@ class UrlParser(object):
         if callback is None:
             return
 
+        path = simplify_regex(prefix + pattern.regex.pattern)
+
+        if filter_path is not None:
+            if filter_path not in path:
+                return None
+            path = simplify_regex(pattern.regex.pattern)
+
+        # path = path.replace('<', '{').replace('>', '}')
+
         return {
-            'path': simplify_regex(prefix + pattern.regex.pattern),
+            'path': path,
             'pattern': pattern,
             'callback': callback,
         }
 
-    def __flatten_patterns_tree__(self, patterns, prefix='', exclude_namespaces=[]):
+    def __flatten_patterns_tree__(self, patterns, prefix='', filter_path=None, exclude_namespaces=[]):
         """
         Uses recursion to flatten url tree.
 
@@ -84,7 +97,7 @@ class UrlParser(object):
 
         for pattern in patterns:
             if isinstance(pattern, RegexURLPattern):
-                endpoint_data = self.__assemble_endpoint_data__(pattern, prefix)
+                endpoint_data = self.__assemble_endpoint_data__(pattern, prefix, filter_path=filter_path)
 
                 if endpoint_data is None:
                     continue
@@ -94,10 +107,10 @@ class UrlParser(object):
             elif isinstance(pattern, RegexURLResolver):
 
                 if pattern.namespace in exclude_namespaces:
-                    return
+                    continue
 
                 prefix = pattern.regex.pattern
-                pattern_list.extend(self.__flatten_patterns_tree__(pattern.url_patterns, prefix))
+                pattern_list.extend(self.__flatten_patterns_tree__(pattern.url_patterns, prefix, filter_path=filter_path))
 
         return pattern_list
 
@@ -110,11 +123,14 @@ class UrlParser(object):
             return
 
         if (hasattr(pattern.callback, 'cls') and
-                issubclass(pattern.callback.cls, APIView)):
+                issubclass(pattern.callback.cls, APIView) and
+                not isinstance(pattern.callback.cls, APIDocView)):
 
             return pattern.callback.cls
 
         elif (hasattr(pattern.callback, 'cls_instance') and
-                isinstance(pattern.callback.cls_instance, APIView)):
+                isinstance(pattern.callback.cls_instance, APIView) and
+                not isinstance(pattern.callback.cls_instance, APIDocView)):
 
             return pattern.callback.cls_instance
+

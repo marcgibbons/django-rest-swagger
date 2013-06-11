@@ -36,6 +36,12 @@ class UrlParserTest(TestCase):
 
         self.assertEqual(len(self.url_patterns), len(apis))
 
+    def test_flatten_url_tree_with_filter(self):
+        urlparser = UrlParser()
+        apis = urlparser.get_apis(self.url_patterns, filter_path="a-view")
+
+        self.assertEqual(2, len(apis))
+
     def test_flatten_url_tree_excluded_namesapce(self):
         urls = patterns('',
             url(r'api/base/path/', include(self.url_patterns, namespace='exclude'))
@@ -43,7 +49,7 @@ class UrlParserTest(TestCase):
         urlparser = UrlParser()
         apis = urlparser.get_apis(urls, 'exclude')
 
-        self.assertIsNone(apis)
+        self.assertEqual([], apis)
 
     def test_get_api_callback(self):
         urlparser = UrlParser()
