@@ -78,7 +78,7 @@ class UrlParser(object):
                 return None
             path = simplify_regex(pattern.regex.pattern)
 
-        # path = path.replace('<', '{').replace('>', '}')
+        path = path.replace('<', '{').replace('>', '}')
 
         return {
             'path': path,

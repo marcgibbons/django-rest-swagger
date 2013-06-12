@@ -3,7 +3,7 @@ from django.db import models
 
 class Cigar(models.Model):
     name = models.CharField(max_length=25)
-    colour = models.CharField(max_length=30)
+    colour = models.CharField(max_length=30, default="Brown")
     gauge = models.IntegerField()
     length = models.IntegerField()
     price = models.DecimalField(decimal_places=2, max_digits=5)

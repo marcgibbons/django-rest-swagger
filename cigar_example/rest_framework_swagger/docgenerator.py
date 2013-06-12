@@ -1,6 +1,7 @@
 """
 Generates Documentation
 """
+import re
 from django.contrib.admindocs.utils import trim_docstring
 
 class DocumentationGenerator(object):
@@ -14,16 +15,17 @@ class DocumentationGenerator(object):
             api_docs.append({
                 'description': self.__get_description__(api['callback']),
                 'path': api['path'],
-                'operations': self.__get_operations__(api['callback']),
+                'operations': self.__get_operations__(api),
             })
 
         return api_docs
 
-    def __get_operations__(self, callback):
+    def __get_operations__(self, api):
         """
         Returns docs for the allowed methods of an API endpoint
         """
         operations = []
+        callback = api['callback']
 
         for method in callback.allowed_methods:
             if method == "OPTIONS":
@@ -34,6 +36,8 @@ class DocumentationGenerator(object):
                 'summary': self.__get_method_docs__(callback, method),
                 'nickname': self.__get_nickname__(callback),
                 'notes': self.__get_notes__(callback),
+                'responseClass': self.__get_serializer_class_name__(callback),
+                'parameters': self.get_parameters(api, method),
             })
 
         return operations
@@ -68,3 +72,148 @@ class DocumentationGenerator(object):
 
     def __get_notes__(self, callback):
         return trim_docstring(callback.get_description())
+
+    def get_models(self, apis):
+        """
+        Builds a list of Swagger 'models'. These represent
+        DRF serializers and their fields
+        """
+        serializers = self.__get_serializer_set__(apis)
+
+        models = {}
+
+        for serializer in serializers:
+            properties = self.__get_serializer_fields__(serializer)
+
+            models[serializer.__name__] = {
+                'id': serializer.__name__,
+                'properties': properties,
+            }
+
+        return models
+
+    def get_parameters(self, api, method):
+        """
+        Returns parameters for an API. Parameters are a combination of HTTP
+        query parameters as well as HTTP body parameters that are defined by
+        the DRF serializer fields
+        """
+        params = []
+        path_params = self.__build_path_parameters__(api['path'])
+        body_params = self.__build_body_parameters__(api['callback'])
+
+        if len(path_params) > 0:
+            params.append(path_params)
+
+        if method not in ["GET", "DELETE"] and len(body_params) > 0:
+            params.append(body_params)
+
+        return params
+
+    def __build_body_parameters__(self, callback):
+        serializer_name = self.__get_serializer_class_name__(callback)
+
+        if serializer_name is None:
+            return
+
+        return {
+            'name': serializer_name,
+            'dataType': serializer_name,
+            'paramType': 'body',
+        }
+
+    def __build_path_parameters__(self, path):
+        """
+        Gets the parameters from the URL
+        """
+        url_params = re.findall('/{([^}]*)}', path)
+        params = []
+
+        for param in url_params:
+            params.append({
+                'name': param,
+                'dataType': 'string',
+                'paramType': 'path',
+                'required': True
+            })
+
+        return params
+
+    def __build_serializer_form_parameters__(self, fields):
+        """
+        Builds form parameters from the serializer class
+        """
+        # TODO: Build this method
+        data = []
+
+    def __get_serializer_fields__(self, serializer):
+        """
+        Returns serializer fields in the Swagger MODEL format
+        """
+        fields = serializer().get_fields()
+
+        data = {}
+        for name, field in fields.items():
+            data[name] = {
+                'type': self.__convert_types_to_swagger__(field.__class__.__name__),
+                'required': True,
+                'allowableValues': {
+                    'min': getattr(field, 'min_length', None),
+                    'max': getattr(field, 'max_length', None),
+                    'defaultValue': getattr(field, 'default', None),
+                    'readOnly': getattr(field, 'read_only', None),
+                    'valueType': 'RANGE',
+                }
+            }
+
+        return data
+
+    def __get_serializer_class__(self, callback):
+        if hasattr(callback, 'get_serializer_class'):
+            return callback.get_serializer_class()
+
+    def __get_serializer_class_name__(self, callback):
+        serializer = self.__get_serializer_class__(callback)
+
+        if serializer is None:
+            return None
+
+        return serializer.__name__
+
+    def __get_serializer_set__(self, apis):
+        """
+        Returns a set of serializer classes for a provided list
+        of APIs
+        """
+        serializers = set()
+
+        for api in apis:
+            serializer = self.__get_serializer_class__(api['callback'])
+            if serializer is not None:
+                serializers.add(serializer)
+
+        return serializers
+
+    def __convert_types_to_swagger__(self, field_type):
+        """
+        Converts Django REST Framework data types into Swagger data types
+        """
+        type_matching = (
+            ('BooleanField', 'boolean'),
+            ('CharField', 'string'),
+            ('URLField', 'string'),
+            ('SlugField', 'string'),
+            ('ChoiceField', 'LIST'),
+            ('EmailField', 'string'),
+            ('RegexField', 'string'),
+            ('DateTimeField', 'Date'),
+            ('DateField', 'Date'),
+            ('TimeField', 'string'),
+            ('IntegerField', 'int'),
+            ('FloatField', 'float'),
+            ('DecimalField', 'double'),
+            ('FileField', 'byte'),
+            ('ImageField', 'byte'),
+        )
+        type_matching = dict(type_matching)
+        return type_matching.get(field_type, 'string')

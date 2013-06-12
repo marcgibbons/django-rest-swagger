@@ -37,7 +37,9 @@ class SwaggerApiView(APIDocView):
         generator = DocumentationGenerator()
 
         return Response({
-            'apis': generator.generate(apis)
+            'apis': generator.generate(apis),
+            'models': generator.get_models(apis),
+            'basePath': 'http://localhost:8000/api'
         })
 
     def get_api_for_resource(self, filter_path):

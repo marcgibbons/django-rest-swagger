@@ -5,7 +5,6 @@ from django.db.models.base import get_absolute_url
 
 
 class CigarSerializer(serializers.ModelSerializer):
-    manufacturer_id = fields.WritableField()
     url = fields.URLField(source='get_absolute_url', read_only=True)
 
     class Meta:
@@ -13,7 +12,6 @@ class CigarSerializer(serializers.ModelSerializer):
 
 
 class ManufacturerSerializer(serializers.ModelSerializer):
-    country_id = fields.WritableField()
 
     class Meta:
         model = models.Manufacturer
