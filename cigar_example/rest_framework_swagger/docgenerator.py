@@ -31,14 +31,19 @@ class DocumentationGenerator(object):
             if method == "OPTIONS":
                 continue  # No one cares
 
-            operations.append({
+            operation = {
                 'httpMethod': method,
                 'summary': self.__get_method_docs__(callback, method),
                 'nickname': self.__get_nickname__(callback),
                 'notes': self.__get_notes__(callback),
                 'responseClass': self.__get_serializer_class_name__(callback),
-                'parameters': self.get_parameters(api, method),
-            })
+            }
+
+            parameters = self.get_parameters(api, method)
+            if len(parameters) > 0:
+                operation['parameters'] = parameters
+
+            operations.append(operation)
 
         return operations
 
@@ -101,12 +106,16 @@ class DocumentationGenerator(object):
         params = []
         path_params = self.__build_path_parameters__(api['path'])
         body_params = self.__build_body_parameters__(api['callback'])
+        form_params = self.__build_form_parameters__(api['callback'], method)
 
-        if len(path_params) > 0:
-            params.append(path_params)
+        if path_params:
+            params += path_params
 
-        if method not in ["GET", "DELETE"] and len(body_params) > 0:
-            params.append(body_params)
+        if method not in ["GET", "DELETE"]:
+            params += form_params
+
+            if not form_params and body_params is not None:
+                params.append(body_params)
 
         return params
 
@@ -139,24 +148,61 @@ class DocumentationGenerator(object):
 
         return params
 
-    def __build_serializer_form_parameters__(self, fields):
+    def __build_form_parameters__(self, callback, method):
         """
         Builds form parameters from the serializer class
         """
-        # TODO: Build this method
         data = []
+        serializer = self.__get_serializer_class__(callback)
+
+        if serializer is None:
+            return data
+
+        fields = serializer().get_fields()
+
+        for name, field in fields.items():
+
+            if getattr(field, 'read_only', False):
+                continue
+
+            data_type = self.__convert_types_to_swagger__(field.__class__.__name__)
+            max_length = getattr(field, 'max_length', None)
+            min_length = getattr(field, 'min_length', None)
+            allowable_values = None
+
+            if max_length is not None or min_length is not None:
+                allowable_values = {
+                    'max': max_length,
+                    'min': min_length,
+                    'valueType': 'RANGE'
+                }
+
+            data.append({
+                'paramType': 'form',
+                'name': name,
+                'dataType': data_type,
+                'allowableValues': allowable_values,
+                'description': '',
+                'defaultValue': getattr(field, 'default', None),
+                'required': getattr(field, 'required', None)
+            })
+
+        return data
 
     def __get_serializer_fields__(self, serializer):
         """
         Returns serializer fields in the Swagger MODEL format
         """
+        if serializer is None:
+            return
+
         fields = serializer().get_fields()
 
         data = {}
         for name, field in fields.items():
             data[name] = {
                 'type': self.__convert_types_to_swagger__(field.__class__.__name__),
-                'required': True,
+                'required': getattr(field, 'required', None),
                 'allowableValues': {
                     'min': getattr(field, 'min_length', None),
                     'max': getattr(field, 'max_length', None),
