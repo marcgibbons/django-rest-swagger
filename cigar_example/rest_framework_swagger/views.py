@@ -7,7 +7,7 @@ class SwaggerResourcesView(APIDocView):
 
     def get(self, request):
         resources = self.get_resources()
-        host = request.build_absolute_uri()
+        host = self.host  #request.build_absolute_uri()
 
         #base_path = "/%s" % resources['base_path']
 

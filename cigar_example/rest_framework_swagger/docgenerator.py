@@ -3,6 +3,9 @@ Generates Documentation
 """
 import re
 from django.contrib.admindocs.utils import trim_docstring
+from rest_framework.utils.formatting import get_view_name, \
+        get_view_description
+
 
 class DocumentationGenerator(object):
 
@@ -27,7 +30,10 @@ class DocumentationGenerator(object):
         operations = []
         callback = api['callback']
 
-        for method in callback.allowed_methods:
+        allowed_methods = callback().allowed_methods
+        if allowed_methods is None:
+            allowed_methods = []
+        for method in allowed_methods:
             if method == "OPTIONS":
                 continue  # No one cares
 
@@ -51,13 +57,13 @@ class DocumentationGenerator(object):
         """
         Returns the APIView class name
         """
-        return callback.get_name()
+        return get_view_name(callback)
 
     def __get_description__(self, callback):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        return callback.get_description().split("\n")[0].split(".")[0]
+        return get_view_description(callback).split("\n")[0].split(".")[0]
 
     def __get_method_docs__(self, callback, method):
         """
@@ -76,7 +82,18 @@ class DocumentationGenerator(object):
         return self.__get_name__(callback)
 
     def __get_notes__(self, callback):
-        return trim_docstring(callback.get_description())
+        docstring = trim_docstring(get_view_description(callback))
+        split_lines = docstring.split('\n')
+
+        for line in split_lines:
+            needle = line.find('--')
+            if needle == -1:
+                continue
+            trim_at = docstring.find(line)
+            docstring = docstring[:trim_at]
+
+        docstring = docstring.replace("\n", "<br/>")
+        return docstring
 
     def get_models(self, apis):
         """
@@ -107,6 +124,7 @@ class DocumentationGenerator(object):
         path_params = self.__build_path_parameters__(api['path'])
         body_params = self.__build_body_parameters__(api['callback'])
         form_params = self.__build_form_parameters__(api['callback'], method)
+        query_params = self.__build_query_params_from_docstring__(api['callback'])
 
         if path_params:
             params += path_params
@@ -116,6 +134,9 @@ class DocumentationGenerator(object):
 
             if not form_params and body_params is not None:
                 params.append(body_params)
+
+        if query_params:
+            params += query_params
 
         return params
 
@@ -165,7 +186,7 @@ class DocumentationGenerator(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = self.__convert_types_to_swagger__(field.__class__.__name__)
+            data_type = field.type_label #self.__convert_types_to_swagger__(field.type_name)
             max_length = getattr(field, 'max_length', None)
             min_length = getattr(field, 'min_length', None)
             allowable_values = None
@@ -189,6 +210,25 @@ class DocumentationGenerator(object):
 
         return data
 
+    def __build_query_params_from_docstring__(self, callback):
+
+        params = []
+        docstring = get_view_description(callback)
+        split_lines = docstring.split('\n')
+
+        for line in split_lines:
+
+            param = line.split(' -- ')
+            if len(param) == 2:
+                params.append({
+                    'paramType': 'query',
+                    'name': param[0].strip(),
+                    'description': param[1].strip(),
+                    'dataType': '',
+                })
+
+        return params
+
     def __get_serializer_fields__(self, serializer):
         """
         Returns serializer fields in the Swagger MODEL format
@@ -200,8 +240,9 @@ class DocumentationGenerator(object):
 
         data = {}
         for name, field in fields.items():
+
             data[name] = {
-                'type': self.__convert_types_to_swagger__(field.__class__.__name__),
+                'type': field.type_label,  #self.__convert_types_to_swagger__(field.type_name),
                 'required': getattr(field, 'required', None),
                 'allowableValues': {
                     'min': getattr(field, 'min_length', None),
@@ -216,7 +257,7 @@ class DocumentationGenerator(object):
 
     def __get_serializer_class__(self, callback):
         if hasattr(callback, 'get_serializer_class'):
-            return callback.get_serializer_class()
+            return callback().get_serializer_class()
 
     def __get_serializer_class_name__(self, callback):
         serializer = self.__get_serializer_class__(callback)
@@ -262,4 +303,5 @@ class DocumentationGenerator(object):
             ('ImageField', 'byte'),
         )
         type_matching = dict(type_matching)
+
         return type_matching.get(field_type, 'string')

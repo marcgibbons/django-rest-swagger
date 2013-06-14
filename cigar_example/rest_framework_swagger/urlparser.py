@@ -76,7 +76,7 @@ class UrlParser(object):
         if filter_path is not None:
             if filter_path not in path:
                 return None
-            path = simplify_regex(pattern.regex.pattern)
+#            path = simplify_regex(pattern.regex.pattern)
 
         path = path.replace('<', '{').replace('>', '}')
 
@@ -124,13 +124,13 @@ class UrlParser(object):
 
         if (hasattr(pattern.callback, 'cls') and
                 issubclass(pattern.callback.cls, APIView) and
-                not isinstance(pattern.callback.cls, APIDocView)):
+                not issubclass(pattern.callback.cls, APIDocView)):
 
             return pattern.callback.cls
 
         elif (hasattr(pattern.callback, 'cls_instance') and
                 isinstance(pattern.callback.cls_instance, APIView) and
-                not isinstance(pattern.callback.cls_instance, APIDocView)):
+                not issubclass(pattern.callback.cls_instance, APIDocView)):
 
             return pattern.callback.cls_instance
 

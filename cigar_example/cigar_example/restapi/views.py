@@ -58,11 +58,13 @@ class MyCustomView(APIView):
     This is a custom view that can be anything at all. It's not using a serializer class,
     but I can define my own parameters like so!
 
+    This is a new line
+
     horse -- the name of your horse
 
     """
     def get(self, *args, **kwargs):
         """ Docs there """
         return Response({'foo':'bar'})
-    def post(self, *args, **kwargs):
-        pass
+    def post(self, request, *args, **kwargs):
+        return Response({'horse': request.GET.get('horse')})

@@ -67,7 +67,7 @@ class UrlParserTest(TestCase):
         urlparser = UrlParser()
         callback = urlparser.__get_pattern_api_callback__(self.url_patterns[0])
 
-        self.assertTrue(isinstance(callback, MockApiView))
+        self.assertTrue(issubclass(callback, MockApiView))
 
     def test_get_api_callback_not_rest_view(self):
         urlparser = UrlParser()
