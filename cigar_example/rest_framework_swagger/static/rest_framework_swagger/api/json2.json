@@ -1,0 +1,15 @@
+{
+    "apiVersion": "0.2",
+    "apis": [
+        {
+            "description": "",
+            "path": "/api-docs.{format}/user"
+        },
+        {
+            "description": "",
+            "path": "/api-docs.{format}/pet"
+        }
+    ],
+    "basePath": "http://localhost:8080/api
+    "swaggerVersion": "1.1"
+}

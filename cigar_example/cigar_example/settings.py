@@ -131,7 +131,6 @@ INSTALLED_APPS = (
     'cigar_example.app',
     'cigar_example.restapi',
     'rest_framework',
-    'rest_framework_docs',
     'rest_framework_swagger',
     'django.contrib.admin',
 )
@@ -167,5 +166,5 @@ LOGGING = {
 
 REST_SWAGGER = {
     "exclude_namespaces": [],    #  List URL namespaces to ignore,
-    "base_path": ''              # Relative path to APIS (ie 'api/version/1/')
+    "base_path": '',              # Relative path to APIS (ie 'api/version/1/')
 }

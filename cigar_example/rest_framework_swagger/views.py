@@ -1,7 +1,22 @@
+from django.views.generic import View
+from django.shortcuts import render_to_response, RequestContext
 from rest_framework.views import Response
 from urlparser import UrlParser
 from apidocview import APIDocView
 from docgenerator import DocumentationGenerator
+
+
+class SwaggerUIView(View):
+    def get(self, request, *args, **kwargs):
+        template_name = "rest_framework_swagger/index.html"
+        data = {'settings': {
+                'discovery_url': "%sapi-docs/" % request.build_absolute_uri()
+                }
+        }
+        response = render_to_response(template_name, RequestContext(request, data))
+
+        return response
+
 
 class SwaggerResourcesView(APIDocView):
 

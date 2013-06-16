@@ -1,0 +1,11 @@
+{
+    "apiVersion": "0.2",
+    "apis": [
+        {
+            "description": "",
+            "path": "/pet.{format}"
+        }
+    ],
+    "basePath": "http://localhost:8080/api",
+    "swaggerVersion": "1.1"
+}

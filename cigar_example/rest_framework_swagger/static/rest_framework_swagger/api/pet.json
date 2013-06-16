@@ -1,0 +1,17 @@
+{
+    "apis": [
+        {
+            "description": "Operations about pets",
+            "operations": [
+                {
+                    "httpMethod": "GET",
+                    "nickname": "getPetById",
+                    "notes": "Only Pets which you have permission to see will be returned",
+                    "responseClass": "Pet",
+                    "summary": "Find pet by its unique ID"
+                }
+            ],
+            "path": "/pet.{format}"
+        }
+    ]
+}

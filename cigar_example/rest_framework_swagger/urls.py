@@ -1,8 +1,9 @@
-from django.conf.urls import patterns, include
-from views import SwaggerResourcesView, SwaggerApiView
+from django.conf.urls import patterns
+from views import SwaggerResourcesView, SwaggerApiView, SwaggerUIView
 
 
 urlpatterns = patterns('',
-    (r'^$', SwaggerResourcesView.as_view()),
-    (r'^(?P<path>\w+)/$', SwaggerApiView.as_view()),
+    (r'^$', SwaggerUIView.as_view()),
+    (r'^api-docs/$', SwaggerResourcesView.as_view()),
+    (r'^api-docs/(?P<path>\w+)/$', SwaggerApiView.as_view()),
 )
