@@ -164,7 +164,7 @@ LOGGING = {
     }
 }
 
-REST_SWAGGER = {
+SWAGGER_SETTINGS = {
     "exclude_namespaces": [],    #  List URL namespaces to ignore,
-    "base_path": '',              # Relative path to APIS (ie 'api/version/1/')
+    "api_version": 1,
 }

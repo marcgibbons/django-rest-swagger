@@ -35,6 +35,7 @@ class UrlParser(object):
         pos -- the position in the path (used by the recursion)
         """
         root_paths = set()
+        base_path = ''
 
         for endpoint in apis:
             path = endpoint['path']

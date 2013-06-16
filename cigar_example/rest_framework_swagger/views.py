@@ -5,6 +5,8 @@ from urlparser import UrlParser
 from apidocview import APIDocView
 from docgenerator import DocumentationGenerator
 
+from rest_framework_swagger import SWAGGER_SETTINGS
+
 
 class SwaggerUIView(View):
     def get(self, request, *args, **kwargs):
@@ -30,7 +32,7 @@ class SwaggerResourcesView(APIDocView):
             })
 
         return Response({
-            'apiVersion': '1',
+            'apiVersion': SWAGGER_SETTINGS['api_version'],
             'swaggerVersion': '1.2.4',
             'basePath': self.host,
             'apis': apis
@@ -38,7 +40,7 @@ class SwaggerResourcesView(APIDocView):
 
     def get_resources(self):
         urlparser = UrlParser()
-        apis = urlparser.get_apis()
+        apis = urlparser.get_apis(exclude_namespaces=SWAGGER_SETTINGS['exclude_namespaces'])
         return urlparser.get_top_level_apis(apis)
 
 
