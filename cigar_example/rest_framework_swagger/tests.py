@@ -1,12 +1,15 @@
+from django.conf import settings
+from django.utils.importlib import import_module
 from django.conf.urls import patterns, url, include
 from django.test import TestCase
 from urlparser import UrlParser
 from docgenerator import DocumentationGenerator
+from django.contrib.admindocs.utils import trim_docstring
 
 from django.views.generic import View
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
-
+from rest_framework import serializers
 
 class MockApiView(APIView):
     """
@@ -25,6 +28,12 @@ class NonApiView(View):
     pass
 
 
+class CommentSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    content = serializers.CharField(max_length=200)
+    created = serializers.DateTimeField()
+
+
 class UrlParserTest(TestCase):
     def setUp(self):
         self.url_patterns = patterns('',
@@ -32,6 +41,16 @@ class UrlParserTest(TestCase):
             url(r'a-view/child/?$', MockApiView.as_view()),
             url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
         )
+
+    def test_get_apis(self):
+        urlparser = UrlParser()
+        urls = import_module(settings.ROOT_URLCONF)
+        # Overwrite settings with test patterns
+        urls.urlpatterns = self.url_patterns
+        apis = urlparser.get_apis()
+
+        for api in apis:
+            self.assertIn(api['pattern'], self.url_patterns)
 
     def test_flatten_url_tree(self):
         urlparser = UrlParser()
@@ -59,7 +78,7 @@ class UrlParserTest(TestCase):
             url(r'api/base/path/', include(self.url_patterns, namespace='exclude'))
         )
         urlparser = UrlParser()
-        apis = urlparser.get_apis(urls, 'exclude')
+        apis = urlparser.__flatten_patterns_tree__(patterns=urls, exclude_namespaces='exclude')
 
         self.assertEqual([], apis)
 
@@ -84,6 +103,39 @@ class UrlParserTest(TestCase):
 
         self.assertEqual(2, len(apis))
 
+    def test_get_top_level_api_nested(self):
+        """
+        Tests recursion to find the 'top level' APIs (ie. if the path to the api is something like
+        /rest-api/version/1/api/ and is common to all the endpoints, the base path is abstracted)
+        """
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'^rest-api/version/1/', include(self.url_patterns)))
+
+        apis = urlparser.get_top_level_apis(urlparser.get_apis(url_patterns))
+
+        self.assertEqual(apis['base_path'], 'rest-api/version/1')
+
+    def test_assemble_endpoint_data(self):
+        """
+        Tests that the endpoint data is correctly packaged
+        """
+        urlparser = UrlParser()
+        pattern = self.url_patterns[0]
+
+        data = urlparser.__assemble_endpoint_data__(pattern)
+
+        self.assertEqual(data['path'], '/a-view/')
+        self.assertEqual(data['callback'], MockApiView)
+        self.assertEqual(data['pattern'], pattern)
+
+    def test_assemble_data_with_non_api_callback(self):
+        bad_pattern = patterns('', url(r'^some_view/', NonApiView.as_view()))
+
+        urlparser = UrlParser()
+        data = urlparser.__assemble_endpoint_data__(bad_pattern)
+
+        self.assertIsNone(data)
+
 
 class DocumentationGeneratorTest(TestCase):
     def setUp(self):
@@ -93,13 +145,6 @@ class DocumentationGeneratorTest(TestCase):
             url(r'a-view/<pk>/?$', MockApiView.as_view(), name="detailed view for mock"),
             url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
         )
-
-    def test_generate(self):
-        urlparser = UrlParser()
-        apis = urlparser.get_apis(self.url_patterns, filter_path='a-view')
-
-        generator = DocumentationGenerator()
-        docs = generator.generate(apis)
 
     def test_get_description(self):
         generator = DocumentationGenerator()
@@ -133,3 +178,128 @@ class DocumentationGeneratorTest(TestCase):
         method_docs = generator.__get_method_docs__(MyListView(), 'POST')
 
         self.assertEqual("My comment", method_docs)
+
+    def test_get_operations(self):
+
+        class AnAPIView(APIView):
+            def post(self, *args, **kwargs):
+                pass
+
+        api = {
+            'path': 'a-path/',
+            'callback': AnAPIView,
+            'pattern': patterns('')
+        }
+        docgen = DocumentationGenerator()
+        operations = docgen.__get_operations__(api)
+
+        self.assertEqual('POST', operations[0]['httpMethod'])
+
+    def test_get_operations_with_no_methods(self):
+
+        class AnAPIView(APIView):
+            pass
+
+        api = {
+            'path': 'a-path/',
+            'callback': AnAPIView,
+            'pattern': patterns('')
+        }
+        docgen = DocumentationGenerator()
+        operations = docgen.__get_operations__(api)
+
+        self.assertEqual([], operations)
+
+    def test_strip_params_from_docstring(self):
+        class AnAPIView(APIView):
+            """
+            My comments are here
+
+            param -- my param
+            """
+            pass
+
+        docgen = DocumentationGenerator()
+        docstring = docgen.__strip_params_from_docstring__(trim_docstring(AnAPIView.__doc__))
+
+        self.assertEqual("My comments are here<br/><br/>", docstring)
+
+    def test_get_models(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        models = docgen.get_models(apis)
+
+        self.assertIn('CommentSerializer', models)
+
+    def test_get_serializer_set(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        serializers = docgen.__get_serializer_set__(apis)
+
+        self.assertIn(CommentSerializer, serializers)
+
+    def test_get_serializer_fields(self):
+        docgen = DocumentationGenerator()
+        fields = docgen.__get_serializer_fields__(CommentSerializer)
+
+        self.assertEqual(3, len(fields))
+
+    def test_get_serializer_fields_api_with_no_serializer(self):
+        docgen = DocumentationGenerator()
+        fields = docgen.__get_serializer_fields__(None)
+
+        self.assertIsNone(fields)
+
+    def test_build_body_parameters(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        docgen = DocumentationGenerator()
+        params = docgen.__build_body_parameters__(SerializedAPI)
+
+        self.assertEqual('CommentSerializer', params['name'])
+
+
+    def test_build_form_parameters(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        docgen = DocumentationGenerator()
+        params = docgen.__build_form_parameters__(SerializedAPI, 'POST')
+
+        self.assertEqual(len(CommentSerializer().get_fields()), len(params))
+
+    def test_build_form_parameters_allowable_values(self):
+
+        class MySerializer(serializers.Serializer):
+            content = serializers.CharField(max_length=200, min_length=10, default="Vandalay Industries")
+            a_read_only_field = serializers.BooleanField(read_only=True)
+
+        class MyAPIView(ListCreateAPIView):
+            serializer_class = MySerializer
+
+        docgen = DocumentationGenerator()
+        params = docgen.__build_form_parameters__(MyAPIView, 'POST')
+
+        self.assertEqual(1, len(params))  # Read only field is ignored
+        param = params[0]
+
+        self.assertEqual('content', param['name'])
+        self.assertEqual('form', param['paramType'])
+        self.assertEqual(True, param['required'])
+        self.assertEqual(200, param['allowableValues']['max'])
+        self.assertEqual(10, param['allowableValues']['min'])
+        self.assertEqual('Vandalay Industries', param['defaultValue'])
+

@@ -76,7 +76,6 @@ class UrlParser(object):
         if filter_path is not None:
             if filter_path not in path:
                 return None
-#            path = simplify_regex(pattern.regex.pattern)
 
         path = path.replace('<', '{').replace('>', '}')
 

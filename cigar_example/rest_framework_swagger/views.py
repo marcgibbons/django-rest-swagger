@@ -6,12 +6,9 @@ from docgenerator import DocumentationGenerator
 class SwaggerResourcesView(APIDocView):
 
     def get(self, request):
-        resources = self.get_resources()
-        host = self.host  #request.build_absolute_uri()
-
-        #base_path = "/%s" % resources['base_path']
-
         apis = []
+        resources = self.get_resources()
+
         for path in resources['root_paths']:
             apis.append({
                 'path': "/%s" % path,
@@ -19,8 +16,8 @@ class SwaggerResourcesView(APIDocView):
 
         return Response({
             'apiVersion': '1',
-            'swaggerVersion': '1.1',
-            'basePath': host,
+            'swaggerVersion': '1.2.4',
+            'basePath': self.host,
             'apis': apis
         })
 
@@ -39,7 +36,7 @@ class SwaggerApiView(APIDocView):
         return Response({
             'apis': generator.generate(apis),
             'models': generator.get_models(apis),
-            'basePath': 'http://localhost:8000/api'
+            'basePath': self.api_full_uri,
         })
 
     def get_api_for_resource(self, filter_path):

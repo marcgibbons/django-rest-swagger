@@ -31,17 +31,16 @@ class DocumentationGenerator(object):
         callback = api['callback']
 
         allowed_methods = callback().allowed_methods
-        if allowed_methods is None:
-            allowed_methods = []
+
         for method in allowed_methods:
             if method == "OPTIONS":
-                continue  # No one cares
+                continue  # No one cares. I assume JSON.
 
             operation = {
                 'httpMethod': method,
                 'summary': self.__get_method_docs__(callback, method),
                 'nickname': self.__get_nickname__(callback),
-                'notes': self.__get_notes__(callback),
+                'notes': self.__get_notes__(callback, method),
                 'responseClass': self.__get_serializer_class_name__(callback),
             }
 
@@ -76,13 +75,43 @@ class DocumentationGenerator(object):
         if docs is None:
             docs = self.__get_description__(callback)
 
-        return trim_docstring(docs)
+        docs = trim_docstring(docs).split('\n')[0]
+
+        return docs
 
     def __get_nickname__(self, callback):
+        """ Returns the APIView's nickname """
         return self.__get_name__(callback)
 
-    def __get_notes__(self, callback):
-        docstring = trim_docstring(get_view_description(callback))
+    def __get_notes__(self, callback, method=None):
+        """
+        Returns the body of the docstring trimmed before any parameters are
+        listed. First, get the class docstring and then get the method's. The
+        methods will always inherit the class comments.
+        """
+        docstring = ""
+
+        if method is not None:
+            class_docs = self.__get_notes__(callback)
+            method_docs = eval("callback.%s.__doc__" % (str(method).lower()))
+
+            if class_docs is not None:
+                docstring += class_docs
+            if method_docs is not None:
+                docstring += method_docs
+        else:
+            docstring = trim_docstring(get_view_description(callback))
+
+        docstring = self.__strip_params_from_docstring__(docstring)
+        docstring = docstring.replace("\n", "<br/>")
+
+        return docstring
+
+    def __strip_params_from_docstring__(self, docstring):
+        """
+        Strips the params from the docstring (ie. myparam -- Some param) will
+        not be removed from the text body
+        """
         split_lines = docstring.split('\n')
 
         for line in split_lines:
@@ -124,7 +153,7 @@ class DocumentationGenerator(object):
         path_params = self.__build_path_parameters__(api['path'])
         body_params = self.__build_body_parameters__(api['callback'])
         form_params = self.__build_form_parameters__(api['callback'], method)
-        query_params = self.__build_query_params_from_docstring__(api['callback'])
+        query_params = self.__build_query_params_from_docstring__(api['callback'], method)
 
         if path_params:
             params += path_params
@@ -186,7 +215,7 @@ class DocumentationGenerator(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = field.type_label #self.__convert_types_to_swagger__(field.type_name)
+            data_type = field.type_label
             max_length = getattr(field, 'max_length', None)
             min_length = getattr(field, 'min_length', None)
             allowable_values = None
@@ -203,21 +232,26 @@ class DocumentationGenerator(object):
                 'name': name,
                 'dataType': data_type,
                 'allowableValues': allowable_values,
-                'description': '',
+                'description': '',  # Blank for now, no real way of getting field comments
                 'defaultValue': getattr(field, 'default', None),
                 'required': getattr(field, 'required', None)
             })
 
         return data
 
-    def __build_query_params_from_docstring__(self, callback):
+    def __build_query_params_from_docstring__(self, callback, method=None):
 
         params = []
-        docstring = get_view_description(callback)
+        # Combine class & method level comments. If parameters are specified
+        if method is not None:
+            docstring = trim_docstring(eval("callback.%s.__doc__" % (str(method).lower())))
+            params += self.__build_query_params_from_docstring__(callback)
+        else: # Otherwise, get the class level docstring
+            docstring = get_view_description(callback)
+
         split_lines = docstring.split('\n')
 
         for line in split_lines:
-
             param = line.split(' -- ')
             if len(param) == 2:
                 params.append({
@@ -242,7 +276,7 @@ class DocumentationGenerator(object):
         for name, field in fields.items():
 
             data[name] = {
-                'type': field.type_label,  #self.__convert_types_to_swagger__(field.type_name),
+                'type': field.type_label,
                 'required': getattr(field, 'required', None),
                 'allowableValues': {
                     'min': getattr(field, 'min_length', None),
@@ -281,27 +315,3 @@ class DocumentationGenerator(object):
 
         return serializers
 
-    def __convert_types_to_swagger__(self, field_type):
-        """
-        Converts Django REST Framework data types into Swagger data types
-        """
-        type_matching = (
-            ('BooleanField', 'boolean'),
-            ('CharField', 'string'),
-            ('URLField', 'string'),
-            ('SlugField', 'string'),
-            ('ChoiceField', 'LIST'),
-            ('EmailField', 'string'),
-            ('RegexField', 'string'),
-            ('DateTimeField', 'Date'),
-            ('DateField', 'Date'),
-            ('TimeField', 'string'),
-            ('IntegerField', 'int'),
-            ('FloatField', 'float'),
-            ('DecimalField', 'double'),
-            ('FileField', 'byte'),
-            ('ImageField', 'byte'),
-        )
-        type_matching = dict(type_matching)
-
-        return type_matching.get(field_type, 'string')

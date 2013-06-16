@@ -112,8 +112,12 @@ TEMPLATE_DIRS = (
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 SOUTH_TESTS_MIGRATE = False
-NOSE_ARGS = ['--nocapture', '--nologcapture']
-
+NOSE_ARGS = [
+    '--nocapture',
+    '--nologcapture',
+    '--with-coverage',
+    '--cover-package=rest_framework_swagger'
+]
 
 INSTALLED_APPS = (
     'rest_framework_docs',
@@ -159,4 +163,9 @@ LOGGING = {
             'propagate': True,
         },
     }
+}
+
+REST_SWAGGER = {
+    "exclude_namespaces": [],    #  List URL namespaces to ignore,
+    "base_path": ''              # Relative path to APIS (ie 'api/version/1/')
 }

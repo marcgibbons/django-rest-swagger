@@ -60,11 +60,20 @@ class MyCustomView(APIView):
 
     This is a new line
 
-    horse -- the name of your horse
 
     """
     def get(self, *args, **kwargs):
-        """ Docs there """
+        """
+        Docs there
+
+        param1 -- my param
+        """
+
         return Response({'foo':'bar'})
     def post(self, request, *args, **kwargs):
+        """
+        Post to see your horse's name!
+
+        horse -- the name of your horse
+        """
         return Response({'horse': request.GET.get('horse')})
