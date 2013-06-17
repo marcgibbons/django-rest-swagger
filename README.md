@@ -87,6 +87,9 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 ## Example
 Included in this repository is a functioning example. Please clone the repo, copy or reference the `rest_framework_swagger` directory into the cigar_example folder. Install the required packages using `pip install -r requirements.txt`
 
+## Screenshots
+![](screenshots/api-list.png)
+
 ## Bugs & Contributions
 Please report bugs by opening an issue
 
