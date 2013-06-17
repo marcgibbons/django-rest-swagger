@@ -2,8 +2,8 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.conf.urls import patterns, url, include
 from django.test import TestCase
-from urlparser import UrlParser
-from docgenerator import DocumentationGenerator
+from rest_framework_swagger.urlparser import UrlParser
+from rest_framework_swagger.docgenerator import DocumentationGenerator
 from django.contrib.admindocs.utils import trim_docstring
 
 from django.views.generic import View

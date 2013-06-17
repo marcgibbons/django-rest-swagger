@@ -2,9 +2,9 @@ from django.views.generic import View
 from django.utils.safestring import mark_safe
 from django.shortcuts import render_to_response, RequestContext
 from rest_framework.views import Response
-from urlparser import UrlParser
-from apidocview import APIDocView
-from docgenerator import DocumentationGenerator
+from rest_framework_swagger.urlparser import UrlParser
+from rest_framework_swagger.apidocview import APIDocView
+from rest_framework_swagger.docgenerator import DocumentationGenerator
 
 from rest_framework_swagger import SWAGGER_SETTINGS
 
