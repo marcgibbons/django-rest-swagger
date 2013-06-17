@@ -120,7 +120,6 @@ NOSE_ARGS = [
 ]
 
 INSTALLED_APPS = (
-    'rest_framework_docs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -165,6 +164,13 @@ LOGGING = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": [],    #  List URL namespaces to ignore,
-    "api_version": 1,
+    "exclude_namespaces": [],    #  List URL namespaces to ignore
+    "api_version": '0.1 alpha',  # Specify your API's version (optional)
+    "enabled_methods": [ # Methods to enable in UI
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete'
+    ],
 }

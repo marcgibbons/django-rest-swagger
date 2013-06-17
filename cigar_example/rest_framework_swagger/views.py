@@ -1,4 +1,5 @@
 from django.views.generic import View
+from django.utils.safestring import mark_safe
 from django.shortcuts import render_to_response, RequestContext
 from rest_framework.views import Response
 from urlparser import UrlParser
@@ -11,9 +12,12 @@ from rest_framework_swagger import SWAGGER_SETTINGS
 class SwaggerUIView(View):
     def get(self, request, *args, **kwargs):
         template_name = "rest_framework_swagger/index.html"
-        data = {'settings': {
-                'discovery_url': "%sapi-docs/" % request.build_absolute_uri()
-                }
+        data = {
+            'settings': {
+                'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),
+                'api_key': SWAGGER_SETTINGS.get('api_key', ''),
+                'enabled_methods': mark_safe(SWAGGER_SETTINGS.get('enabled_methods'))
+            }
         }
         response = render_to_response(template_name, RequestContext(request, data))
 
@@ -32,7 +36,7 @@ class SwaggerResourcesView(APIDocView):
             })
 
         return Response({
-            'apiVersion': SWAGGER_SETTINGS['api_version'],
+            'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2.4',
             'basePath': self.host,
             'apis': apis
@@ -40,7 +44,7 @@ class SwaggerResourcesView(APIDocView):
 
     def get_resources(self):
         urlparser = UrlParser()
-        apis = urlparser.get_apis(exclude_namespaces=SWAGGER_SETTINGS['exclude_namespaces'])
+        apis = urlparser.get_apis(exclude_namespaces=SWAGGER_SETTINGS.get('exclude_namespaces'))
         return urlparser.get_top_level_apis(apis)
 
 

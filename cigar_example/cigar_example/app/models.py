@@ -15,15 +15,18 @@ class Cigar(models.Model):
 
 
 class Manufacturer(models.Model):
-    name = models.CharField(max_length=25, null=False, blank=False)
-    country = models.ForeignKey('Countries')
+    name = models.CharField(max_length=25)
+    country = models.ForeignKey('Country')
 
     def __unicode__(self):
         return self.name
 
 
-class Countries(models.Model):
+class Country(models.Model):
     name = models.CharField(max_length=25, null=False, blank=True)
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = "Countries"

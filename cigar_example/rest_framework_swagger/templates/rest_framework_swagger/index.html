@@ -18,15 +18,15 @@
     <script src='{% static "rest_framework_swagger/lib/highlight.7.3.pack.js" %}' type='text/javascript'></script>
 
     <script type="text/javascript">
-	$(function () {
-	    window.swaggerUi = new SwaggerUi({
+    $(function () {
+        window.swaggerUi = new SwaggerUi({
                 discoveryUrl:"{{ settings.discovery_url }}",
-//                apiKey:"special-key",
+                apiKey:"{{ settings.api_key }}",
                 dom_id:"swagger-ui-container",
                 supportHeaderParams: false,
-                supportedSubmitMethods: ['get', 'post', 'put'],
+                supportedSubmitMethods: {{ settings.enabled_methods }},
                 onComplete: function(swaggerApi, swaggerUi){
-                	if(console) {
+                    if(console) {
                         console.log("Loaded SwaggerUI")
                         console.log(swaggerApi);
                         console.log(swaggerUi);
@@ -34,7 +34,7 @@
                   $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
                 },
                 onFailure: function(data) {
-                	if(console) {
+                    if(console) {
                         console.log("Unable to Load SwaggerUI");
                         console.log(data);
                     }

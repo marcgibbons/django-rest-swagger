@@ -1,6 +1,6 @@
 from rest_framework.views import Response, APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from cigar_example.app.models import Cigar, Manufacturer, Countries
+from cigar_example.app.models import Cigar, Manufacturer, Country
 from serializers import CigarSerializer, ManufacturerSerializer, CountrySerializer
 
 
@@ -43,14 +43,14 @@ class CountryList(ListCreateAPIView):
     """
     Gets a list of countries. Allows the creation of a new country.
     """
-    model = Countries
+    model = Country
     serializer_class = CountrySerializer
 
 class CountryDetails(RetrieveUpdateDestroyAPIView):
     """
     Detailed view of the country
     """
-    model = Countries
+    model = Country
     serializer_class = CountrySerializer
 
 class MyCustomView(APIView):
