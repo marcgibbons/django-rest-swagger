@@ -101,9 +101,7 @@ Contributions are welcome and are encouraged !
 
 Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring development time and for being an awesome place to work, play & innovate
 
-Many thanks to Tom Christie & all the contributors who have developed Django REST Framework
-
-The Python & Django communities
+Many thanks to Tom Christie & all the contributors who have developed [Django REST Framework](http://django-rest-framework.org/)
 
 ## Contributors
 * Marc Gibbons (@marcgibbons)
