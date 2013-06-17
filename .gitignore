@@ -3,6 +3,7 @@
 *env/
 swag/
 *.py[cod]
+*.coverage
 
 # C extensions
 *.so

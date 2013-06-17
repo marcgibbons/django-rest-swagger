@@ -1,5 +1,7 @@
 from django.conf import settings
 
+VERSION = '0.1.0'
+
 DEFAULT_SWAGGER_SETTINGS = {
     'exclude_namespaces': None,
     'api_version': '',
