@@ -23,7 +23,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django-rest-swagger',
     version=VERSION,
-#    download_url='https://github.com/marcgibbons/django-rest-framework-docs/raw/master/dist/django-rest-framework-docs-0.1.6.tar.gz',
+    download_url='https://github.com/marcgibbons/django-rest-swagger/raw/master/dist/django-rest-swagger-0.1.0.tar.gz',
     packages=['rest_framework_swagger'],
     package_data={'rest_framework_swagger': ['rest_framework_swagger/templates/rest_framework_swagger/*', 'rest_framework_swagger/static/rest_framework_swagger/*']},
     include_package_data=True,
