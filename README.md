@@ -89,6 +89,7 @@ Included in this repository is a functioning example. Please clone the repo, cop
 
 ## Screenshots
 ![](screenshots/api-list.png)
+![](screenshots/fields.png)
 
 ## Bugs & Contributions
 Please report bugs by opening an issue
