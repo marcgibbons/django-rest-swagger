@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
@@ -27,33 +28,21 @@ class UrlParser(object):
 
         return patterns
 
-    def get_top_level_apis(self, apis, pos=0):
+    def get_top_level_apis(self, apis):
         """
         Returns the 'top level' APIs (ie. swagger 'resources')
 
         apis -- list of APIs as returned by self.get_apis
-        pos -- the position in the path (used by the recursion)
         """
         root_paths = set()
-        base_path = ''
 
-        for endpoint in apis:
-            path = endpoint['path']
+        api_paths = [endpoint['path'].strip("/") for endpoint in apis]
+        base_path = os.path.commonprefix(api_paths) #.split("/")[0]
 
-            if path[0] == '/':
-                path = path[1:]
-
-            split_path = path.split("/")
-
-            if pos < len(split_path) and split_path[pos] != '':
-                root_paths.add(path.split("/")[pos])
-
-            base_path = "/".join(split_path[0:pos])
-
-        if len(root_paths) == 1 and len(apis) > 1:
-            next_level = self.get_top_level_apis(apis, pos + 1)
-            root_paths = next_level['root_paths']
-            base_path = next_level['base_path']
+        for path in api_paths:
+            if '{' in path:
+                continue
+            root_paths.add(path)
 
         return {
             'root_paths': root_paths,
