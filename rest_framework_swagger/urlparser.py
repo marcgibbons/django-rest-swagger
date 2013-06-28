@@ -22,20 +22,7 @@ class UrlParser(object):
             patterns = urls.urlpatterns
 
         if filter_path is not None:
-            all_apis = self.get_apis(patterns, exclude_namespaces=[])
-            top_level_apis = list(self.get_top_level_apis(all_apis))
-
-            if filter_path in top_level_apis:
-                top_level_apis.remove(filter_path)
-
-            for top in top_level_apis:
-                if top in filter_path:
-                    top_level_apis.remove(top)
-
-            for pattern in patterns:
-                for top in top_level_apis:
-                    if top in pattern.regex.pattern:
-                        patterns.remove(pattern)
+            return self.get_filtered_apis(patterns, filter_path)
 
         patterns = self.__flatten_patterns_tree__(
             patterns,
@@ -44,6 +31,28 @@ class UrlParser(object):
         )
 
         return patterns
+
+    def get_filtered_apis(self, patterns, filter_path):
+        filtered_list = []
+
+        all_apis = self.get_apis(patterns, exclude_namespaces=[])
+        top_level_apis = self.get_top_level_apis(all_apis)
+        top_level_apis.discard(filter_path)
+
+        for top in list(top_level_apis):
+            if top in filter_path: #and len(filter_path) > len(top):
+                top_level_apis.remove(top)
+
+        for api in all_apis:
+            remove = False
+            for top in top_level_apis:
+                if top + '/' in api['path'].lstrip("/"):
+                    remove = True
+
+            if filter_path in api['path'].strip("/") and not remove:
+                filtered_list.append(api)
+
+        return filtered_list
 
     def get_top_level_apis(self, apis):
         """
@@ -54,7 +63,6 @@ class UrlParser(object):
         root_paths = set()
 
         api_paths = [endpoint['path'].strip("/") for endpoint in apis]
-        base_path = os.path.commonprefix(api_paths) #.split("/")[0]
 
         for path in api_paths:
             if '{' in path:
