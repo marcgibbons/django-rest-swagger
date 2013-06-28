@@ -21,10 +21,27 @@ class UrlParser(object):
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
+        if filter_path is not None:
+            all_apis = self.get_apis(patterns, exclude_namespaces=[])
+            top_level_apis = list(self.get_top_level_apis(all_apis))
+
+            if filter_path in top_level_apis:
+                top_level_apis.remove(filter_path)
+
+            for top in top_level_apis:
+                if top in filter_path:
+                    top_level_apis.remove(top)
+
+            for pattern in patterns:
+                for top in top_level_apis:
+                    if top in pattern.regex.pattern:
+                        patterns.remove(pattern)
+
         patterns = self.__flatten_patterns_tree__(
             patterns,
             filter_path=filter_path,
-            exclude_namespaces=exclude_namespaces)
+            exclude_namespaces=exclude_namespaces,
+        )
 
         return patterns
 
@@ -44,10 +61,7 @@ class UrlParser(object):
                 continue
             root_paths.add(path)
 
-        return {
-            'root_paths': root_paths,
-            'base_path': base_path
-        }
+        return root_paths
 
     def __assemble_endpoint_data__(self, pattern, prefix='', filter_path=None):
         """

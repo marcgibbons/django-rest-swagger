@@ -39,6 +39,7 @@ class UrlParserTest(TestCase):
         self.url_patterns = patterns('',
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
+            url(r'a-view/child2/?$', MockApiView.as_view()),
             url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
         )
 
@@ -101,19 +102,8 @@ class UrlParserTest(TestCase):
         urlparser = UrlParser()
         apis = urlparser.get_top_level_apis(urlparser.get_apis(self.url_patterns))
 
-        self.assertEqual(2, len(apis))
+        self.assertEqual(4, len(apis))
 
-    def test_get_top_level_api_nested(self):
-        """
-        Tests recursion to find the 'top level' APIs (ie. if the path to the api is something like
-        /rest-api/version/1/api/ and is common to all the endpoints, the base path is abstracted)
-        """
-        urlparser = UrlParser()
-        url_patterns = patterns('', url(r'^rest-api/version/1/', include(self.url_patterns)))
-
-        apis = urlparser.get_top_level_apis(urlparser.get_apis(url_patterns))
-
-        self.assertEqual(apis['base_path'], 'rest-api/version/1')
 
     def test_assemble_endpoint_data(self):
         """

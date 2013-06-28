@@ -30,7 +30,7 @@ class SwaggerResourcesView(APIDocView):
         apis = []
         resources = self.get_resources()
 
-        for path in resources['root_paths']:
+        for path in resources:
             apis.append({
                 'path': "/%s" % path,
             })
