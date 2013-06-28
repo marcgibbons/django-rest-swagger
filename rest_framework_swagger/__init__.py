@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 VERSION = '0.1.0'
 
 DEFAULT_SWAGGER_SETTINGS = {
-    'exclude_namespaces': None,
+    'exclude_namespaces': [],
     'api_version': '',
     'api_key': '',
     'enabled_methods': ['get', 'post', 'put', 'patch', 'delete']
