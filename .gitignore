@@ -37,3 +37,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+cigar_example/rest_framework_swagger
