@@ -81,7 +81,7 @@ class DocumentationGenerator(object):
 
     def __get_nickname__(self, callback):
         """ Returns the APIView's nickname """
-        return self.__get_name__(callback)
+        return self.__get_name__(callback).replace(' ', '_')
 
     def __get_notes__(self, callback, method=None):
         """
