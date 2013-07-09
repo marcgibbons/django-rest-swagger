@@ -6,7 +6,7 @@ from rest_framework_swagger import VERSION
 README = """
 Django REST Swagger
 
-An API documentation generator for Swagger UI and Django REST Framework version 2.3.5
+An API documentation generator for Swagger UI and Django REST Framework version 2.3+
 
 Installation
 From pip:
@@ -23,7 +23,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django-rest-swagger',
     version=VERSION,
-    download_url='https://github.com/marcgibbons/django-rest-swagger/raw/master/dist/django-rest-swagger-0.1.1.tar.gz',
+    download_url='https://github.com/marcgibbons/django-rest-swagger/raw/master/dist/django-rest-swagger-0.1.2.tar.gz',
     packages=['rest_framework_swagger'],
     package_data={'rest_framework_swagger': ['rest_framework_swagger/templates/rest_framework_swagger/*', 'rest_framework_swagger/static/rest_framework_swagger/*']},
     include_package_data=True,

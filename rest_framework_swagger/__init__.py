@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 
 DEFAULT_SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
