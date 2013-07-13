@@ -39,3 +39,4 @@ nosetests.xml
 .pydevproject
 
 cigar_example/rest_framework_swagger
+cigar_example/db.sql
