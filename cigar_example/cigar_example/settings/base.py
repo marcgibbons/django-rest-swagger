@@ -127,6 +127,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_nose',
+    'djsupervisor',
     'cigar_example.app',
     'cigar_example.restapi',
     'rest_framework',
