@@ -1,4 +1,5 @@
 Django==1.5.1
+MySQL-python==1.2.4
 PyYAML==3.10
 argh==0.23.2
 argparse==1.2.1
