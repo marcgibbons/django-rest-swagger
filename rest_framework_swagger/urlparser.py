@@ -80,7 +80,7 @@ class UrlParser(object):
         """
         callback = self.__get_pattern_api_callback__(pattern)
 
-        if callback is None:
+        if callback is None or self.__exclude_router_api_root__(callback):
             return
 
         path = simplify_regex(prefix + pattern.regex.pattern)
@@ -90,6 +90,9 @@ class UrlParser(object):
                 return None
 
         path = path.replace('<', '{').replace('>', '}')
+
+        if self.__exclude_format_endpoints__(path):
+            return
 
         return {
             'path': path,
@@ -145,3 +148,20 @@ class UrlParser(object):
 
             return pattern.callback.cls_instance
 
+    def __exclude_router_api_root__(self, callback):
+        """
+        Returns True if the URL's callback is rest_framework.routers.APIRoot
+        """
+        if callback.__module__ == 'rest_framework.routers':
+            return True
+
+        return False
+
+    def __exclude_format_endpoints__(self, path):
+        """
+        Excludes URL patterns that contain .{format}
+        """
+        if '.{format}' in path:
+            return True
+
+        return False

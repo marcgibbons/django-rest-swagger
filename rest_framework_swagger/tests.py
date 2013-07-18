@@ -10,6 +10,9 @@ from django.views.generic import View
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import serializers
+from rest_framework.routers import DefaultRouter
+from rest_framework.viewsets import ModelViewSet
+
 
 class MockApiView(APIView):
     """
@@ -125,6 +128,25 @@ class UrlParserTest(TestCase):
         data = urlparser.__assemble_endpoint_data__(bad_pattern)
 
         self.assertIsNone(data)
+
+    def test_exclude_router_api_root(self):
+        from django.contrib.auth.models import User
+
+        class MyViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
+
+        router = DefaultRouter()
+        router.register('test', MyViewSet)
+
+        urls_created = len(router.urls)
+
+        parser = UrlParser()
+        apis = parser.get_apis(router.urls)
+
+        self.assertEqual(4, urls_created - len(apis))
+
+
 
 
 class DocumentationGeneratorTest(TestCase):
@@ -292,4 +314,15 @@ class DocumentationGeneratorTest(TestCase):
         self.assertEqual(200, param['allowableValues']['max'])
         self.assertEqual(10, param['allowableValues']['min'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
+
+    def test_get_allowed_methods(self):
+        from django.contrib.auth.models import User
+
+        class MyViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
+
+        docgen = DocumentationGenerator()
+        import ipdb; ipdb.set_trace()
+        allowed_methods = docgen.__get_allowed_methods__(MyViewSet)
 

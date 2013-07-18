@@ -3,6 +3,7 @@ Generates Documentation
 """
 import re
 from django.contrib.admindocs.utils import trim_docstring
+from rest_framework import viewsets
 from rest_framework.utils.formatting import get_view_name, \
         get_view_description
 
@@ -30,7 +31,7 @@ class DocumentationGenerator(object):
         operations = []
         callback = api['callback']
 
-        allowed_methods = callback().allowed_methods
+        allowed_methods = self.__get_allowed_methods__(callback, api['path'])
 
         for method in allowed_methods:
             if method == "OPTIONS":
@@ -52,6 +53,35 @@ class DocumentationGenerator(object):
 
         return operations
 
+    def __get_allowed_methods__(self, callback, path):
+        if issubclass(callback, viewsets.ViewSetMixin):
+            allowed_methods = set()
+            mapping = {
+                'create': 'POST',
+                'retrieve': 'GET',
+                'update': 'PUT',
+                'partial_update': 'PATCH',
+                'destroy': 'DELETE',
+                'list': 'GET'
+            }
+            object_view_methods = ['create', 'retrieve', 'updated', 'partial_update', 'destroy']
+            list_view_methods = ['create', 'list']
+
+            if '{%s}' % callback.lookup_field in path:
+                loop_list = object_view_methods
+            else:
+                loop_list = list_view_methods
+
+            for method_name in loop_list:
+                if hasattr(callback, method_name):
+                    allowed_methods.add(mapping[method_name])
+
+            return list(allowed_methods)
+
+        allowed_methods = callback().allowed_methods
+
+        return allowed_methods
+
     def __get_name__(self, callback):
         """
         Returns the APIView class name
@@ -64,17 +94,26 @@ class DocumentationGenerator(object):
         """
         return get_view_description(callback).split("\n")[0].split(".")[0]
 
+    def __eval_method_docstring_(self, callback, method):
+        """
+        Attempts to fetch the docs for a class method. Returns None
+        if the method does not exist
+        """
+        try:
+            return eval("callback.%s.__doc__" % (str(method).lower()))
+        except AttributeError:
+            return None
+
     def __get_method_docs__(self, callback, method):
         """
         Attempts to retrieve method specific docs for an
         endpoint. If none are available, the class docstring
         will be used
         """
-        docs = eval("callback.%s.__doc__" % (str(method).lower()))
+        docs = self.__eval_method_docstring_(callback, method)
 
         if docs is None:
             docs = self.__get_description__(callback)
-
         docs = trim_docstring(docs).split('\n')[0]
 
         return docs
@@ -93,7 +132,7 @@ class DocumentationGenerator(object):
 
         if method is not None:
             class_docs = self.__get_notes__(callback)
-            method_docs = eval("callback.%s.__doc__" % (str(method).lower()))
+            method_docs = self.__eval_method_docstring_(callback, method)
 
             if class_docs is not None:
                 docstring += class_docs
@@ -244,10 +283,13 @@ class DocumentationGenerator(object):
         params = []
         # Combine class & method level comments. If parameters are specified
         if method is not None:
-            docstring = trim_docstring(eval("callback.%s.__doc__" % (str(method).lower())))
+            docstring = self.__eval_method_docstring_(callback, method)
             params += self.__build_query_params_from_docstring__(callback)
         else: # Otherwise, get the class level docstring
             docstring = get_view_description(callback)
+
+        if docstring is None:
+            return params
 
         split_lines = docstring.split('\n')
 
