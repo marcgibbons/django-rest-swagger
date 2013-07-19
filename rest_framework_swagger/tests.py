@@ -316,6 +316,10 @@ class DocumentationGeneratorTest(TestCase):
         self.assertEqual('Vandalay Industries', param['defaultValue'])
 
     def test_get_allowed_methods(self):
+        """
+        Tests a ModelViewSet's allowed methods. If the path includes something like {pk},
+        consider it an object view, otherwise, a list view
+        """
         from django.contrib.auth.models import User
 
         class MyViewSet(ModelViewSet):
@@ -323,6 +327,17 @@ class DocumentationGeneratorTest(TestCase):
             model = User
 
         docgen = DocumentationGenerator()
-        import ipdb; ipdb.set_trace()
-        allowed_methods = docgen.__get_allowed_methods__(MyViewSet)
 
+        # Test a list endpoint
+        allowed_methods = docgen.__get_allowed_methods__(MyViewSet, '/api/endpoint')
+        self.assertEqual(2, len(allowed_methods))
+        self.assertIn('POST', allowed_methods)
+        self.assertIn('GET', allowed_methods)
+
+        # Test an object endpoint
+        allowed_methods = docgen.__get_allowed_methods__(MyViewSet, '/api/endpoint/{pk}')
+        self.assertEqual(4, len(allowed_methods))
+        self.assertIn('POST', allowed_methods)
+        self.assertIn('PATCH', allowed_methods)
+        self.assertIn('DELETE', allowed_methods)
+        self.assertIn('GET', allowed_methods)
