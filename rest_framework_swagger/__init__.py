@@ -1,6 +1,3 @@
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-
 VERSION = '0.1.3'
 
 DEFAULT_SWAGGER_SETTINGS = {
@@ -11,12 +8,13 @@ DEFAULT_SWAGGER_SETTINGS = {
 }
 
 try:
+    from django.conf import settings
     SWAGGER_SETTINGS = getattr(settings, 'SWAGGER_SETTINGS', DEFAULT_SWAGGER_SETTINGS)
 
     for key, value in DEFAULT_SWAGGER_SETTINGS.items():
         if key not in SWAGGER_SETTINGS:
             SWAGGER_SETTINGS[key] = value
 
-except ImproperlyConfigured:
+except:
     SWAGGER_SETTINGS = DEFAULT_SWAGGER_SETTINGS
 
