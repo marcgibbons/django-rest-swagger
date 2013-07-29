@@ -19,7 +19,6 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
 lib64
 
 # Installer logs
@@ -34,6 +33,7 @@ nosetests.xml
 *.mo
 
 # Mr Developer
+.idea
 .mr.developer.cfg
 .project
 .pydevproject
