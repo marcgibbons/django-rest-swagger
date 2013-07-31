@@ -173,4 +173,5 @@ SWAGGER_SETTINGS = {
         'patch',
         'delete'
     ],
+    "is_authenticated": True
 }

@@ -4,7 +4,9 @@ DEFAULT_SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
     'api_version': '',
     'api_key': '',
-    'enabled_methods': ['get', 'post', 'put', 'patch', 'delete']
+    'enabled_methods': ['get', 'post', 'put', 'patch', 'delete'],
+    'is_authenticated': False,
+    'is_superuser': False
 }
 
 try:
