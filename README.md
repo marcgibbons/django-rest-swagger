@@ -1,5 +1,5 @@
 # Django REST Swagger
-####An API documentation generator for Swagger UI and Django REST Framework version 2.3.5
+####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
 
 For older versions of Django REST Framework, see [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs)
 
