@@ -99,7 +99,7 @@ Please report bugs by opening an issue
 Contributions are welcome and are encouraged !
 
 ## Special Thanks
-![](http://bnotions.com/assets/img/bnotions_color.png)
+![http://bnotions.com](http://bnotions.com/assets/img/bnotions_color.png)
 
 Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring development time and for being an awesome place to work, play & innovate
 
