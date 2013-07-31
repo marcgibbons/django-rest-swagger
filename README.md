@@ -60,6 +60,8 @@ SWAGGER_SETTINGS = {
         'delete'
     ],
     "api_key": '', # An API key
+    "is_authenticated": False,  # Set to True to enforce user authentication,
+    "is_superuser": False,  # Set to True to enforce admin only access
 }
 ```
 
@@ -113,3 +115,8 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * @swistakm
 * Peter Baumgartner (@ipmb)
 * Marlon Bailey (@avinash240)
+
+## Release Notes:
+### v0.1.5 (July 30, 2013)
+* Added permission settings for Swagger docs. Default is now allow any, which will override REST Framework settings
+* Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
