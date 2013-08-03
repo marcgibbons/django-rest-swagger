@@ -108,6 +108,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 ## Contributors
 * Marc Gibbons (@marcgibbons)
 * Geraldo Andrade (@quein)
+* Vítek Pliska (@whit)
 
 ### Django REST Framework Docs contributors:
 
@@ -117,6 +118,10 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+### v0.1.6 (August 3, 2013)
+* Improvments and bug fixes with relative imports in Python 3
+* throbber.gif image is being pointed to local copy
+
 ### v0.1.5 (July 30, 2013)
 * Added permission settings for Swagger docs. Default is now allow any, which will override REST Framework settings
 * Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
