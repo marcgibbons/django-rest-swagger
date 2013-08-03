@@ -1,6 +1,7 @@
 from django.conf.urls import patterns
-from views import SwaggerResourcesView, SwaggerApiView, SwaggerUIView
 from django.conf.urls import url
+from rest_framework_swagger.views import SwaggerResourcesView, SwaggerApiView, SwaggerUIView
+
 
 urlpatterns = patterns('',
     url(r'^$', SwaggerUIView.as_view(), name="django.swagger.base.view"),
