@@ -51,8 +51,9 @@ Further configuration can optionally be made from your project's `settings.py`.
 ```python
 SWAGGER_SETTINGS = {
     "exclude_namespaces": [], # List URL namespaces to ignore
-    "api_version": '0.1', # Specify your API's version
-    "enabled_methods": [ # Specify which methods to enable in Swagger UI
+    "api_version": '0.1',  # Specify your API's version
+    "api_path": "/",  # specify API path if it's not root
+    "enabled_methods": [  # Specify which methods to enable in Swagger UI
         'get',
         'post',
         'put',
