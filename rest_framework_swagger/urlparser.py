@@ -123,7 +123,7 @@ class UrlParser(object):
                 if pattern.namespace in exclude_namespaces:
                     continue
 
-                prefix = pattern.regex.pattern
+                prefix = prefix + pattern.regex.pattern
                 pattern_list.extend(self.__flatten_patterns_tree__(pattern.url_patterns, prefix, filter_path=filter_path))
 
         return pattern_list
