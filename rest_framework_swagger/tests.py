@@ -105,13 +105,14 @@ class UrlParserTest(TestCase):
             url(r'^', include(router.urls))
         )
         urls = patterns('',
-            url(r'api/', include(urls_app))
+            url(r'api/', include(urls_app)),
+            url(r'test/', include(urls_app))
         )
         urlparser = UrlParser()
         apis = urlparser.get_apis(urls)
 
-        for api in apis:
-            self.assertRegexpMatches(api['path'], r'^/api/')
+        self.assertEqual(sum(api['path'].find('api') != -1 for api in apis), 4)
+        self.assertEqual(sum(api['path'].find('test') != -1 for api in apis), 4)
 
     def test_get_api_callback(self):
         urlparser = UrlParser()
