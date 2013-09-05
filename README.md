@@ -52,7 +52,7 @@ Further configuration can optionally be made from your project's `settings.py`.
 SWAGGER_SETTINGS = {
     "exclude_namespaces": [], # List URL namespaces to ignore
     "api_version": '0.1',  # Specify your API's version
-    "api_path": "/",  # specify API path if it's not root
+    "api_path": "/",  # Specify the path to your API not a root level
     "enabled_methods": [  # Specify which methods to enable in Swagger UI
         'get',
         'post',
@@ -110,6 +110,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marc Gibbons (@marcgibbons)
 * Geraldo Andrade (@quein)
 * Vítek Pliska (@whit)
+* Falk Schuetzenmeister (@postfalk)
 
 ### Django REST Framework Docs contributors:
 
@@ -119,6 +120,10 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+### v0.1.7 (Sept 4, 2013)
+* URL flattening fixes
+* API root prefix fix
+
 ### v0.1.6 (August 3, 2013)
 * Improvments and bug fixes with relative imports in Python 3
 * throbber.gif image is being pointed to local copy
