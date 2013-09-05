@@ -86,6 +86,34 @@ class UrlParserTest(TestCase):
 
         self.assertEqual([], apis)
 
+    def test_flatten_url_tree_url_import_with_routers(self):
+        from django.contrib.auth.models import User
+
+        class MockApiViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
+
+        class AnotherMockApiViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
+
+        router = DefaultRouter()
+        router.register(r'other_views', MockApiViewSet)
+        router.register(r'more_views', MockApiViewSet)
+
+        urls_app = patterns('',
+            url(r'^', include(router.urls))
+        )
+        urls = patterns('',
+            url(r'api/', include(urls_app)),
+            url(r'test/', include(urls_app))
+        )
+        urlparser = UrlParser()
+        apis = urlparser.get_apis(urls)
+
+        self.assertEqual(sum(api['path'].find('api') != -1 for api in apis), 4)
+        self.assertEqual(sum(api['path'].find('test') != -1 for api in apis), 4)
+
     def test_get_api_callback(self):
         urlparser = UrlParser()
         callback = urlparser.__get_pattern_api_callback__(self.url_patterns[0])
