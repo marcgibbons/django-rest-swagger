@@ -271,7 +271,7 @@ class DocumentationGenerator(object):
                 'name': name,
                 'dataType': data_type,
                 'allowableValues': allowable_values,
-                'description': '',  # Blank for now, no real way of getting field comments
+                'description': getattr(field, 'help_text', ''),
                 'defaultValue': getattr(field, 'default', None),
                 'required': getattr(field, 'required', None)
             })
