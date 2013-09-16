@@ -74,6 +74,7 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 * Serializers & fields in use by a certain method
 * Field default values, minimum, maximum, read-only and required attributes
 * URL parameters (ie. /product/{id})
+* Field `help_text` property is used to create the description from the serializer or model.
 * Query parameters (user-defined) - Custom parameters. It is possible to customize a parameter list for your
     API. To do so, include a key-value pair in the docstring of your API class
     delimited by two hyphens ('--'). Example: 'start_time -- The first reading':
@@ -111,6 +112,9 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Geraldo Andrade (@quein)
 * Vítek Pliska (@whit)
 * Falk Schuetzenmeister (@postfalk)
+* Lukas Hetzenecker (@lukas-hetzenecker)
+* David Wolever (@wolever)
+
 
 ### Django REST Framework Docs contributors:
 
@@ -120,6 +124,10 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+### v0.1.8 (Sept 16, 2013)
+* Fixed broken imports - Now supports DRF 2.3.8
+* Added description on the model field
+
 ### v0.1.7 (Sept 4, 2013)
 * URL flattening fixes
 * API root prefix fix
