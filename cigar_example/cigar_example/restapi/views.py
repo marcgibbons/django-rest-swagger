@@ -59,8 +59,6 @@ class MyCustomView(APIView):
     but I can define my own parameters like so!
 
     This is a new line
-
-
     """
     def get(self, *args, **kwargs):
         """
@@ -70,6 +68,7 @@ class MyCustomView(APIView):
         """
 
         return Response({'foo':'bar'})
+
     def post(self, request, *args, **kwargs):
         """
         Post to see your horse's name!
