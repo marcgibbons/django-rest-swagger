@@ -4,8 +4,7 @@ Generates Documentation
 import re
 from django.contrib.admindocs.utils import trim_docstring
 from rest_framework import viewsets
-from rest_framework.utils.formatting import get_view_name, \
-        get_view_description
+from rest_framework.views import get_view_name, get_view_description
 
 
 class DocumentationGenerator(object):
@@ -271,7 +270,7 @@ class DocumentationGenerator(object):
                 'name': name,
                 'dataType': data_type,
                 'allowableValues': allowable_values,
-                'description': '',  # Blank for now, no real way of getting field comments
+                'description': getattr(field, 'help_text', ''),
                 'defaultValue': getattr(field, 'default', None),
                 'required': getattr(field, 'required', None)
             })

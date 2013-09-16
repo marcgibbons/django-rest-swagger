@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Cigar(models.Model):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=25, help_text='Cigar Name')
     colour = models.CharField(max_length=30, default="Brown")
     gauge = models.IntegerField()
     length = models.IntegerField()
