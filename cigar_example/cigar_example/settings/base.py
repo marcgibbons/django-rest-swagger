@@ -175,3 +175,4 @@ SWAGGER_SETTINGS = {
     ],
     "is_authenticated": False
 }
+APPEND_SLASH = False
