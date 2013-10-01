@@ -14,8 +14,8 @@ From source:
 ## Requirements
 This application was developed and tested on:
 
-* Django 1.5.1
-* Django REST Framework 2.3.4, 2.3.5
+* Django 1.5.1 - 1.5.4
+* Django REST Framework 2.3.4 - 2.3.8
 
 Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
 
@@ -124,6 +124,10 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+### v0.1.9 (Oct 1, 2013)
+* Revisited doc algorithm
+* Added support for APPEND_SLASH = False
+
 ### v0.1.8 (Sept 16, 2013)
 * Fixed broken imports - Now supports DRF 2.3.8
 * Added description on the model field
