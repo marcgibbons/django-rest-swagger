@@ -262,7 +262,29 @@ class DocumentationGeneratorTest(TestCase):
         docgen = DocumentationGenerator()
         docstring = docgen.__strip_params_from_docstring__(trim_docstring(AnAPIView.__doc__))
 
-        self.assertEqual("My comments are here<br/><br/>", docstring)
+        self.assertEqual("My comments are here<br/>", docstring)
+
+    def test_strip_params_from_docstring_multiline(self):
+        class TestView(APIView):
+            """
+            Creates a new user.
+            Returns: token - auth token
+
+            email -- e-mail address
+            password -- password, optional
+            city -- city, optional
+            street -- street, optional
+            number -- house number, optional
+            zip_code -- zip code 10 chars, optional
+            phone -- phone number in US format (XXX-XXX-XXXX), optional
+            """
+            pass
+
+        docgen = DocumentationGenerator()
+        docstring = docgen.__strip_params_from_docstring__(TestView.__doc__)
+        expected = 'Creates a new user.<br/>Returns: token - auth token<br/>'
+
+        self.assertEqual(expected, docstring)
 
     def test_get_models(self):
         class SerializedAPI(ListCreateAPIView):

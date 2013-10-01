@@ -150,17 +150,18 @@ class DocumentationGenerator(object):
         Strips the params from the docstring (ie. myparam -- Some param) will
         not be removed from the text body
         """
-        split_lines = docstring.split('\n')
+        split_lines = trim_docstring(docstring).split('\n')
 
-        for line in split_lines:
-            needle = line.find('--')
-            if needle == -1:
-                continue
-            trim_at = docstring.find(line)
-            docstring = docstring[:trim_at]
+        cut_off = None
+        for index, line in enumerate(split_lines):
+            line = line.strip()
+            if line.find('--') != -1:
+                cut_off = index
+                break
+        if cut_off is not None:
+            split_lines = split_lines[0:cut_off]
 
-        docstring = docstring.replace("\n", "<br/>")
-        return docstring
+        return "<br/>".join(split_lines)
 
     def get_models(self, apis):
         """
