@@ -9,7 +9,6 @@ from cigar_example.restapi import views as api_views
 urlpatterns = patterns('',
     # Examples:
      url(r'^custom$', api_views.MyCustomView.as_view()),
-     url(r'^test-test$', api_views.TestView.as_view()),
      url(r'^cigars/?$', api_views.CigarList.as_view(), name='list_of_cigars'),
      url(r'^cigars/(?P<pk>\d+)/?$', api_views.CigarDetails.as_view(), name='cigar_details'),
 

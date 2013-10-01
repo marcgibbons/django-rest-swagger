@@ -77,20 +77,3 @@ class MyCustomView(APIView):
         """
         return Response({'horse': request.GET.get('horse')})
 
-
-class TestView(APIView):
-    """
-    Creates a new user.
-    Returns: token - auth token.
-
-    email -- e-mail address
-    password -- password, optional
-    city -- city, optional
-    street -- street, optional
-    number -- house number, optional
-    zip_code -- zip code 10 chars, optional
-    phone -- phone number in US format (XXX-XXX-XXXX), optional
-    """
-
-    def get(self, request):
-        return Response()
