@@ -3,6 +3,7 @@ Generates Documentation
 """
 import re
 from django.contrib.admindocs.utils import trim_docstring
+from django.http import HttpRequest
 from rest_framework import viewsets
 from rest_framework.views import get_view_name, get_view_description
 
@@ -29,6 +30,7 @@ class DocumentationGenerator(object):
         """
         operations = []
         callback = api['callback']
+        callback.request = HttpRequest()
 
         allowed_methods = self.__get_allowed_methods__(callback, api['path'])
 

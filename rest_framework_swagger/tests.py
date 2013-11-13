@@ -1,12 +1,14 @@
 from django.conf import settings
-from django.utils.importlib import import_module
 from django.conf.urls import patterns, url, include
+from django.contrib.admindocs.utils import trim_docstring
+from django.http import HttpRequest
 from django.test import TestCase
+from django.utils.importlib import import_module
+from django.views.generic import View
+
 from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.docgenerator import DocumentationGenerator
-from django.contrib.admindocs.utils import trim_docstring
 
-from django.views.generic import View
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import serializers
@@ -323,6 +325,20 @@ class DocumentationGeneratorTest(TestCase):
         fields = docgen.__get_serializer_fields__(None)
 
         self.assertIsNone(fields)
+
+    def test_get_serializer_class_access_request_context(self):
+        class MyListView(ListCreateAPIView):
+            serializer_class = CommentSerializer
+            def get_serializer_class(self):
+                self.serializer_class.context = {'request': self.request}
+                return self.serializer_class
+
+        docgen = DocumentationGenerator()
+        callback = MyListView
+        callback.request = HttpRequest()
+        serializer_class = docgen.__get_serializer_class__(MyListView)
+
+        self.assertIs(serializer_class, CommentSerializer)
 
     def test_build_body_parameters(self):
         class SerializedAPI(ListCreateAPIView):

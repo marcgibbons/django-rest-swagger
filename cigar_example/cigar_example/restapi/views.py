@@ -53,6 +53,10 @@ class CountryDetails(RetrieveUpdateDestroyAPIView):
     model = Country
     serializer_class = CountrySerializer
 
+    def get_serializer_class(self):
+        self.serializer_class.context = {'request': self.request}
+        return self.serializer_class
+
 class MyCustomView(APIView):
     """
     This is a custom view that can be anything at all. It's not using a serializer class,
