@@ -124,6 +124,13 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+
+### v0.1.10 (Nov 23, 2013)
+* Upgraded Swagger UI version
+* Now supports Django ViewSet method-level documentation
+* Now supports ViewSet @action & @link method implementation
+* Added blank HttpRequest to the callback for those who like to hack the get_serializer classes
+
 ### v0.1.9 (Oct 1, 2013)
 * Revisited doc algorithm
 * Added support for APPEND_SLASH = False

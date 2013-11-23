@@ -61,7 +61,6 @@ class UrlParser(object):
         apis -- list of APIs as returned by self.get_apis
         """
         root_paths = set()
-
         api_paths = [endpoint['path'].strip("/") for endpoint in apis]
 
         for path in api_paths:
