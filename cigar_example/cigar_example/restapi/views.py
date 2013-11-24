@@ -22,36 +22,14 @@ class CigarViewSet(viewsets.ModelViewSet):
         return super(CigarViewSet, self).list(request, *args, **kwargs)
 
     @action()
-    def smoke(self, request, pk):
-        """ Test that this is documentation on a custom action."""
-        return Response('Lighting...')
+    def set_price(self, request, pk):
+        """An example action to on the ViewSet."""
+        return Response('20$')
 
     @link()
     def get_price(self, request, pk):
         """Return the price of a cigar."""
         return Response('20$')
-
-
-class CigarList(ListCreateAPIView):
-
-    """List and create cigars from the database."""
-
-    model = Cigar
-    serializer_class = CigarSerializer
-
-
-class CigarDetails(RetrieveUpdateDestroyAPIView):
-
-    """
-    Detailed view of an individual cigar record.
-
-    Can be updated and deleted. Each cigar must
-    be assigned to a manufacturer
-
-    """
-
-    model = Cigar
-    serializer_class = CigarSerializer
 
 
 class ManufacturerList(ListCreateAPIView):
