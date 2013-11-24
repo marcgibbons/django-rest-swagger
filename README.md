@@ -14,8 +14,8 @@ From source:
 ## Requirements
 This application was developed and tested on:
 
-* Django 1.5.1 - 1.5.4
-* Django REST Framework 2.3.4 - 2.3.8
+* Django 1.5.1 - 1.5.5
+* Django REST Framework 2.3.8
 
 Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
 
@@ -101,9 +101,7 @@ Please report bugs by opening an issue
 Contributions are welcome and are encouraged !
 
 ## Special Thanks
-![http://bnotions.com](http://bnotions.com/assets/img/bnotions_color.png)
-
-Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring development time and for being an awesome place to work, play & innovate
+Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring initial development time.
 
 Many thanks to Tom Christie & all the contributors who have developed [Django REST Framework](http://django-rest-framework.org/)
 
@@ -130,6 +128,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Now supports Django ViewSet method-level documentation
 * Now supports ViewSet @action & @link method implementation
 * Added blank HttpRequest to the callback for those who like to hack the get_serializer classes
+* HTML Markdown supported in docstrings (use responsibly)
 
 ### v0.1.9 (Oct 1, 2013)
 * Revisited doc algorithm
@@ -150,3 +149,29 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 ### v0.1.5 (July 30, 2013)
 * Added permission settings for Swagger docs. Default is now allow any, which will override REST Framework settings
 * Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
+
+
+License
+--------
+Copyright (c) 2013, Marc Gibbons
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
