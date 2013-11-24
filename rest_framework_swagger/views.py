@@ -53,8 +53,8 @@ class SwaggerResourcesView(APIDocView):
 
         return Response({
             'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
-            'swaggerVersion': '1.2.4',
-            'basePath': self.host,
+            'swaggerVersion': '1.2',
+            'basePath': self.host.rstrip('/'),
             'apis': apis
         })
 
@@ -73,7 +73,7 @@ class SwaggerApiView(APIDocView):
         return Response({
             'apis': generator.generate(apis),
             'models': generator.get_models(apis),
-            'basePath': self.api_full_uri,
+            'basePath': self.api_full_uri.rstrip('/'),
         })
 
     def get_api_for_resource(self, filter_path):

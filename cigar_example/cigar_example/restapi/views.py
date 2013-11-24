@@ -1,79 +1,97 @@
+"""API Views for example application."""
 from rest_framework.views import Response, APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import viewsets
+from rest_framework.decorators import action, link
+from rest_framework.generics import ListCreateAPIView, \
+    RetrieveUpdateDestroyAPIView
+
 from cigar_example.app.models import Cigar, Manufacturer, Country
-from serializers import CigarSerializer, ManufacturerSerializer, CountrySerializer
+from .serializers import CigarSerializer, ManufacturerSerializer, \
+    CountrySerializer
 
 
-class CigarList(ListCreateAPIView):
-    """
-    Lists and creates cigars from the database.
-    """
+class CigarViewSet(viewsets.ModelViewSet):
 
-    model = Cigar
-    """ This is the model """
+    """ Cigar resource. """
+
     serializer_class = CigarSerializer
-
-
-class CigarDetails(RetrieveUpdateDestroyAPIView):
-    """
-    Detailed view of an individual cigar record.
-
-    Can be updated and deleted. Each cigar must
-    be assigned to a manufacturer
-    """
     model = Cigar
-    serializer_class = CigarSerializer
+
+    def list(self, request, *args, **kwargs):
+        """ Return a list of objects. """
+        return super(CigarViewSet, self).list(request, *args, **kwargs)
+
+    @action()
+    def set_price(self, request, pk):
+        """An example action to on the ViewSet."""
+        return Response('20$')
+
+    @link()
+    def get_price(self, request, pk):
+        """Return the price of a cigar."""
+        return Response('20$')
 
 
 class ManufacturerList(ListCreateAPIView):
-    """
-    Gets the list of cigar manufacturers from the database.
-    """
+
+    """Get the list of cigar manufacturers from the database."""
+
     model = Manufacturer
     serializer_class = ManufacturerSerializer
+
 
 class ManufacturerDetails(RetrieveUpdateDestroyAPIView):
-    """
-    Returns the details on a manufacturer
-    """
+
+    """Return the details on a manufacturer."""
+
     model = Manufacturer
     serializer_class = ManufacturerSerializer
 
+
 class CountryList(ListCreateAPIView):
-    """
-    Gets a list of countries. Allows the creation of a new country.
-    """
+
+    """Gets a list of countries. Allows the creation of a new country."""
+
     model = Country
     serializer_class = CountrySerializer
+
 
 class CountryDetails(RetrieveUpdateDestroyAPIView):
-    """
-    Detailed view of the country
-    """
+
+    """Detailed view of the country."""
+
     model = Country
     serializer_class = CountrySerializer
 
-class MyCustomView(APIView):
-    """
-    This is a custom view that can be anything at all. It's not using a serializer class,
-    but I can define my own parameters like so!
+    def get_serializer_class(self):
+        self.serializer_class.context = {'request': self.request}
+        return self.serializer_class
 
-    This is a new line
+
+class MyCustomView(APIView):
+
     """
+    This is a custom view that can be anything at all.
+
+    It's not using a serializer class, but I can define my own parameters.
+
+    """
+
     def get(self, *args, **kwargs):
         """
-        Docs there
+        Get the single object.
 
         param1 -- my param
-        """
 
+        """
         return Response({'foo':'bar'})
 
     def post(self, request, *args, **kwargs):
         """
-        Post to see your horse's name!
+        Post to see your horse's name.
 
         horse -- the name of your horse
+
         """
         return Response({'horse': request.GET.get('horse')})
 
