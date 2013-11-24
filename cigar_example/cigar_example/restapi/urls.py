@@ -10,15 +10,11 @@ router.register(r'cigars', views.CigarViewSet)
 urlpatterns = patterns('',
     # Examples:
      url(r'^custom$', views.MyCustomView.as_view()),
-#     url(r'^cigars/?$', views.CigarList.as_view(), name='list_of_cigars'),
-#     url(r'^cigars/(?P<pk>\d+)/?$', views.CigarDetails.as_view(), name='cigar_details'),
-
      url(r'^manufacturers/?$', views.ManufacturerList.as_view(), name='list_of_manufacturers'),
      url(r'^manufacturers/(?P<pk>\d+)/?$', views.ManufacturerDetails.as_view(), name='manufacturer_details'),
 
      url(r'^countries/?$', views.CountryList.as_view(), name='list_of_countries'),
      url(r'^countries/(?P<pk>\d+)/?$', views.CountryDetails.as_view(), name='countries_details'),
-
 )
 
 urlpatterns += router.urls

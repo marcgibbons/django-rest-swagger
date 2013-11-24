@@ -64,9 +64,12 @@ class UrlParser(object):
         api_paths = [endpoint['path'].strip("/") for endpoint in apis]
 
         for path in api_paths:
-            if '{' in path:
+            #  If a URLs /resource/ and /resource/{pk} exist, use the base
+            #  as the resource. If there is no base resource URL, then include
+            path_base = path.split('/{')[0]
+            if '{' in path and path_base in api_paths:
                 continue
-            root_paths.add(path)
+            root_paths.add(path_base)
 
         return root_paths
 
