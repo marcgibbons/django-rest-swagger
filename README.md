@@ -14,8 +14,8 @@ From source:
 ## Requirements
 This application was developed and tested on:
 
-* Django 1.5.1 - 1.5.5
-* Django REST Framework 2.3.8
+* Django 1.5.1 - 1.6
+* Django REST Framework 2.3.8+
 
 Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
 
