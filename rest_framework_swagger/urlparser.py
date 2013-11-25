@@ -1,4 +1,3 @@
-import os
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
