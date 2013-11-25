@@ -126,7 +126,12 @@ class UrlParser(object):
                     continue
 
                 pref = prefix + pattern.regex.pattern
-                pattern_list.extend(self.__flatten_patterns_tree__(pattern.url_patterns, pref, filter_path=filter_path))
+                pattern_list.extend(self.__flatten_patterns_tree__(
+                    pattern.url_patterns,
+                    pref,
+                    filter_path=filter_path,
+                    exclude_namespaces=exclude_namespaces,
+                ))
 
         return pattern_list
 
