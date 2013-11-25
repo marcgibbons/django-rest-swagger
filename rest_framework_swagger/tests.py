@@ -175,6 +175,45 @@ class UrlParserTest(TestCase):
         self.assertEqual(4, urls_created - len(apis))
 
 
+class NestedUrlParserTest(TestCase):
+    def setUp(self):
+        class FuzzyApiView(APIView):
+            def get(self, request):
+                pass
+
+        class ShinyApiView(APIView):
+            def get(self, request):
+                pass
+
+        api_fuzzy_url_patterns = patterns(
+            '', url(r'^item/$', FuzzyApiView.as_view(), name='find_me'))
+        api_shiny_url_patterns = patterns(
+            '', url(r'^item/$', ShinyApiView.as_view(), name='hide_me'))
+
+        fuzzy_app_urls = patterns(
+            '', url(r'^api/', include(api_fuzzy_url_patterns,
+                                      namespace='api_fuzzy_app')))
+        shiny_app_urls = patterns(
+            '', url(r'^api/', include(api_shiny_url_patterns,
+                                      namespace='api_shiny_app')))
+
+        self.project_urls = patterns(
+            '',
+            url('my_fuzzy_app/', include(fuzzy_app_urls)),
+            url('my_shiny_app/', include(shiny_app_urls)),
+        )
+
+    def test_exclude_nested_urls(self):
+
+        url_parser = UrlParser()
+        # Overwrite settings with test patterns
+        urlpatterns = self.project_urls
+        apis = url_parser.get_apis(urlpatterns,
+                                   exclude_namespaces=['api_shiny_app'])
+        self.assertEqual(len(apis), 1)
+        self.assertEqual(apis[0]['pattern'].name, 'find_me')
+
+
 class DocumentationGeneratorTest(TestCase):
     def setUp(self):
         self.url_patterns = patterns('',
