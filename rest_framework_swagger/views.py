@@ -90,7 +90,22 @@ class SwaggerResourcesView(APIDocView):
             'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
             'basePath': self.host.rstrip('/'),
-            'apis': apis
+            'apis': apis,
+            'info': {
+                'contact': 'apiteam@wordnik.com',
+                'description': 'This is a sample server Petstore server. '
+                               'You can find out more about Swagger at '
+                               '<a href="http://swagger.wordnik.com">'
+                               'http://swagger.wordnik.com</a> '
+                               'or on irc.freenode.net, #swagger. '
+                               'For this sample, you can use the api key '
+                               '"special-key" to test '
+                               'the authorization filters',
+                'license': 'Apache 2.0',
+                'licenseUrl': 'http://www.apache.org/licenses/LICENSE-2.0.html',
+                'termsOfServiceUrl': 'http://helloreverb.com/terms/',
+                'title': 'Swagger Sample App',
+            },
         })
 
     def get_resources(self):
