@@ -1,5 +1,6 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 import re
+import sys
 from unipath import Path
 
 from django.contrib.admindocs.utils import trim_docstring
@@ -44,7 +45,9 @@ class BaseIntrospector(object):
         """
         try:
             docstring = eval("callback.%s.__doc__" % (str(method).lower()))
-            return docstring.decode('utf-8')
+            if sys.version_info < (3,):
+                docstring = docstring.decode('utf-8')
+            return docstring
         except AttributeError:
             return None
 
@@ -360,7 +363,7 @@ class ViewSetIntrospector(BaseIntrospector):
         Returns the bound methods to the action
         """
         action_name = self.get_action_function_name(callback, path)
-        action_func = eval('callback.%s.im_func' % action_name)
+        action_func = eval('callback.%s' % action_name)
 
         return action_func.bind_to_methods
 

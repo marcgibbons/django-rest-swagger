@@ -469,7 +469,7 @@ class ViewTestIntrospectorTest(TestCase):
         path_components = Path(path).components()
         last_element = path_components[len(path_components) - 1]
 
-        action_func = eval('callback.%s.im_func' % last_element)
+        action_func = eval('callback.%s' % last_element)
         expected_result = action_func.bind_to_methods
 
         introspector = ViewSetIntrospector()
