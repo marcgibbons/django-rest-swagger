@@ -20,7 +20,7 @@ class SwaggerUIView(View):
 
         template_name = "rest_framework_swagger/index.html"
         data = {
-            'settings': {
+            'swagger_settings': {
                 'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),
                 'api_key': SWAGGER_SETTINGS.get('api_key', ''),
                 'enabled_methods': mark_safe(SWAGGER_SETTINGS.get('enabled_methods'))

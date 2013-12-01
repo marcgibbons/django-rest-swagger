@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Cigar, Country, Manufacturer
+from .models import Cigar, Country, Manufacturer
 
 
 admin.site.register(Cigar)

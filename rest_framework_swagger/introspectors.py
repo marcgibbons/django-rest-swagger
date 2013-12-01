@@ -1,5 +1,6 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 import re
+import sys
 from unipath import Path
 
 from django.contrib.admindocs.utils import trim_docstring
@@ -23,7 +24,7 @@ class BaseIntrospector(object):
         url_components = Path(path).components()
         last_index = len(url_components) - 1
 
-        return unicode(url_components[last_index])
+        return url_components[last_index]
 
     def get_name(self, callback):
         """
@@ -43,7 +44,10 @@ class BaseIntrospector(object):
         if the method does not exist
         """
         try:
-            return eval("callback.%s.__doc__" % (str(method).lower()))
+            docstring = eval("callback.%s.__doc__" % (str(method).lower()))
+            if sys.version_info < (3,):
+                docstring = docstring.decode('utf-8')
+            return docstring
         except AttributeError:
             return None
 
@@ -75,7 +79,7 @@ class BaseIntrospector(object):
             if class_docs is not None:
                 docstring += class_docs
             if method_docs is not None:
-                docstring += '\n' + method_docs
+                docstring = '%s \n %s' % (class_docs, method_docs)
         else:
             docstring = trim_docstring(get_view_description(callback))
 
@@ -359,7 +363,7 @@ class ViewSetIntrospector(BaseIntrospector):
         Returns the bound methods to the action
         """
         action_name = self.get_action_function_name(callback, path)
-        action_func = eval('callback.%s.im_func' % action_name)
+        action_func = eval('callback.%s' % action_name)
 
         return action_func.bind_to_methods
 
@@ -384,7 +388,7 @@ class ViewSetIntrospector(BaseIntrospector):
 
     def convert_http_method_to_viewset_method(self, callback, method):
         #  Reverse viewset method to HTTP method mapping
-        mapping = {v: k for k, v in self.METHOD_MAPPINGS.items()}
+        mapping = dict((v, k) for k, v in self.METHOD_MAPPINGS.items())
         return mapping[method.upper()]
 
     def get_serializer_class(self, callback, path=None):
