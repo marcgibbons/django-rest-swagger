@@ -384,7 +384,7 @@ class ViewSetIntrospector(BaseIntrospector):
 
     def convert_http_method_to_viewset_method(self, callback, method):
         #  Reverse viewset method to HTTP method mapping
-        mapping = {v: k for k, v in self.METHOD_MAPPINGS.items()}
+        mapping = dict((v, k) for k, v in self.METHOD_MAPPINGS.items())
         return mapping[method.upper()]
 
     def get_serializer_class(self, callback, path=None):
