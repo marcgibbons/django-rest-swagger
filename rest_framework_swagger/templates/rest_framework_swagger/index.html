@@ -21,10 +21,10 @@
   <script type="text/javascript">
     $(function () {
       window.swaggerUi = new SwaggerUi({
-      url: "{{ settings.discovery_url }}",
-      apiKey: "{{ settings.api_key }}",
+      url: "{{ swagger_settings.discovery_url }}",
+      apiKey: "{{ swagger_settings.api_key }}",
       dom_id: "swagger-ui-container",
-      supportedSubmitMethods: {{ settings.enabled_methods }},
+      supportedSubmitMethods: {{ swagger_settings.enabled_methods }},
       onComplete: function(swaggerApi, swaggerUi){
         if(console) {
           console.log("Loaded SwaggerUI")
