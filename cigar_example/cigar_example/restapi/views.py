@@ -1,3 +1,4 @@
+ # coding=utf-8
 """API Views for example application."""
 from rest_framework.views import Response, APIView
 from rest_framework import viewsets
@@ -18,7 +19,10 @@ class CigarViewSet(viewsets.ModelViewSet):
     model = Cigar
 
     def list(self, request, *args, **kwargs):
-        """ Return a list of objects. """
+        """
+        Return a list of objects.
+
+        """
         return super(CigarViewSet, self).list(request, *args, **kwargs)
 
     @action()
@@ -74,6 +78,8 @@ class MyCustomView(APIView):
     This is a custom view that can be anything at all.
 
     It's not using a serializer class, but I can define my own parameters.
+
+    Cet exemple démontre l'utilisation de caractères unicode
 
     """
 

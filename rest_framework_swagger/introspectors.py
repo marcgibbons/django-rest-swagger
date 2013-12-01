@@ -23,7 +23,7 @@ class BaseIntrospector(object):
         url_components = Path(path).components()
         last_index = len(url_components) - 1
 
-        return unicode(url_components[last_index])
+        return url_components[last_index]
 
     def get_name(self, callback):
         """
@@ -43,7 +43,8 @@ class BaseIntrospector(object):
         if the method does not exist
         """
         try:
-            return eval("callback.%s.__doc__" % (str(method).lower()))
+            docstring = eval("callback.%s.__doc__" % (str(method).lower()))
+            return docstring.decode('utf-8')
         except AttributeError:
             return None
 
@@ -75,7 +76,7 @@ class BaseIntrospector(object):
             if class_docs is not None:
                 docstring += class_docs
             if method_docs is not None:
-                docstring += '\n' + method_docs
+                docstring = '%s \n %s' % (class_docs, method_docs)
         else:
             docstring = trim_docstring(get_view_description(callback))
 

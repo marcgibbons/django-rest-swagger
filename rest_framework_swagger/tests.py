@@ -467,7 +467,7 @@ class ViewTestIntrospectorTest(TestCase):
         path = '/api-path/myviewset/{pk}/do_something/'
 
         path_components = Path(path).components()
-        last_element = unicode(path_components[len(path_components) - 1])
+        last_element = path_components[len(path_components) - 1]
 
         action_func = eval('callback.%s.im_func' % last_element)
         expected_result = action_func.bind_to_methods
