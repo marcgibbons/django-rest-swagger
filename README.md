@@ -16,6 +16,7 @@ This application was developed and tested on:
 
 * Django 1.5.1 - 1.6
 * Django REST Framework 2.3.8+
+* Python 2/3
 
 Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
 
@@ -112,6 +113,8 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Falk Schuetzenmeister (@postfalk)
 * Lukas Hetzenecker (@lukas-hetzenecker)
 * David Wolever (@wolever)
+* Brian Moe (@bmoe)
+* Ian Martin (@aztechian)
 
 
 ### Django REST Framework Docs contributors:
@@ -122,6 +125,12 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+
+### v0.1.11 (Dec 1, 2013)
+* Added proper unicode support for Python 2
+* Compatibility fixes for Python 3
+* Changed settings template var to avoid naming conflicts
+* Fixed mapping dict constructor in introspectors for Python 2.6 support
 
 ### v0.1.10 (Nov 23, 2013)
 * Upgraded Swagger UI version
