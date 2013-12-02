@@ -36,14 +36,6 @@ class IntrospectorHelper(object):
 
         return serializer.__name__
 
-    @staticmethod
-    def path_contains_lookup_field(callback, path):
-        """
-        Evaluates the path containing the default lookup field
-        (ie. /items/{pk})
-        """
-        lookup_field = getattr(callback, 'lookup_field', 'pk')
-        return '{%s}' % lookup_field in path
 
     @staticmethod
     def get_view_description(callback):
@@ -281,14 +273,6 @@ class APIViewMethodIntrospector(BaseMethodIntrospector):
 
 class ViewSetIntrospector(BaseViewIntrospector):
     """Handle ViewSet introspection."""
-    METHOD_MAPPINGS = {
-        'create': 'POST',
-        'retrieve': 'GET',
-        'update': 'PUT',
-        'partial_update': 'PATCH',
-        'destroy': 'DELETE',
-        'list': 'GET'
-    }
 
     def __iter__(self):
         methods = self._resolve_methods()
