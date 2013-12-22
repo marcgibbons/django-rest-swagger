@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.views import Response
 from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.apidocview import APIDocView
+from rest_framework.renderers import JSONRenderer
 from rest_framework_swagger.docgenerator import DocumentationGenerator
 
 from rest_framework_swagger import SWAGGER_SETTINGS
@@ -41,6 +42,8 @@ class SwaggerUIView(View):
 
 
 class SwaggerResourcesView(APIDocView):
+
+    renderer_classes = (JSONRenderer)
 
     def get(self, request):
         apis = []
