@@ -43,7 +43,7 @@ class SwaggerUIView(View):
 
 class SwaggerResourcesView(APIDocView):
 
-    renderer_classes = (JSONRenderer)
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request):
         apis = []
