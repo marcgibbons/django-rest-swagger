@@ -1,4 +1,4 @@
-from unipath import Path
+from django.core.urlresolvers import RegexURLResolver
 
 from django.conf import settings
 from django.conf.urls import patterns, url, include
@@ -9,16 +9,15 @@ from django.test import TestCase
 from django.utils.importlib import import_module
 from django.views.generic import View
 
-from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import serializers
 from rest_framework.routers import DefaultRouter
-from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from .urlparser import UrlParser
 from .docgenerator import DocumentationGenerator
-from .introspectors import ViewSetIntrospector, APIViewIntrospector
+from .introspectors import ViewSetIntrospector, APIViewIntrospector, IntrospectorHelper, APIViewMethodIntrospector
 
 
 class MockApiView(APIView):
@@ -223,39 +222,6 @@ class DocumentationGeneratorTest(TestCase):
             url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
         )
 
-    def test_get_description(self):
-        generator = DocumentationGenerator()
-        description = generator.get_description(MockApiView())
-
-        self.assertEqual('A Test View', description)
-
-    def test_get_method_docs(self):
-
-        class TestApiView(APIView):
-            def get(self, *args):
-                """
-                Here are my comments
-                """
-            pass
-
-        introspector = APIViewIntrospector()
-        docs_get = introspector.get_method_docs(TestApiView, 'GET')
-
-        self.assertEqual("Here are my comments", docs_get.strip())
-
-    def test_get_method_summary_without_docstring(self):
-
-        class MyListView(ListCreateAPIView):
-            """
-            My comment
-            """
-            pass
-
-        introspector = APIViewIntrospector()
-        method_docs = introspector.get_method_summary(MyListView, 'POST')
-
-        self.assertEqual("My comment", method_docs)
-
     def test_get_operations(self):
 
         class AnAPIView(APIView):
@@ -287,42 +253,6 @@ class DocumentationGeneratorTest(TestCase):
 
         self.assertEqual([], operations)
 
-    def test_strip_params_from_docstring(self):
-        class AnAPIView(APIView):
-            """
-            My comments are here
-
-            param -- my param
-            """
-            pass
-
-        docgen = DocumentationGenerator()
-        docstring = docgen.strip_params_from_docstring(trim_docstring(AnAPIView.__doc__))
-
-        self.assertEqual("My comments are here<br/>", docstring)
-
-    def test_strip_params_from_docstring_multiline(self):
-        class TestView(APIView):
-            """
-            Creates a new user.
-            Returns: token - auth token
-
-            email -- e-mail address
-            password -- password, optional
-            city -- city, optional
-            street -- street, optional
-            number -- house number, optional
-            zip_code -- zip code 10 chars, optional
-            phone -- phone number in US format (XXX-XXX-XXXX), optional
-            """
-            pass
-
-        docgen = DocumentationGenerator()
-        docstring = docgen.strip_params_from_docstring(TestView.__doc__)
-        expected = 'Creates a new user.<br/>Returns: token - auth token<br/>'
-
-        self.assertEqual(expected, docstring)
-
     def test_get_models(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
@@ -345,19 +275,19 @@ class DocumentationGeneratorTest(TestCase):
         apis = urlparser.get_apis(url_patterns)
 
         docgen = DocumentationGenerator()
-        serializers = docgen.get_serializer_set(apis)
+        serializers = docgen._get_serializer_set(apis)
 
         self.assertIn(CommentSerializer, serializers)
 
     def test_get_serializer_fields(self):
         docgen = DocumentationGenerator()
-        fields = docgen.get_serializer_fields(CommentSerializer)
+        fields = docgen._get_serializer_fields(CommentSerializer)
 
         self.assertEqual(3, len(fields))
 
     def test_get_serializer_fields_api_with_no_serializer(self):
         docgen = DocumentationGenerator()
-        fields = docgen.get_serializer_fields(None)
+        fields = docgen._get_serializer_fields(None)
 
         self.assertIsNone(fields)
 
@@ -371,16 +301,143 @@ class DocumentationGeneratorTest(TestCase):
         docgen = DocumentationGenerator()
         callback = MyListView
         callback.request = HttpRequest()
-        serializer_class = docgen.get_serializer_class(MyListView)
+        serializer_class = docgen._get_serializer_class(MyListView)
 
         self.assertIs(serializer_class, CommentSerializer)
+
+
+class IntrospectorHelperTest(TestCase):
+    def test_strip_params_from_docstring(self):
+        class AnAPIView(APIView):
+            """
+            My comments are here
+
+            param -- my param
+            """
+            pass
+
+        docstring = IntrospectorHelper.strip_params_from_docstring(trim_docstring(AnAPIView.__doc__))
+
+        self.assertEqual("My comments are here<br/>", docstring)
+
+    def test_strip_params_from_docstring_multiline(self):
+        class TestView(APIView):
+            """
+            Creates a new user.
+            Returns: token - auth token
+
+            email -- e-mail address
+            password -- password, optional
+            city -- city, optional
+            street -- street, optional
+            number -- house number, optional
+            zip_code -- zip code 10 chars, optional
+            phone -- phone number in US format (XXX-XXX-XXXX), optional
+            """
+            pass
+
+        docstring = IntrospectorHelper.strip_params_from_docstring(TestView.__doc__)
+        expected = 'Creates a new user.<br/>Returns: token - auth token<br/>'
+
+        self.assertEqual(expected, docstring)
+
+
+class ViewSetTestIntrospectorTest(TestCase):
+    def test_get_allowed_methods(self):
+        """
+        Tests a ModelViewSet's allowed methods. If the path includes something like {pk},
+        consider it an object view, otherwise, a list view
+        """
+
+        class MyViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
+
+        # Test a list endpoint
+        introspector = ViewSetIntrospector(
+            MyViewSet,
+            '/api/endpoint',
+            url(r'^/api/endpoint$', MyViewSet.as_view({
+                'get': 'list',
+                'post': 'create'
+            }))
+        )
+        allowed_methods = list(introspector)
+        self.assertEqual(2, len(allowed_methods))
+        allowed_methods = [introspector.get_http_method() for introspector in allowed_methods]
+        self.assertIn('POST', allowed_methods)
+        self.assertIn('GET', allowed_methods)
+
+        # Test an object endpoint
+        introspector = ViewSetIntrospector(
+            MyViewSet,
+            '/api/endpoint/{pk}',
+            url(
+                r'^/api/endpoint/(?P<{pk}>[^/]+)$',
+                MyViewSet.as_view({
+                    'get': 'retrieve',
+                    'put': 'update',
+                    'patch': 'partial_update',
+                    'delete': 'destroy'
+                })
+            )
+        )
+        allowed_methods = list(introspector)
+        self.assertEqual(4, len(allowed_methods))
+        allowed_methods = [introspector.get_http_method() for introspector in allowed_methods]
+        self.assertIn('PUT', allowed_methods)
+        self.assertIn('PATCH', allowed_methods)
+        self.assertIn('DELETE', allowed_methods)
+        self.assertIn('GET', allowed_methods)
+
+
+class BaseViewIntrospectorTest(TestCase):
+    def test_get_description(self):
+        introspector = APIViewIntrospector(MockApiView, '/', RegexURLResolver(r'^/', ''))
+        self.assertEqual('A Test View', introspector.get_description())
+
+    def test_get_serializer_class(self):
+        introspector = APIViewIntrospector(MockApiView, '/', RegexURLResolver(r'^/', ''))
+        self.assertEqual(None, introspector.get_serializer_class())
+
+
+class BaseMethodIntrospectorTest(TestCase):
+    def test_get_method_docs(self):
+
+        class TestApiView(APIView):
+            def get(self, *args):
+                """
+                Here are my comments
+                """
+            pass
+
+        class_introspector = ViewSetIntrospector(TestApiView, '/{pk}', RegexURLResolver(r'^/(?P<{pk}>[^/]+)$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'GET')
+        docs_get = introspector.get_docs()
+
+        self.assertEqual("Here are my comments", docs_get.strip())
+
+    def test_get_method_summary_without_docstring(self):
+
+        class MyListView(ListCreateAPIView):
+            """
+            My comment
+            """
+            pass
+
+        class_introspector = ViewSetIntrospector(MyListView, '/{pk}', RegexURLResolver(r'^/(?P<{pk}>[^/]+)$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        method_docs = introspector.get_summary()
+
+        self.assertEqual("My comment", method_docs)
 
     def test_build_body_parameters(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
 
-        docgen = DocumentationGenerator()
-        params = docgen.build_body_parameters(SerializedAPI)
+        class_introspector = ViewSetIntrospector(SerializedAPI, '/', RegexURLResolver(r'^/$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_body_parameters()
 
         self.assertEqual('CommentSerializer', params['name'])
 
@@ -388,8 +445,9 @@ class DocumentationGeneratorTest(TestCase):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
 
-        docgen = DocumentationGenerator()
-        params = docgen.build_form_parameters(SerializedAPI, 'POST')
+        class_introspector = ViewSetIntrospector(SerializedAPI, '/', RegexURLResolver(r'^/$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_form_parameters()
 
         self.assertEqual(len(CommentSerializer().get_fields()), len(params))
 
@@ -402,8 +460,9 @@ class DocumentationGeneratorTest(TestCase):
         class MyAPIView(ListCreateAPIView):
             serializer_class = MySerializer
 
-        docgen = DocumentationGenerator()
-        params = docgen.build_form_parameters(MyAPIView, 'POST')
+        class_introspector = ViewSetIntrospector(MyAPIView, '/', RegexURLResolver(r'^/$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_form_parameters()
 
         self.assertEqual(1, len(params))  # Read only field is ignored
         param = params[0]
@@ -414,65 +473,3 @@ class DocumentationGeneratorTest(TestCase):
         self.assertEqual(200, param['allowableValues']['max'])
         self.assertEqual(10, param['allowableValues']['min'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
-
-
-class ViewTestIntrospectorTest(TestCase):
-    def test_get_allowed_methods(self):
-        """
-        Tests a ModelViewSet's allowed methods. If the path includes something like {pk},
-        consider it an object view, otherwise, a list view
-        """
-
-        class MyViewSet(ModelViewSet):
-            serializer_class = CommentSerializer
-            model = User
-
-        introspector = ViewSetIntrospector()
-
-        # Test a list endpoint
-        allowed_methods = introspector.get_allowed_methods(MyViewSet, '/api/endpoint')
-        self.assertEqual(2, len(allowed_methods))
-        self.assertIn('POST', allowed_methods)
-        self.assertIn('GET', allowed_methods)
-
-        # Test an object endpoint
-        allowed_methods = introspector.get_allowed_methods(MyViewSet, '/api/endpoint/{pk}')
-        self.assertEqual(4, len(allowed_methods))
-        self.assertIn('POST', allowed_methods)
-        self.assertIn('PATCH', allowed_methods)
-        self.assertIn('DELETE', allowed_methods)
-        self.assertIn('GET', allowed_methods)
-
-    def test_is_custom_action_true(self):
-        class MyViewSet(ViewSet):
-            @action()
-            def my_action(self, request):
-                pass
-
-        path = '/api/{pk}/my_action/'
-        introspector = ViewSetIntrospector()
-
-        self.assertTrue(introspector.is_custom_action(MyViewSet, path))
-
-    def test_viewset_action_allowed_methods(self):
-        class MyViewSet(ViewSet):
-            @action()
-            def do_something(self, request):
-                """
-                This is a REST action that does something. Django REST maps it
-                to an HTTP POST method
-                """
-
-        callback = MyViewSet
-        path = '/api-path/myviewset/{pk}/do_something/'
-
-        path_components = Path(path).components()
-        last_element = path_components[len(path_components) - 1]
-
-        action_func = eval('callback.%s' % last_element)
-        expected_result = action_func.bind_to_methods
-
-        introspector = ViewSetIntrospector()
-        allowed_methods = introspector.get_allowed_methods(callback, path)
-
-        self.assertEqual(expected_result, allowed_methods)
