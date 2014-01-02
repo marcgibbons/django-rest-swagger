@@ -7,6 +7,13 @@ from django.contrib.admindocs.utils import trim_docstring
 from rest_framework.views import get_view_name, get_view_description
 
 
+def get_resolved_value(obj, attr, default=None):
+    value = getattr(obj, attr, default)
+    if callable(value):
+        value = value()
+    return value
+
+
 class IntrospectorHelper(object):
     __metaclass__ = ABCMeta
 
@@ -226,7 +233,7 @@ class BaseMethodIntrospector(object):
                 'dataType': data_type,
                 'allowableValues': allowable_values,
                 'description': getattr(field, 'help_text', ''),
-                'defaultValue': getattr(field, 'default', None),
+                'defaultValue': get_resolved_value(field, 'default'),
                 'required': getattr(field, 'required', None)
             })
 

@@ -4,7 +4,8 @@ from django.http import HttpRequest
 from rest_framework import viewsets
 
 from .introspectors import APIViewIntrospector, \
-    ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper
+    ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
+    get_resolved_value
 
 
 class DocumentationGenerator(object):
@@ -112,7 +113,7 @@ class DocumentationGenerator(object):
                 'allowableValues': {
                     'min': getattr(field, 'min_length', None),
                     'max': getattr(field, 'max_length', None),
-                    'defaultValue': getattr(field, 'default', None),
+                    'defaultValue': get_resolved_value(field, 'default', None),
                     'readOnly': getattr(field, 'read_only', None),
                     'valueType': 'RANGE',
                 }
