@@ -48,6 +48,7 @@
         window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + key, "header"));
       }
     })
+    window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + "{{ swagger_settings.api_key }}", "header"));
     window.swaggerUi.load();
   });
 
