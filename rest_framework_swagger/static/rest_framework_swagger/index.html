@@ -42,7 +42,7 @@
       console.log("key: " + key);
       if(key && key.trim() != "") {
         console.log("added key " + key);
-        window.authorizations.add("key", new ApiKeyAuthorization("api_key", key, "query"));
+        window.authorizations.add("key", new ApiKeyAuthorization("Authorization:", "Token " + key, "header"));
       }
     })
     window.swaggerUi.load();
