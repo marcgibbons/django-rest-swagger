@@ -77,7 +77,6 @@ class SwaggerResourcesView(APIDocView):
         return split_path[len(split_path) - 1]
 
 
-
 class SwaggerApiView(APIDocView):
 
     renderer_classes = (JSONRenderer,)
