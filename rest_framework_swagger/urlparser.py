@@ -2,6 +2,8 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
+import unipath
+
 from rest_framework.views import APIView
 
 from rest_framework_swagger.apidocview import APIDocView
@@ -68,9 +70,30 @@ class UrlParser(object):
             path_base = path.split('/{')[0]
             if '{' in path and path_base in api_paths:
                 continue
-            root_paths.add(path_base)
+            root_paths.add(unipath.path.Path(path_base))
 
-        return root_paths
+        return self.__filter_top_level_apis__(root_paths)
+
+    def __filter_top_level_apis__(self, root_paths):
+        """
+        Returns a top level APIs if they meet the following conditions:
+            1.  The path does not have common ancestry with other endpoints
+            2.  The parent path of endpoints with common ancestry
+        """
+        filtered_paths = set()
+
+        for path in root_paths:
+            split_path = path.split('/')
+            depth = len(split_path)
+
+            if depth <= 2:
+                filtered_paths.add(path)
+                continue
+
+            if path.parent in [p.parent for p in root_paths]:
+                filtered_paths.add(path.parent)
+
+        return filtered_paths
 
     def __assemble_endpoint_data__(self, pattern, prefix='', filter_path=None):
         """
