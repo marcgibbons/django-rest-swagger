@@ -27,7 +27,7 @@ class SwaggerUIView(View):
                 'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),
                 'api_key': SWAGGER_SETTINGS.get('api_key', ''),
                 'enabled_methods': mark_safe(
-                    json.dumps( SWAGGER_SETTINGS.get('enabled_methods')))
+                    json.dumps(SWAGGER_SETTINGS.get('enabled_methods')))
             }
         }
         response = render_to_response(template_name, RequestContext(request, data))
