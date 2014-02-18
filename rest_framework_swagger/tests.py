@@ -1,5 +1,6 @@
-from django.core.urlresolvers import RegexURLResolver
+import datetime
 
+from django.core.urlresolvers import RegexURLResolver
 from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.contrib.auth.models import User
@@ -17,7 +18,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from .urlparser import UrlParser
 from .docgenerator import DocumentationGenerator
-from .introspectors import ViewSetIntrospector, APIViewIntrospector, IntrospectorHelper, APIViewMethodIntrospector
+from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
+    IntrospectorHelper, APIViewMethodIntrospector
 
 
 class MockApiView(APIView):
@@ -41,7 +43,7 @@ class NonApiView(View):
 class CommentSerializer(serializers.Serializer):
     email = serializers.EmailField()
     content = serializers.CharField(max_length=200)
-    created = serializers.DateTimeField()
+    created = serializers.DateTimeField(default=datetime.datetime.now)
 
 
 class UrlParserTest(TestCase):
@@ -266,6 +268,22 @@ class DocumentationGeneratorTest(TestCase):
 
         self.assertIn('CommentSerializer', models)
 
+    def test_get_models_resolves_callable_values(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        models = docgen.get_models(apis)
+
+        created_prop = models['CommentSerializer']['properties']['created']
+        value = created_prop['allowableValues']['defaultValue']
+        delta = datetime.timedelta(seconds=1)
+        self.assertAlmostEqual(value, datetime.datetime.now(), delta=delta)
+
     def test_get_serializer_set(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
@@ -343,12 +361,7 @@ class IntrospectorHelperTest(TestCase):
 
 
 class ViewSetTestIntrospectorTest(TestCase):
-    def test_get_allowed_methods(self):
-        """
-        Tests a ModelViewSet's allowed methods. If the path includes something like {pk},
-        consider it an object view, otherwise, a list view
-        """
-
+    def test_get_allowed_methods_list(self):
         class MyViewSet(ModelViewSet):
             serializer_class = CommentSerializer
             model = User
@@ -364,9 +377,14 @@ class ViewSetTestIntrospectorTest(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(2, len(allowed_methods))
-        allowed_methods = [introspector.get_http_method() for introspector in allowed_methods]
+        allowed_methods = [method.get_http_method() for method in allowed_methods]
         self.assertIn('POST', allowed_methods)
         self.assertIn('GET', allowed_methods)
+
+    def test_get_allowed_methods_object(self):
+        class MyViewSet(ModelViewSet):
+            serializer_class = CommentSerializer
+            model = User
 
         # Test an object endpoint
         introspector = ViewSetIntrospector(
@@ -384,7 +402,7 @@ class ViewSetTestIntrospectorTest(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(4, len(allowed_methods))
-        allowed_methods = [introspector.get_http_method() for introspector in allowed_methods]
+        allowed_methods = [method.get_http_method() for method in allowed_methods]
         self.assertIn('PUT', allowed_methods)
         self.assertIn('PATCH', allowed_methods)
         self.assertIn('DELETE', allowed_methods)
@@ -473,3 +491,23 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual(200, param['allowableValues']['max'])
         self.assertEqual(10, param['allowableValues']['min'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
+
+    def test_build_form_parameters_callable_default_value_is_resolved(self):
+
+        class MySerializer(serializers.Serializer):
+            content = serializers.IntegerField(default=lambda: 203)
+
+        class MyAPIView(ListCreateAPIView):
+            serializer_class = MySerializer
+
+        class_introspector = ViewSetIntrospector(MyAPIView, '/', RegexURLResolver(r'^/$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_form_parameters()
+
+        self.assertEqual(1, len(params))
+        param = params[0]
+
+        self.assertEqual('content', param['name'])
+        self.assertEqual('form', param['paramType'])
+        self.assertEqual(True, param['required'])
+        self.assertEqual(203, param['defaultValue'])
