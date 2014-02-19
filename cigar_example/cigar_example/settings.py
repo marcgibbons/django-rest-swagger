@@ -1,4 +1,5 @@
 # Django settings for cigar_example project.
+from os.path import dirname, abspath, join
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -8,10 +9,13 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+DJANGO_ROOT = dirname(dirname(abspath(__file__)))
+root = lambda *x: abspath(join(abspath(DJANGO_ROOT), *x))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'db.sql',  # Or path to database file if using sqlite3.
+        'NAME': root('db.sql'),  # Or path to database file if using sqlite3.
         'USER': '',  # Not used with sqlite3.
         'PASSWORD': '',  # Not used with sqlite3.
         'HOST': '',  # Set to empty string for localhost. Not used with sqlite3.
