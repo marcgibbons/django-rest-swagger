@@ -454,6 +454,7 @@ class YAMLDocstringParser(object):
             return None
 
         yaml_string = "\n".join(split_lines[cut_from:])
+        yaml_string = formatting.dedent(yaml_string)
         try:
             return yaml.load(yaml_string)
         except YAMLError:
