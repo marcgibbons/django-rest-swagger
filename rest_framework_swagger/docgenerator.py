@@ -113,6 +113,11 @@ class DocumentationGenerator(object):
         docstring_serializer = doc_parser.get_serializer_class(
             callback=method_inspector.callback
         )
+
+        if doc_parser.get_response_class() is not None:
+            # Custom response class detected
+            return None
+
         if docstring_serializer is not None:
             self.explicit_serializers.add(docstring_serializer)
             serializer = docstring_serializer
