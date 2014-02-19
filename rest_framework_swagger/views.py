@@ -66,8 +66,13 @@ class SwaggerResourcesView(APIDocView):
 
     def get_resources(self):
         urlparser = UrlParser()
-        apis = urlparser.get_apis(exclude_namespaces=SWAGGER_SETTINGS.get('exclude_namespaces'))
-        resources = urlparser.get_top_level_apis(apis)
+        apis = urlparser.get_apis(
+            exclude_namespaces=SWAGGER_SETTINGS.get('exclude_namespaces')
+        )
+        resources = urlparser.get_top_level_apis(
+            apis,
+            resource_url_prefix=SWAGGER_SETTINGS.get('resource_url_prefix')
+        )
         resources = sorted(resources, key=self.get_child)
 
         return resources
@@ -93,4 +98,7 @@ class SwaggerApiView(APIDocView):
 
     def get_api_for_resource(self, filter_path):
         urlparser = UrlParser()
-        return urlparser.get_apis(filter_path=filter_path)
+        return urlparser.get_apis(
+            filter_path=filter_path,
+            resource_url_prefix=SWAGGER_SETTINGS.get('resource_url_prefix')
+        )

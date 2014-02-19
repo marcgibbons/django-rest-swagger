@@ -135,7 +135,7 @@ class UrlParserTest(TestCase):
 
     def test_get_top_level_api(self):
         urlparser = UrlParser()
-        apis = urlparser.get_top_level_apis(urlparser.get_apis(self.url_patterns))
+        apis = urlparser.get_top_level_apis(urlparser.get_apis(self.url_patterns), None)
 
         self.assertEqual(4, len(apis))
 
