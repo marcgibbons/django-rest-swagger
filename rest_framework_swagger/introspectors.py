@@ -5,6 +5,8 @@ import re
 from django.contrib.admindocs.utils import trim_docstring
 
 from rest_framework.views import get_view_name, get_view_description
+from rest_framework.compat import apply_markdown, smart_text
+from rest_framework.utils import formatting
 
 
 def get_resolved_value(obj, attr, default=None):
@@ -18,23 +20,23 @@ class IntrospectorHelper(object):
     __metaclass__ = ABCMeta
 
     @staticmethod
-    def strip_params_from_docstring(docstring):
+    def strip_yaml_from_docstring(docstring):
         """
-        Strips the params from the docstring (ie. myparam -- Some param) will
-        not be removed from the text body
+        Strips YAML from the docstring.
         """
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
         for index, line in enumerate(split_lines):
             line = line.strip()
-            if line.find('--') != -1:
+            if line.startswith('---'):
                 cut_off = index
                 break
         if cut_off is not None:
             split_lines = split_lines[0:cut_off]
 
-        return "<br/>".join(split_lines)
+        return "\n".join(split_lines)
+
 
     @staticmethod
     def get_serializer_name(serializer):
@@ -113,15 +115,23 @@ class BaseMethodIntrospector(object):
         docstring = ""
 
         class_docs = trim_docstring(get_view_description(self.callback))
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         method_docs = self.get_docs()
 
         if class_docs is not None:
             docstring += class_docs
         if method_docs is not None:
+            method_docs = formatting.dedent(smart_text(method_docs))
+            method_docs = IntrospectorHelper.strip_yaml_from_docstring(
+                method_docs
+            )
             docstring += '\n' + method_docs
 
-        docstring = IntrospectorHelper.strip_params_from_docstring(docstring)
-        docstring = docstring.replace("\n\n", "<br/>")
+        # Markdown is optional
+        if apply_markdown:
+            docstring = apply_markdown(docstring)
+        else:
+            docstring = docstring.replace("\n\n", "<br/>")
 
         return docstring
 
