@@ -310,14 +310,33 @@ class YAMLDocstringParser(object):
     """
     Docstring parser powered by YAML syntax
 
-    Note: Yaml part of docstring should start with `---`
-
     This parser allows you override some parts of automatic method inspection
     behaviours which are not always correct.
 
+    See the following documents for more information about YAML and Swagger:
+    - https://github.com/wordnik/swagger-core/wiki
+    - http://www.yaml.org/spec/1.2/spec.html
+    - https://github.com/wordnik/swagger-codegen/wiki/Creating-Swagger-JSON-from-YAML-files
 
+    1. Control over parameters
+    ============================================================================
+    Define parameters and its properties in docstrings:
 
-    1. It is possible to override parameters discovered by method inspector by
+        parameters:
+            - name: some_param
+              description: Foobar long description goes here
+              required: true
+              allowMultiple: false
+              type: integer
+              paramType: form
+              minimum: 10
+              maximum: 100
+            - name: other_foo
+              paramType: query
+            - name: avatar
+              type: file
+
+    It is possible to override parameters discovered by method inspector by
     defining:
         `parameters_strategy` option to either `merge` or `replace`
 
@@ -329,26 +348,55 @@ class YAMLDocstringParser(object):
 
     By default strategy is set to `merge`
 
-    2. Sometimes method inspector produces wrong list of parameters that
+
+    Sometimes method inspector produces wrong list of parameters that
     you might not won't to see in SWAGGER form. To handle this situation
     define `paramTypes` that should be omitted
         omit_parameters:
             - form
 
-    3. Once in a while you are using different serializers inside methods
-    but automatic method inspector cannot detect it. For this purposes there
+    2. Control over serializers
+    ============================================================================
+    Once in a while you are using different serializers inside methods
+    but automatic method inspector cannot detect this. For that purpose there
     is two explicit parameters that allows you to discard serializer detected
     by method inspector OR replace it with another one
 
         serializer: some.package.FooSerializer
         omit_serializer: true
 
-    4. Custom Response Object
+    3. Custom Response Class
+    ============================================================================
+    If your view is not using serializer at all but instead outputs simple
+    data type such as JSON you may define custom response object in method
+    signature like follows:
+
+        responseClass:
+          name:
+            required: true
+            type: string
+          url:
+            required: false
+            type: url
+
+    4. Response Messages (Error Codes)
+    ============================================================================
+    If you'd like to share common response errors that your APIView might throw
+    you can define them in docstring using following format:
+
+    responseMessages:
+        - code: 401
+          message: Not authenticated
+        - code: 403
+          message: Insufficient rights to call this procedure
 
 
-    Sample docstring:
+    SAMPLE DOCSTRING:
+    ============================================================================
+
     ---
     # API Docs
+    # Note: YAML always starts with `---`
 
     responseClass:
       name:
