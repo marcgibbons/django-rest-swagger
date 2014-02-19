@@ -434,12 +434,8 @@ class YAMLDocstringParser(object):
     """
     PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
 
-    def __init__(self, inspector):
-        self.inspector = inspector
-        self.object = self.load_obj_from_docstring(
-            docstring=inspector.get_docs()
-        )
-
+    def __init__(self, docstring):
+        self.object = self.load_obj_from_docstring(docstring=docstring)
         if self.object is None:
             self.object = {}
 
@@ -463,11 +459,11 @@ class YAMLDocstringParser(object):
         except YAMLError:
             return None
 
-    def _load_class(self, cls_name):
+    @staticmethod
+    def _load_class(cls_name, callback):
         """
         Dynamically load a class from a string
         """
-        callback = self.inspector.callback
         if not cls_name or not callback or not hasattr(callback, '__module__'):
             return None
 
@@ -507,13 +503,13 @@ class YAMLDocstringParser(object):
             pass
         return None
 
-    def get_serializer_class(self):
+    def get_serializer_class(self, callback):
         """
         Retrieves serializer class from YAML object
         """
         serializer = self.object.get('serializer', None)
         try:
-            return self._load_class(serializer)
+            return self._load_class(serializer, callback)
         except (ImportError, ValueError):
             pass
         return None
@@ -568,14 +564,14 @@ class YAMLDocstringParser(object):
 
         return params
 
-    def discover_parameters(self):
+    def discover_parameters(self, inspector):
         """
         Applies parameters strategy for parameters discovered
         from method and docstring
         """
         parameters = []
         docstring_params = self.get_parameters()
-        method_params = self.inspector.get_parameters()
+        method_params = inspector.get_parameters()
 
         for param_type in self.PARAM_TYPES:
             if self.should_omit_parameters(param_type):

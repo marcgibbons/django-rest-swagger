@@ -49,13 +49,14 @@ class DocumentationGenerator(object):
                     method_introspector.get_http_method() == "OPTIONS":
                 continue  # No one cares. I impose JSON.
 
-            doc_parser = YAMLDocstringParser(method_introspector)
+            doc_parser = YAMLDocstringParser(
+                docstring=method_introspector.get_docs())
+
             serializer = self._get_method_serializer(
                 doc_parser, method_introspector)
 
             response_class = self._get_method_response_class(
-                doc_parser, serializer, introspector, method_introspector
-            )
+                doc_parser, serializer, introspector, method_introspector)
 
             operation = {
                 'httpMethod': method_introspector.get_http_method(),
@@ -66,7 +67,8 @@ class DocumentationGenerator(object):
             }
 
             response_messages = doc_parser.get_response_messages()
-            parameters = doc_parser.discover_parameters()
+            parameters = doc_parser.discover_parameters(
+                inspector=method_introspector)
 
             if parameters:
                 operation['parameters'] = parameters
@@ -108,7 +110,9 @@ class DocumentationGenerator(object):
         """
         serializer = method_inspector.get_serializer_class()
 
-        docstring_serializer = doc_parser.get_serializer_class()
+        docstring_serializer = doc_parser.get_serializer_class(
+            callback=method_inspector.callback
+        )
         if docstring_serializer is not None:
             self.explicit_serializers.add(docstring_serializer)
             serializer = docstring_serializer
