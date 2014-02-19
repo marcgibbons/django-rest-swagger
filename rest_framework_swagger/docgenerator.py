@@ -9,6 +9,8 @@ from .introspectors import APIViewIntrospector, \
 
 
 class DocumentationGenerator(object):
+    explicit_serializers = set()
+
     def generate(self, apis):
         """
         Returns documentaion for a list of APIs
@@ -43,7 +45,19 @@ class DocumentationGenerator(object):
                     method_introspector.get_http_method() == "OPTIONS":
                 continue  # No one cares. I impose JSON.
 
+            docstring_parser = YAMLDocstringParser(method_introspector)
             serializer = method_introspector.get_serializer_class()
+
+            # Docstring may override serializer discovery
+            docstring_serializer = docstring_parser.get_serializer_class()
+            if docstring_serializer is not None:
+                self.explicit_serializers.add(docstring_serializer)
+                serializer = docstring_serializer
+
+            # Serializer might be intentionally omitted
+            if docstring_parser.should_omit_serializer():
+                serializer = None
+
             serializer_name = IntrospectorHelper.get_serializer_name(serializer)
 
             operation = {
@@ -54,10 +68,9 @@ class DocumentationGenerator(object):
                 'responseClass': serializer_name,
             }
 
-            docstring_parser = YAMLDocstringParser(method_introspector)
             response_messages = docstring_parser.get_response_messages()
-
             parameters = docstring_parser.discover_parameters()
+
             if parameters:
                 operation['parameters'] = parameters
 
@@ -74,6 +87,7 @@ class DocumentationGenerator(object):
         DRF serializers and their fields
         """
         serializers = self._get_serializer_set(apis)
+        serializers.update(self.explicit_serializers)
 
         models = {}
 

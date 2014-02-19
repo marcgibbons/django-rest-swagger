@@ -2,6 +2,7 @@
 
 import re
 import yaml
+import importlib
 
 from collections import OrderedDict
 from _yaml import YAMLError
@@ -329,11 +330,38 @@ class YAMLDocstringParser(object):
         omit_parameters:
             - form
 
+    3. Once in a while you are using different serializers inside methods
+    but automatic method inspector cannot detect it. For this purposes there
+    is two explicit parameters that allows you to discard serializer detected
+    by method inspector OR replace it with another one
+
+        serializer: some.package.FooSerializer
+        omit_serializer: true
+
+
     Sample docstring:
+
+    # serializer_name = {
+    #     "MyCigarSerializer": {
+    #         "id": "MyCigarSerializer",
+    #         "properties": {
+    #             "name": {
+    #                 "required": True,
+    #                 "type": "string"
+    #             },
+    #             "url": {
+    #                 "required": False,
+    #                 "type": "url"
+    #             },
+    #         }
+    #     }
+    # }
+
     ---
     # API Docs
-
-    serializer: foo
+    responseClass:
+    serializer: .serializers.FooSerializer
+    omit_serializer: false
     parameters_strategy: merge
     omit_parameters:
         - path
@@ -388,13 +416,60 @@ class YAMLDocstringParser(object):
         except YAMLError:
             return None
 
+    def _load_class(self, cls_name):
+        """
+        Dynamically load a class from a string
+        """
+        callback = self.inspector.callback
+        if not cls_name or not callback or not hasattr(callback, '__module__'):
+            return None
+
+        if cls_name.find('.') == -1:
+            # within current module/file
+            class_name = cls_name
+            module_path = callback.__module__
+        else:
+            # relative lookup?
+            if cls_name[0] == '.':
+                module_path = callback.__module__
+                while cls_name[0] == '.':
+                    idx = module_path.rfind('.')
+                    if idx == -1:
+                        if module_path == '':
+                            return None
+                        module_path = ''
+                    else:
+                        module_path = module_path[:idx]
+
+                    cls_name = cls_name[1:]
+                    if len(cls_name) <= 1:
+                        return None
+
+                if module_path:
+                    cls_name = module_path + '.' + cls_name
+
+            # extract class and module
+            parts = cls_name.split('.')
+            module_path, class_name = '.'.join(parts[:-1]), parts[-1]
+
+        try:
+            module = importlib.import_module(module_path)
+            if hasattr(module, class_name):
+                return getattr(module, class_name)
+        except ImportError:
+            pass
+        return None
+
     def get_serializer_class(self):
         """
-        Retrieves serializer from YAML object
+        Retrieves serializer class from YAML object
         """
-        # TODO: Incomplete!
-        serializer_class = self.object.get('serializer', None)
-        return serializer_class
+        serializer = self.object.get('serializer', None)
+        try:
+            return self._load_class(serializer)
+        except (ImportError, ValueError):
+            pass
+        return None
 
     def get_response_messages(self):
         """
@@ -463,6 +538,12 @@ class YAMLDocstringParser(object):
         Checks if particular parameter types should be omitted explicitly
         """
         return param_type in self.object.get('omit_parameters', [])
+
+    def should_omit_serializer(self):
+        """
+        Checks if serializer should be intentionally omitted
+        """
+        return self.object.get('omit_serializer', False)
 
     def _apply_strategy(self, param_type, method_params, docstring_params):
         """
