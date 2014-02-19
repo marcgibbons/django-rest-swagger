@@ -19,7 +19,7 @@ from rest_framework.viewsets import ModelViewSet
 from .urlparser import UrlParser
 from .docgenerator import DocumentationGenerator
 from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
-    IntrospectorHelper, APIViewMethodIntrospector
+    IntrospectorHelper, APIViewMethodIntrospector, YAMLDocstringParser
 
 
 class MockApiView(APIView):
@@ -325,37 +325,34 @@ class DocumentationGeneratorTest(TestCase):
 
 
 class IntrospectorHelperTest(TestCase):
-    def test_strip_params_from_docstring(self):
+    def test_strip_yaml_from_docstring(self):
         class AnAPIView(APIView):
             """
             My comments are here
-
-            param -- my param
+            ---
+            # This is YAML
+            param: my param
             """
             pass
 
-        docstring = IntrospectorHelper.strip_params_from_docstring(trim_docstring(AnAPIView.__doc__))
+        docstring = IntrospectorHelper.strip_yaml_from_docstring(trim_docstring(AnAPIView.__doc__))
 
-        self.assertEqual("My comments are here<br/>", docstring)
+        self.assertEqual("My comments are here", docstring)
 
     def test_strip_params_from_docstring_multiline(self):
         class TestView(APIView):
             """
             Creates a new user.
             Returns: token - auth token
-
-            email -- e-mail address
-            password -- password, optional
-            city -- city, optional
-            street -- street, optional
-            number -- house number, optional
-            zip_code -- zip code 10 chars, optional
-            phone -- phone number in US format (XXX-XXX-XXXX), optional
+            ---
+            # This is YAML
+            param: my param
+            foo: 123
             """
             pass
 
-        docstring = IntrospectorHelper.strip_params_from_docstring(TestView.__doc__)
-        expected = 'Creates a new user.<br/>Returns: token - auth token<br/>'
+        docstring = IntrospectorHelper.strip_yaml_from_docstring(TestView.__doc__)
+        expected = 'Creates a new user.\nReturns: token - auth token'
 
         self.assertEqual(expected, docstring)
 
@@ -511,3 +508,236 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual('form', param['paramType'])
         self.assertEqual(True, param['required'])
         self.assertEqual(203, param['defaultValue'])
+
+
+class YAMLDocstringParserTests(TestCase):
+
+    def test_yaml_loader(self):
+        class AnAPIView(APIView):
+            def get(self):
+                """
+                My comments are here
+                ---
+                # This is YAML
+                param: my param
+                """
+                pass
+
+        class_introspector = ViewSetIntrospector(
+            AnAPIView, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'GET')
+        doc_parser = YAMLDocstringParser(introspector.get_docs())
+        self.assertEqual(doc_parser.object['param'], 'my param')
+
+    def test_merge_parameters(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+            def post(self, request, *args, **kwargs):
+                """
+                My post view with custom post parameters
+
+                ---
+                parameters:
+                    - name: name
+                      type: string
+                      required: true
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        params = parser.discover_parameters(introspector)
+
+        self.assertEqual(len(CommentSerializer().get_fields()) + 1, len(params))
+
+    def test_replace_parameters(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                My post view with custom post parameters
+
+                ---
+                parameters_strategy: replace
+                parameters:
+                    - name: name
+                      type: string
+                      required: true
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        params = parser.discover_parameters(introspector)
+
+        self.assertEqual(1, len(params))
+
+    def test_omit_parameters(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                My post view with custom post parameters
+
+                ---
+                omit_parameters:
+                    - form
+                parameters:
+                    - name: name
+                      type: string
+                      required: true
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        params = parser.discover_parameters(introspector)
+
+        self.assertEqual(0, len(params))
+
+    def test_complex_parameters_strategy(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def get(self, request, *args, **kwargs):
+                """
+                My list view with custom query parameters
+
+                ---
+                parameters_strategy:
+                    form: replace
+                    query: merge
+                parameters:
+                    - name: search
+                      type: string
+                      required: true
+                      paramType: query
+                    - name: foo
+                      paramType: form
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'GET')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        params = introspector.build_form_parameters()
+        self.assertEqual(len(CommentSerializer().get_fields()), len(params))
+
+        params = parser.discover_parameters(introspector)
+        self.assertEqual(2, len(params))
+        query_params = parser._filter_params(params, 'paramType', 'query')
+        form_params = parser._filter_params(params, 'paramType', 'form')
+        self.assertEqual(1, len(query_params))
+        self.assertEqual(1, len(form_params))
+
+    def test_response_messages(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                responseMessages:
+                    - code: 403
+                      message: Not authorized.
+                    - code: 404
+                      message: Not found.
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        messages = parser.get_response_messages()
+
+        self.assertEqual(2, len(messages))
+        self.assertEqual(messages[0]['message'], 'Not authorized.')
+        self.assertEqual(messages[1]['message'], 'Not found.')
+
+    def test_custom_serializer(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                serializer: serializers.ModelSerializer
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        generator = DocumentationGenerator()
+        serializer = generator._get_method_serializer(parser, introspector)
+        self.assertTrue(serializer, serializers.ModelSerializer)
+
+    def test_omit_serializer(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                omit_serializer: true
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        generator = DocumentationGenerator()
+        serializer = generator._get_method_serializer(parser, introspector)
+        self.assertEqual(serializer, None)
+
+    def test_custom_response_class(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                responseClass:
+                  name:
+                    required: true
+                    type: string
+                  url:
+                    required: false
+                    type: url
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = ViewSetIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = YAMLDocstringParser(docstring=introspector.get_docs())
+        generator = DocumentationGenerator()
+        serializer = generator._get_method_serializer(parser, introspector)
+        response_class = generator._get_method_response_class(
+            parser, serializer, class_introspector, introspector)
+
+        self.assertEqual(response_class, 'SerializedAPIPostResponse')
+        self.assertEqual(serializer, None)
+        self.assertIn('SerializedAPIPostResponse',
+                      generator.explicit_response_classes)
