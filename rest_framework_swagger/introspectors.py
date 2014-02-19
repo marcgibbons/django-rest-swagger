@@ -547,6 +547,7 @@ class YAMLDocstringParser(object):
                 'allowMultiple': field.get('allowMultiple', False),
                 'type': field.get('type', 'string'),
                 'paramType': field.get('paramType', 'form'),
+                'defaultValue': field.get('defaultValue', None),
             }
 
             # Min/Max are optional
