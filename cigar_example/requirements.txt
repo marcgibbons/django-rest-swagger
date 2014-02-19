@@ -1,7 +1,7 @@
 Django==1.5.5
 PyYAML==3.10
 argh==0.23.2
-argparse==1.2.1
+argparse==1.1
 coverage==3.6
 distribute==0.6.49
 django-nose==1.2
