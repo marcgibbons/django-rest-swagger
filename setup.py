@@ -32,7 +32,8 @@ setup(
     install_requires=[
         'django>=1.5',
         'djangorestframework>=2.3.5',
-        'Unipath>=1.0'
+        'Unipath>=1.0',
+        'PyYAML>=3.10',
     ],
 
     url='http://github.com/marcgibbons',
