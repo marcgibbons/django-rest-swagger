@@ -309,13 +309,34 @@ class YAMLDocstringParser(object):
     """
     Docstring parser powered by YAML syntax
 
-    Sample docstring:
+    Note: Yaml part of docstring should start with `---`
 
+    1. It is possible to override parameters discovered by method inspector by
+    defining:
+        `parameters_strategy` option to either `merge` or `replace`
+
+    To define different strategies for different `paramType`'s use the
+    following syntax:
+        parameters_strategy:
+            form: replace
+            query: merge
+
+    By default strategy is set to `merge`
+
+    2. Sometimes method inspector produces wrong list of parameters that
+    you might not won't to see in SWAGGER form. To handle this situation
+    define `paramTypes` that should be omitted
+        omit_parameters:
+            - form
+
+    Sample docstring:
     ---
     # API Docs
 
     serializer: foo
     parameters_strategy: merge
+    omit_parameters:
+        - path
     parameters:
         - name: name
           description: Foobar long description goes here
@@ -335,9 +356,8 @@ class YAMLDocstringParser(object):
     responseMessages:
         - code: 401
           message: Not authenticated
-
-    Note: `---` always marks beginning of YAML string
     """
+    PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
 
     def __init__(self, inspector):
         self.inspector = inspector
@@ -429,12 +449,20 @@ class YAMLDocstringParser(object):
         docstring_params = self.get_parameters()
         method_params = self.inspector.get_parameters()
 
-        for param_type in ['header', 'path', 'form', 'body', 'query']:
+        for param_type in self.PARAM_TYPES:
+            if self.should_omit_parameters(param_type):
+                continue
             parameters += self._apply_strategy(
                 param_type, method_params, docstring_params
             )
 
         return parameters
+
+    def should_omit_parameters(self, param_type):
+        """
+        Checks if particular parameter types should be omitted explicitly
+        """
+        return param_type in self.object.get('omit_parameters', [])
 
     def _apply_strategy(self, param_type, method_params, docstring_params):
         """
