@@ -312,6 +312,11 @@ class YAMLDocstringParser(object):
 
     Note: Yaml part of docstring should start with `---`
 
+    This parser allows you override some parts of automatic method inspection
+    behaviours which are not always correct.
+
+
+
     1. It is possible to override parameters discovered by method inspector by
     defining:
         `parameters_strategy` option to either `merge` or `replace`
@@ -338,30 +343,24 @@ class YAMLDocstringParser(object):
         serializer: some.package.FooSerializer
         omit_serializer: true
 
+    4. Custom Response Object
+
 
     Sample docstring:
-
-    # serializer_name = {
-    #     "MyCigarSerializer": {
-    #         "id": "MyCigarSerializer",
-    #         "properties": {
-    #             "name": {
-    #                 "required": True,
-    #                 "type": "string"
-    #             },
-    #             "url": {
-    #                 "required": False,
-    #                 "type": "url"
-    #             },
-    #         }
-    #     }
-    # }
-
     ---
     # API Docs
+
     responseClass:
+      name:
+        required: true
+        type: string
+      url:
+        required: false
+        type: url
+
     serializer: .serializers.FooSerializer
     omit_serializer: false
+
     parameters_strategy: merge
     omit_parameters:
         - path
@@ -470,6 +469,12 @@ class YAMLDocstringParser(object):
         except (ImportError, ValueError):
             pass
         return None
+
+    def get_response_class(self):
+        """
+        Docstring may define custom response class
+        """
+        return self.object.get('responseClass', None)
 
     def get_response_messages(self):
         """
