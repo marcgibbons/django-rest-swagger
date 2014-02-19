@@ -5,7 +5,7 @@ from rest_framework import viewsets
 
 from .introspectors import APIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_resolved_value
+    get_resolved_value, YAMLDocstringParser
 
 
 class DocumentationGenerator(object):
@@ -54,9 +54,15 @@ class DocumentationGenerator(object):
                 'responseClass': serializer_name,
             }
 
-            parameters = method_introspector.get_parameters()
-            if len(parameters) > 0:
+            docstring_parser = YAMLDocstringParser(method_introspector)
+            response_messages = docstring_parser.get_response_messages()
+
+            parameters = docstring_parser.discover_parameters()
+            if parameters:
                 operation['parameters'] = parameters
+
+            if response_messages:
+                operation['responseMessages'] = response_messages
 
             operations.append(operation)
 
