@@ -114,12 +114,13 @@ class BaseMethodIntrospector(object):
         """
         docstring = ""
 
-        class_docs = trim_docstring(get_view_description(self.callback))
+        class_docs = self.callback.__doc__ or ''
+        class_docs = smart_text(class_docs)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         method_docs = self.get_docs()
 
         if class_docs is not None:
-            docstring += class_docs
+            docstring += class_docs + "  \n"
         if method_docs is not None:
             method_docs = formatting.dedent(smart_text(method_docs))
             method_docs = IntrospectorHelper.strip_yaml_from_docstring(
