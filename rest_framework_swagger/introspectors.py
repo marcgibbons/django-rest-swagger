@@ -409,6 +409,24 @@ class YAMLDocstringParser(object):
           message: Insufficient rights to call this procedure
 
 
+    5. Different models for reading and writing operations
+    ============================================================================
+    Since REST Framework won't output write_only fields in responses as well as
+    does not require read_only fields to be provided it is worth to
+    automatically register 2 separate models for reading and writing operations.
+
+    Discovered serializer will be registered with `Write` or `Read` prefix.
+    Response Class will be automatically adjusted if serializer class was
+    detected by method inspector.
+
+    You can also refer to this models in your parameters:
+
+    parameters:
+        - name: CigarSerializer
+          type: WriteCigarSerializer
+          paramType: body
+
+
     SAMPLE DOCSTRING:
     ============================================================================
 
