@@ -124,6 +124,13 @@ class DocumentationGenerator(object):
                 'properties': r_properties,
             }
 
+            # Keep original model for testing purposes
+            models[serializer.__name__] = {
+                'id': serializer.__name__,
+                'required': data['required'],
+                'properties': data['fields'],
+            }
+
         models.update(self.explicit_response_types)
         return models
 

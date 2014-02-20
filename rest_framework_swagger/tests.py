@@ -299,9 +299,9 @@ class DocumentationGeneratorTest(TestCase):
 
     def test_get_serializer_fields(self):
         docgen = DocumentationGenerator()
-        fields, _ = docgen._get_serializer_fields(CommentSerializer)
+        fields = docgen._get_serializer_fields(CommentSerializer)
 
-        self.assertEqual(3, len(fields))
+        self.assertEqual(3, len(fields['fields']))
 
     def test_get_serializer_fields_api_with_no_serializer(self):
         docgen = DocumentationGenerator()
