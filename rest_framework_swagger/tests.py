@@ -238,7 +238,7 @@ class DocumentationGeneratorTest(TestCase):
         docgen = DocumentationGenerator()
         operations = docgen.get_operations(api)
 
-        self.assertEqual('POST', operations[0]['httpMethod'])
+        self.assertEqual('POST', operations[0]['method'])
 
     def test_get_operations_with_no_methods(self):
 
@@ -280,7 +280,7 @@ class DocumentationGeneratorTest(TestCase):
         models = docgen.get_models(apis)
 
         created_prop = models['CommentSerializer']['properties']['created']
-        value = created_prop['allowableValues']['defaultValue']
+        value = created_prop['defaultValue']
         delta = datetime.timedelta(seconds=1)
         self.assertAlmostEqual(value, datetime.datetime.now(), delta=delta)
 
@@ -299,7 +299,7 @@ class DocumentationGeneratorTest(TestCase):
 
     def test_get_serializer_fields(self):
         docgen = DocumentationGenerator()
-        fields = docgen._get_serializer_fields(CommentSerializer)
+        fields, _ = docgen._get_serializer_fields(CommentSerializer)
 
         self.assertEqual(3, len(fields))
 
@@ -485,8 +485,6 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual('content', param['name'])
         self.assertEqual('form', param['paramType'])
         self.assertEqual(True, param['required'])
-        self.assertEqual(200, param['allowableValues']['max'])
-        self.assertEqual(10, param['allowableValues']['min'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
 
     def test_build_form_parameters_callable_default_value_is_resolved(self):

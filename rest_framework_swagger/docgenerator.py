@@ -59,11 +59,11 @@ class DocumentationGenerator(object):
                 doc_parser, serializer, introspector, method_introspector)
 
             operation = {
-                'httpMethod': method_introspector.get_http_method(),
+                'method': method_introspector.get_http_method(),
                 'summary': method_introspector.get_summary(),
                 'nickname': method_introspector.get_nickname(),
                 'notes': method_introspector.get_notes(),
-                'responseClass': response_class,
+                'type': response_class,
             }
 
             response_messages = doc_parser.get_response_messages()
@@ -91,10 +91,11 @@ class DocumentationGenerator(object):
         models = {}
 
         for serializer in serializers:
-            properties = self._get_serializer_fields(serializer)
+            properties, required = self._get_serializer_fields(serializer)
 
             models[serializer.__name__] = {
                 'id': serializer.__name__,
+                'required': required,
                 'properties': properties,
             }
 
@@ -182,21 +183,44 @@ class DocumentationGenerator(object):
         fields = serializer().get_fields()
 
         data = {}
+        required = []
         for name, field in fields.items():
+            if getattr(field, 'required', None):
+                required.append(name)
 
-            data[name] = {
-                'type': field.type_label,
-                'required': getattr(field, 'required', None),
-                'allowableValues': {
-                    'min': getattr(field, 'min_length', None),
-                    'max': getattr(field, 'max_length', None),
-                    'defaultValue': get_resolved_value(field, 'default', None),
-                    'readOnly': getattr(field, 'read_only', None),
-                    'valueType': 'RANGE',
-                }
+            data_type = field.type_label
+
+            # guess format
+            data_format = 'string'
+            if data_type in BaseMethodIntrospector.PRIMITIVES:
+                data_format = BaseMethodIntrospector.PRIMITIVES.get(data_type)[0]
+
+            f = {
+                'description': getattr(field, 'help_text', ''),
+                'type': data_type,
+                'format': data_format,
+                'required': getattr(field, 'required', False),
+                'defaultValue': get_resolved_value(field, 'default'),
+                'readOnly': getattr(field, 'read_only', None),
             }
 
-        return data
+            # Min/Max values
+            max_val = getattr(field, 'max_val', None)
+            min_val = getattr(field, 'min_val', None)
+            if max_val is not None and data_type == 'integer':
+                f['minimum'] = min_val
+
+            if max_val is not None and data_type == 'integer':
+                f['maximum'] = max_val
+
+            # ENUM options
+            if field.type_label == 'multiple choice' \
+                    and isinstance(field.choices, list):
+                f['enum'] = [k for k, v in field.choices]
+
+            data[name] = f
+
+        return data, required
 
     def _get_serializer_class(self, callback):
         if hasattr(callback, 'get_serializer_class'):

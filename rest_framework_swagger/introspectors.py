@@ -89,6 +89,13 @@ class BaseViewIntrospector(object):
 class BaseMethodIntrospector(object):
     __metaclass__ = ABCMeta
 
+    PRIMITIVES = {
+        'integer': ['int32', 'int64'],
+        'number': ['float', 'double'],
+        'string': ['string', 'byte', 'date', 'date-time'],
+        'boolean': ['boolean'],
+    }
+
     def __init__(self, view_introspector, method):
         self.method = method
         self.parent = view_introspector
@@ -190,7 +197,7 @@ class BaseMethodIntrospector(object):
 
         return {
             'name': serializer_name,
-            'dataType': serializer_name,
+            'type': serializer_name,
             'paramType': 'body',
         }
 
@@ -204,7 +211,7 @@ class BaseMethodIntrospector(object):
         for param in url_params:
             params.append({
                 'name': param,
-                'dataType': 'string',
+                'type': 'string',
                 'paramType': 'path',
                 'required': True
             })
@@ -229,26 +236,37 @@ class BaseMethodIntrospector(object):
                 continue
 
             data_type = field.type_label
-            max_length = getattr(field, 'max_length', None)
-            min_length = getattr(field, 'min_length', None)
-            allowable_values = None
 
-            if max_length is not None or min_length is not None:
-                allowable_values = {
-                    'max': max_length,
-                    'min': min_length,
-                    'valueType': 'RANGE'
-                }
+            # guess format
+            data_format = 'string'
+            if data_type in self.PRIMITIVES:
+                data_format = self.PRIMITIVES.get(data_type)[0]
 
-            data.append({
+            f = {
                 'paramType': 'form',
                 'name': name,
-                'dataType': data_type,
-                'allowableValues': allowable_values,
                 'description': getattr(field, 'help_text', ''),
+                'type': data_type,
+                'format': data_format,
+                'required': getattr(field, 'required', False),
                 'defaultValue': get_resolved_value(field, 'default'),
-                'required': getattr(field, 'required', None)
-            })
+            }
+
+            # Min/Max values
+            max_val = getattr(field, 'max_val', None)
+            min_val = getattr(field, 'min_val', None)
+            if max_val is not None and data_type == 'integer':
+                f['minimum'] = min_val
+
+            if max_val is not None and data_type == 'integer':
+                f['maximum'] = max_val
+
+            # ENUM options
+            if field.type_label == 'multiple choice' \
+                    and isinstance(field.choices, list):
+                f['enum'] = [k for k, v in field.choices]
+
+            data.append(f)
 
         return data
 
@@ -405,6 +423,10 @@ class YAMLDocstringParser(object):
       url:
         required: false
         type: url
+      created_at:
+        required: true
+        type: string
+        format: date-time
 
     serializer: .serializers.FooSerializer
     omit_serializer: false
@@ -529,8 +551,9 @@ class YAMLDocstringParser(object):
         response_messages = self.object.get('responseMessages', [])
         for message in response_messages:
             messages.append({
-                'code': message.get('code', 'Unknown'),
-                'message': message.get('message')
+                'code': message.get('code', None),
+                'message': message.get('message', None),
+                'responseModel': message.get('responseModel', None),
             })
         return messages
 
@@ -541,22 +564,54 @@ class YAMLDocstringParser(object):
         params = []
         fields = self.object.get('parameters', [])
         for field in fields:
+            param_type = field.get('paramType', None)
+            if param_type not in self.PARAM_TYPES:
+                param_type = 'form'
+
+            # Data Type & Format
+            # See:
+            # https://github.com/wordnik/swagger-core/wiki/1.2-transition#wiki-additions-2
+            # https://github.com/wordnik/swagger-core/wiki/Parameters
+            data_type = field.get('type', 'string')
+            if param_type in ['path', 'query', 'header']:
+                if data_type not in BaseMethodIntrospector.PRIMITIVES:
+                    data_type = 'string'
+
+            # Data Format
+            data_format = field.get('format', None)
+            flattern_primitives = [
+                val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
+                for val in sublist
+            ]
+
+            if data_format not in flattern_primitives:
+                formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
+                if formats:
+                    data_format = formats[0]
+                else:
+                    data_format = 'string'
+
             f = {
+                'paramType': param_type,
                 'name': field.get('name', None),
                 'description': field.get('description', None),
+                'type': data_type,
+                'format': data_format,
                 'required': field.get('required', False),
-                'allowMultiple': field.get('allowMultiple', False),
-                'type': field.get('type', 'string'),
-                'paramType': field.get('paramType', 'form'),
                 'defaultValue': field.get('defaultValue', None),
             }
 
             # Min/Max are optional
-            if 'minimum' in field:
+            if 'minimum' in field and data_type == 'integer':
                 f['minimum'] = field.get('minimum', 0)
 
-            if 'maximum' in field:
+            if 'maximum' in field and data_type == 'integer':
                 f['maximum'] = field.get('maximum', 0)
+
+            # enum options
+            enum = f.get('enum', [])
+            if enum:
+                f['enum'] = enum
 
             # File support
             if f['type'] == 'file':
