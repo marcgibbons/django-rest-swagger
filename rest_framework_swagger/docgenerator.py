@@ -55,7 +55,7 @@ class DocumentationGenerator(object):
             serializer = self._get_method_serializer(
                 doc_parser, method_introspector)
 
-            response_class = self._get_method_response_type(
+            response_type = self._get_method_response_type(
                 doc_parser, serializer, introspector, method_introspector)
 
             operation = {
@@ -63,7 +63,7 @@ class DocumentationGenerator(object):
                 'summary': method_introspector.get_summary(),
                 'nickname': method_introspector.get_nickname(),
                 'notes': method_introspector.get_notes(),
-                'type': response_class,
+                'type': response_type,
             }
 
             response_messages = doc_parser.get_response_messages()
@@ -91,14 +91,38 @@ class DocumentationGenerator(object):
         models = {}
 
         for serializer in serializers:
-            properties, required = self._get_serializer_fields(serializer)
+            data = self._get_serializer_fields(serializer)
 
-            models[serializer.__name__] = {
-                'id': serializer.__name__,
-                'required': required,
-                'properties': properties,
+            # Register 2 models with different subset of properties suitable
+            # for data reading and writing.
+            # i.e. rest framework does not output write_only fields in response
+            # or require read_only fields in complex input.
+
+            # Writing
+            # no readonly fields
+            w_name = "Write{serializer}".format(serializer=serializer.__name__)
+
+            w_properties = dict((k, v) for k, v in data['fields'].items()
+                                if k not in data['read_only'])
+
+            models[w_name] = {
+                'id': w_name,
+                'required': [i for i in data['required'] if i in w_properties.keys()],
+                'properties': w_properties,
             }
 
+            # Reading
+            # no write_only fields
+            r_name = "Read{serializer}".format(serializer=serializer.__name__)
+
+            r_properties = dict((k, v) for k, v in data['fields'].items()
+                                if k not in data['write_only'])
+
+            models[r_name] = {
+                'id': r_name,
+                'required': [i for i in r_properties.keys()],
+                'properties': r_properties,
+            }
 
         models.update(self.explicit_response_types)
         return models
@@ -139,26 +163,39 @@ class DocumentationGenerator(object):
         Once custom `type` found in docstring - it'd be
         registered in a scope
         """
-        response_class = doc_parser.get_response_type()
-        if response_class is not None:
+        response_type = doc_parser.get_response_type()
+        if response_type is not None:
             # Register class in scope
             view_name = view_inspector.callback.__name__
             view_name = view_name.replace('ViewSet', '')
             view_name = view_name.replace('APIView', '')
             view_name = view_name.replace('View', '')
-            response_class_name = "{view}{method}Response".format(
+            response_type_name = "{view}{method}Response".format(
                 view=view_name,
                 method=method_inspector.method.title().replace('_', '')
             )
             self.explicit_response_types.update({
-                response_class_name: {
-                    "id": response_class_name,
-                    "properties": response_class
+                response_type_name: {
+                    "id": response_type_name,
+                    "properties": response_type
                 }
             })
-            return response_class_name
+            return response_type_name
         else:
-            return IntrospectorHelper.get_serializer_name(serializer)
+            serializer_name = IntrospectorHelper.get_serializer_name(serializer)
+            if serializer_name is not None:
+                method = method_inspector.get_http_method()
+                if method.lower() in ['post', 'put', 'patch']:
+                    prefix = "Write"
+                else:
+                    prefix = "Read"
+
+                return "{prefix}{serializer_name}".format(
+                    prefix=prefix,
+                    serializer_name=serializer_name
+                )
+
+            return None
 
     def _get_serializer_set(self, apis):
         """
@@ -183,14 +220,21 @@ class DocumentationGenerator(object):
 
         fields = serializer().get_fields()
 
-        data = {}
-        required = []
+        data = {
+            'fields': {},
+            'required': [],
+            'write_only': [],
+            'read_only': [],
+        }
         for name, field in fields.items():
             if getattr(field, 'write_only', False):
-                continue
+                data['write_only'].append(name)
+
+            if getattr(field, 'read_only', False):
+                data['read_only'].append(name)
 
             if getattr(field, 'required', False):
-                required.append(name)
+                data['required'].append(name)
 
             data_type = field.type_label
 
@@ -222,9 +266,9 @@ class DocumentationGenerator(object):
                     and isinstance(field.choices, list):
                 f['enum'] = [k for k, v in field.choices]
 
-            data[name] = f
+            data['fields'][name] = f
 
-        return data, required
+        return data
 
     def _get_serializer_class(self, callback):
         if hasattr(callback, 'get_serializer_class'):
