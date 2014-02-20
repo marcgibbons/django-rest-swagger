@@ -389,7 +389,7 @@ class YAMLDocstringParser(object):
     data type such as JSON you may define custom response object in method
     signature like follows:
 
-        responseClass:
+        type:
           name:
             required: true
             type: string
@@ -416,7 +416,7 @@ class YAMLDocstringParser(object):
     # API Docs
     # Note: YAML always starts with `---`
 
-    responseClass:
+    type:
       name:
         required: true
         type: string
@@ -537,11 +537,11 @@ class YAMLDocstringParser(object):
             pass
         return None
 
-    def get_response_class(self):
+    def get_response_type(self):
         """
         Docstring may define custom response class
         """
-        return self.object.get('responseClass', None)
+        return self.object.get('type', None)
 
     def get_response_messages(self):
         """

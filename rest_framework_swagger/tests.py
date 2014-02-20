@@ -715,7 +715,7 @@ class YAMLDocstringParserTests(TestCase):
             def post(self, request, *args, **kwargs):
                 """
                 ---
-                responseClass:
+                type:
                   name:
                     required: true
                     type: string
@@ -732,10 +732,10 @@ class YAMLDocstringParserTests(TestCase):
         parser = YAMLDocstringParser(docstring=introspector.get_docs())
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(parser, introspector)
-        response_class = generator._get_method_response_class(
+        response_class = generator._get_method_response_type(
             parser, serializer, class_introspector, introspector)
 
         self.assertEqual(response_class, 'SerializedAPIPostResponse')
         self.assertEqual(serializer, None)
         self.assertIn('SerializedAPIPostResponse',
-                      generator.explicit_response_classes)
+                      generator.explicit_response_types)

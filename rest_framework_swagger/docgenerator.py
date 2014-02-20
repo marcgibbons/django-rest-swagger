@@ -13,7 +13,7 @@ class DocumentationGenerator(object):
     explicit_serializers = set()
 
     # Response classes defined in docstrings
-    explicit_response_classes = dict()
+    explicit_response_types = dict()
 
     def generate(self, apis):
         """
@@ -55,7 +55,7 @@ class DocumentationGenerator(object):
             serializer = self._get_method_serializer(
                 doc_parser, method_introspector)
 
-            response_class = self._get_method_response_class(
+            response_class = self._get_method_response_type(
                 doc_parser, serializer, introspector, method_introspector)
 
             operation = {
@@ -92,6 +92,13 @@ class DocumentationGenerator(object):
 
         for serializer in serializers:
             properties, required = self._get_serializer_fields(serializer)
+            # PATCH model: no required fields
+            # PUT model: required fields stays as is
+            # GET model: no write_only fields
+            # POST model: required fields stays as is
+
+            # Register POST & PUT models
+
 
             models[serializer.__name__] = {
                 'id': serializer.__name__,
@@ -99,7 +106,8 @@ class DocumentationGenerator(object):
                 'properties': properties,
             }
 
-        models.update(self.explicit_response_classes)
+
+        models.update(self.explicit_response_types)
         return models
 
     def _get_method_serializer(self, doc_parser, method_inspector):
@@ -115,7 +123,7 @@ class DocumentationGenerator(object):
             callback=method_inspector.callback
         )
 
-        if doc_parser.get_response_class() is not None:
+        if doc_parser.get_response_type() is not None:
             # Custom response class detected
             return None
 
@@ -128,17 +136,17 @@ class DocumentationGenerator(object):
 
         return serializer
 
-    def _get_method_response_class(self, doc_parser, serializer,
-                                   view_inspector, method_inspector):
+    def _get_method_response_type(self, doc_parser, serializer,
+                                  view_inspector, method_inspector):
         """
-        Returns responseClass for method.
-        This might be custom responseClass from docstring or discovered
+        Returns response type for method.
+        This might be custom `type` from docstring or discovered
         serializer class name.
 
-        Once custom responseClass found in docstring - it'd be
+        Once custom `type` found in docstring - it'd be
         registered in a scope
         """
-        response_class = doc_parser.get_response_class()
+        response_class = doc_parser.get_response_type()
         if response_class is not None:
             # Register class in scope
             view_name = view_inspector.callback.__name__
@@ -149,7 +157,7 @@ class DocumentationGenerator(object):
                 view=view_name,
                 method=method_inspector.method.title().replace('_', '')
             )
-            self.explicit_response_classes.update({
+            self.explicit_response_types.update({
                 response_class_name: {
                     "id": response_class_name,
                     "properties": response_class
