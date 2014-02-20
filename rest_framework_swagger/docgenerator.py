@@ -92,13 +92,6 @@ class DocumentationGenerator(object):
 
         for serializer in serializers:
             properties, required = self._get_serializer_fields(serializer)
-            # PATCH model: no required fields
-            # PUT model: required fields stays as is
-            # GET model: no write_only fields
-            # POST model: required fields stays as is
-
-            # Register POST & PUT models
-
 
             models[serializer.__name__] = {
                 'id': serializer.__name__,
@@ -193,7 +186,10 @@ class DocumentationGenerator(object):
         data = {}
         required = []
         for name, field in fields.items():
-            if getattr(field, 'required', None):
+            if getattr(field, 'write_only', False):
+                continue
+
+            if getattr(field, 'required', False):
                 required.append(name)
 
             data_type = field.type_label
