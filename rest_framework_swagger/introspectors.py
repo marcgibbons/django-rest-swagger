@@ -103,7 +103,11 @@ class BaseMethodIntrospector(object):
         self.path = view_introspector.path
 
     def get_serializer_class(self):
-        return self.parent.get_serializer_class()
+        serializer = self.parent.get_serializer_class()
+        if serializer is None:
+            parser = YAMLDocstringParser(docstring=self.get_docs())
+            serializer = parser.get_serializer_class(self.callback)
+        return serializer
 
     def get_summary(self):
         docs = self.get_docs()
