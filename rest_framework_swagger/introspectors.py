@@ -348,7 +348,6 @@ class YAMLDocstringParser(object):
             - name: some_param
               description: Foobar long description goes here
               required: true
-              allowMultiple: false
               type: integer
               paramType: form
               minimum: 10
@@ -460,11 +459,8 @@ class YAMLDocstringParser(object):
         - name: name
           description: Foobar long description goes here
           required: true
-          allowMultiple: false
           type: string
           paramType: form
-          minimum: 10
-          maximum: 100
         - name: other_foo
           paramType: query
         - name: other_bar
