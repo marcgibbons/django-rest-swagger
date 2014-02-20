@@ -191,14 +191,7 @@ class DocumentationGenerator(object):
         else:
             serializer_name = IntrospectorHelper.get_serializer_name(serializer)
             if serializer_name is not None:
-                method = method_inspector.get_http_method()
-                if method.lower() in ['post', 'put', 'patch']:
-                    prefix = "Write"
-                else:
-                    prefix = "Read"
-
-                return "{prefix}{serializer_name}".format(
-                    prefix=prefix,
+                return "Read{serializer_name}".format(
                     serializer_name=serializer_name
                 )
 
