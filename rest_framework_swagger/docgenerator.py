@@ -2,6 +2,7 @@
 from django.http import HttpRequest
 
 from rest_framework import viewsets
+from rest_framework.serializers import BaseSerializer
 
 from .introspectors import APIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
@@ -11,6 +12,9 @@ from .introspectors import APIViewIntrospector, \
 class DocumentationGenerator(object):
     # Serializers defined in docstrings
     explicit_serializers = set()
+
+    # Serializers defined in fields
+    fields_serializers = set()
 
     # Response classes defined in docstrings
     explicit_response_types = dict()
@@ -87,6 +91,9 @@ class DocumentationGenerator(object):
         """
         serializers = self._get_serializer_set(apis)
         serializers.update(self.explicit_serializers)
+        serializers.update(
+            self._find_field_serializers(serializers)
+        )
 
         models = {}
 
@@ -98,9 +105,10 @@ class DocumentationGenerator(object):
             # i.e. rest framework does not output write_only fields in response
             # or require read_only fields in complex input.
 
+            serializer_name = IntrospectorHelper.get_serializer_name(serializer)
             # Writing
             # no readonly fields
-            w_name = "Write{serializer}".format(serializer=serializer.__name__)
+            w_name = "Write{serializer}".format(serializer=serializer_name)
 
             w_properties = dict((k, v) for k, v in data['fields'].items()
                                 if k not in data['read_only'])
@@ -113,7 +121,7 @@ class DocumentationGenerator(object):
 
             # Reading
             # no write_only fields
-            r_name = "Read{serializer}".format(serializer=serializer.__name__)
+            r_name = "Read{serializer}".format(serializer=serializer_name)
 
             r_properties = dict((k, v) for k, v in data['fields'].items()
                                 if k not in data['write_only'])
@@ -125,13 +133,14 @@ class DocumentationGenerator(object):
             }
 
             # Keep original model for testing purposes
-            models[serializer.__name__] = {
-                'id': serializer.__name__,
+            models[serializer_name] = {
+                'id': serializer_name,
                 'required': data['required'],
                 'properties': data['fields'],
             }
 
         models.update(self.explicit_response_types)
+        models.update(self.fields_serializers)
         return models
 
     def _get_method_serializer(self, doc_parser, method_inspector):
@@ -211,6 +220,19 @@ class DocumentationGenerator(object):
 
         return serializers
 
+    def _find_field_serializers(self, serializers):
+        """
+        Returns set of serializers discovered from fields
+        """
+        serializers_set = set()
+        for serializer in serializers:
+            fields = serializer().get_fields()
+            for name, field in fields.items():
+                if isinstance(field, BaseSerializer):
+                    serializers_set.add(field)
+
+        return serializers_set
+
     def _get_serializer_fields(self, serializer):
         """
         Returns serializer fields in the Swagger MODEL format
@@ -218,7 +240,10 @@ class DocumentationGenerator(object):
         if serializer is None:
             return
 
-        fields = serializer().get_fields()
+        if hasattr(serializer, '__call__'):
+            fields = serializer().get_fields()
+        else:
+            fields = serializer.get_fields()
 
         data = {
             'fields': {},
@@ -266,6 +291,25 @@ class DocumentationGenerator(object):
                     and isinstance(field.choices, list):
                 f['enum'] = [k for k, v in field.choices]
 
+            # Support for complex types
+            if isinstance(field, BaseSerializer):
+                field_serializer = IntrospectorHelper.get_serializer_name(field)
+
+                if getattr(field, 'write_only', False):
+                    field_serializer = "Write{}".format(field_serializer)
+
+                if getattr(field, 'read_only', False):
+                    field_serializer = "Read{}".format(field_serializer)
+
+                f['type'] = field_serializer
+                if field.many:
+                    f['type'] = 'array'
+                    if data_type in BaseMethodIntrospector.PRIMITIVES:
+                        f['items'] = {'type': data_type}
+                    else:
+                        f['items'] = {'$ref': field_serializer}
+
+            # memorize discovered field
             data['fields'][name] = f
 
         return data
