@@ -1,10 +1,14 @@
+import os
+
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
+import unipath
+
 from rest_framework.views import APIView
 
-from rest_framework_swagger.apidocview import APIDocView
+from .apidocview import APIDocView
 
 
 class UrlParser(object):
@@ -20,35 +24,21 @@ class UrlParser(object):
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
-        if filter_path is not None:
-            return self.get_filtered_apis(patterns, filter_path)
-
-        patterns = self.__flatten_patterns_tree__(
+        apis = self.__flatten_patterns_tree__(
             patterns,
             filter_path=filter_path,
             exclude_namespaces=exclude_namespaces,
         )
+        if filter_path is not None:
+            return self.get_filtered_apis(apis, filter_path)
 
-        return patterns
+        return apis
 
-    def get_filtered_apis(self, patterns, filter_path):
+    def get_filtered_apis(self, apis, filter_path):
         filtered_list = []
 
-        all_apis = self.get_apis(patterns, exclude_namespaces=[])
-        top_level_apis = self.get_top_level_apis(all_apis)
-        top_level_apis.discard(filter_path)
-
-        for top in list(top_level_apis):
-            if top in filter_path: #and len(filter_path) > len(top):
-                top_level_apis.remove(top)
-
-        for api in all_apis:
-            remove = False
-            for top in top_level_apis:
-                if top + '/' in api['path'].lstrip("/"):
-                    remove = True
-
-            if filter_path in api['path'].strip("/") and not remove:
+        for api in apis:
+            if filter_path in api['path'].strip('/'):
                 filtered_list.append(api)
 
         return filtered_list
@@ -68,9 +58,27 @@ class UrlParser(object):
             path_base = path.split('/{')[0]
             if '{' in path and path_base in api_paths:
                 continue
-            root_paths.add(path_base)
+            root_paths.add(unipath.path.Path(path_base))
 
-        return root_paths
+        top_level_apis = self.__filter_top_level_apis__(root_paths)
+
+        return sorted(top_level_apis, key=self.__get_last_element__)
+
+    def __filter_top_level_apis__(self, root_paths):
+        """
+        Returns top level APIs
+        """
+        filtered_paths = set()
+        base_path = os.path.commonprefix(root_paths)
+        for path in root_paths:
+            resource = path.lstrip(base_path).split('/')[0]
+            filtered_paths.add(base_path + resource)
+
+        return list(filtered_paths)
+
+    def __get_last_element__(self, paths):
+        split_paths = paths.split('/')
+        return split_paths[len(split_paths) - 1]
 
     def __assemble_endpoint_data__(self, pattern, prefix='', filter_path=None):
         """
