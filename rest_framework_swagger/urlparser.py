@@ -4,7 +4,6 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
-import unipath
 
 from rest_framework.views import APIView
 
@@ -58,7 +57,7 @@ class UrlParser(object):
             path_base = path.split('/{')[0]
             if '{' in path and path_base in api_paths:
                 continue
-            root_paths.add(unipath.path.Path(path_base))
+            root_paths.add(path_base)
 
         top_level_apis = self.__filter_top_level_apis__(root_paths)
 

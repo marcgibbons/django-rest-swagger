@@ -1,4 +1,4 @@
-""" Generates API documentation by introspection. """
+"""Generates API documentation by introspection."""
 from django.http import HttpRequest
 
 from rest_framework import viewsets
