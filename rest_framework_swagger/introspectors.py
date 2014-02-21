@@ -1,5 +1,6 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 
+import inspect
 import re
 import yaml
 import importlib
@@ -49,7 +50,10 @@ class IntrospectorHelper(object):
         if serializer is None:
             return None
 
-        return serializer.__name__
+        if inspect.isclass(serializer):
+            return serializer.__name__
+
+        return serializer.__class__.__name__
 
 
     @staticmethod
