@@ -121,7 +121,7 @@ class DocumentationGenerator(object):
 
             # Reading
             # no write_only fields
-            r_name = "Read{serializer}".format(serializer=serializer_name)
+            r_name = serializer_name
 
             r_properties = dict((k, v) for k, v in data['fields'].items()
                                 if k not in data['write_only'])
@@ -132,12 +132,12 @@ class DocumentationGenerator(object):
                 'properties': r_properties,
             }
 
-            # Keep original model for testing purposes
-            models[serializer_name] = {
-                'id': serializer_name,
-                'required': data['required'],
-                'properties': data['fields'],
-            }
+            # Enable original model for testing purposes
+            # models[serializer_name] = {
+            #     'id': serializer_name,
+            #     'required': data['required'],
+            #     'properties': data['fields'],
+            # }
 
         models.update(self.explicit_response_types)
         models.update(self.fields_serializers)
@@ -200,9 +200,7 @@ class DocumentationGenerator(object):
         else:
             serializer_name = IntrospectorHelper.get_serializer_name(serializer)
             if serializer_name is not None:
-                return "Read{serializer_name}".format(
-                    serializer_name=serializer_name
-                )
+                return serializer_name
 
             return None
 
@@ -297,9 +295,6 @@ class DocumentationGenerator(object):
 
                 if getattr(field, 'write_only', False):
                     field_serializer = "Write{}".format(field_serializer)
-
-                if getattr(field, 'read_only', False):
-                    field_serializer = "Read{}".format(field_serializer)
 
                 f['type'] = field_serializer
                 if field.many:
