@@ -6,7 +6,6 @@ import yaml
 import importlib
 
 from collections import OrderedDict
-from _yaml import YAMLError
 from abc import ABCMeta, abstractmethod
 
 from django.contrib.admindocs.utils import trim_docstring
@@ -501,7 +500,7 @@ class YAMLDocstringParser(object):
         yaml_string = formatting.dedent(yaml_string)
         try:
             return yaml.load(yaml_string)
-        except YAMLError:
+        except yaml.YAMLError:
             return None
 
     @staticmethod
