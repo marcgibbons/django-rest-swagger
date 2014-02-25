@@ -70,6 +70,10 @@ class DocumentationGenerator(object):
                 'type': response_type,
             }
 
+            if doc_parser.yaml_error is not None:
+                operation['notes'] += "<pre>YAMLError:\n {err}</pre>".format(
+                    err=doc_parser.yaml_error)
+
             response_messages = doc_parser.get_response_messages()
             parameters = doc_parser.discover_parameters(
                 inspector=method_introspector)

@@ -476,14 +476,14 @@ class YAMLDocstringParser(object):
           message: Not authenticated
     """
     PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
+    yaml_error = None
 
     def __init__(self, docstring):
         self.object = self.load_obj_from_docstring(docstring=docstring)
         if self.object is None:
             self.object = {}
 
-    @staticmethod
-    def load_obj_from_docstring(docstring):
+    def load_obj_from_docstring(self, docstring):
         """Loads YAML from docstring"""
         split_lines = trim_docstring(docstring).split('\n')
 
@@ -500,7 +500,8 @@ class YAMLDocstringParser(object):
         yaml_string = formatting.dedent(yaml_string)
         try:
             return yaml.load(yaml_string)
-        except yaml.YAMLError:
+        except yaml.YAMLError, e:
+            self.yaml_error = e
             return None
 
     @staticmethod
