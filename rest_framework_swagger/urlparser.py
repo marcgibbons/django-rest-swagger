@@ -68,12 +68,19 @@ class UrlParser(object):
         Returns top level APIs
         """
         filtered_paths = set()
-        base_path = os.path.commonprefix(root_paths)
+        base_path = self.__get_base_path__(root_paths)
         for path in root_paths:
             resource = path.lstrip(base_path).split('/')[0]
             filtered_paths.add(base_path + resource)
 
         return list(filtered_paths)
+
+    def __get_base_path__(self, root_paths):
+        base_path = os.path.commonprefix(root_paths)
+        slash_index = base_path.rfind('/') + 1
+        base_path = base_path[:slash_index]
+
+        return base_path
 
     def __get_last_element__(self, paths):
         split_paths = paths.split('/')

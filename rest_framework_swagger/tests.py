@@ -175,6 +175,20 @@ class UrlParserTest(TestCase):
 
         self.assertEqual(4, urls_created - len(apis))
 
+    def test_get_base_path_for_common_endpoints(self):
+        parser = UrlParser()
+        paths = ['api/endpoint1', 'api/endpoint2']
+        base_path = parser.__get_base_path__(paths)
+
+        self.assertEqual('api/', base_path)
+
+    def test_get_base_path_for_root_level_endpoints(self):
+        parser = UrlParser()
+        paths = ['endpoint1', 'endpoint2', 'endpoint3']
+        base_path = parser.__get_base_path__(paths)
+
+        self.assertEqual('', base_path)
+
 
 class NestedUrlParserTest(TestCase):
     def setUp(self):
