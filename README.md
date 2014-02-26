@@ -132,6 +132,9 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
+### v0.1.13 (Feb 25, 2014)
+* Fixed grouping bug
+
 ### v0.1.12 (Feb 24, 2014)
 * Improved resource grouping
 * Alphabetical sorting of resources
