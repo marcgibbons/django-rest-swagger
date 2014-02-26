@@ -1,3 +1,5 @@
+import json
+
 from django.views.generic import View
 from django.utils.safestring import mark_safe
 from django.shortcuts import render_to_response, RequestContext
@@ -6,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.views import Response
 from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.apidocview import APIDocView
+from rest_framework.renderers import JSONRenderer
 from rest_framework_swagger.docgenerator import DocumentationGenerator
 
 from rest_framework_swagger import SWAGGER_SETTINGS
@@ -23,7 +26,8 @@ class SwaggerUIView(View):
             'swagger_settings': {
                 'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),
                 'api_key': SWAGGER_SETTINGS.get('api_key', ''),
-                'enabled_methods': mark_safe(SWAGGER_SETTINGS.get('enabled_methods'))
+                'enabled_methods': mark_safe(
+                    json.dumps( SWAGGER_SETTINGS.get('enabled_methods')))
             }
         }
         response = render_to_response(template_name, RequestContext(request, data))
@@ -41,6 +45,8 @@ class SwaggerUIView(View):
 
 
 class SwaggerResourcesView(APIDocView):
+
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request):
         apis = []
@@ -61,10 +67,14 @@ class SwaggerResourcesView(APIDocView):
     def get_resources(self):
         urlparser = UrlParser()
         apis = urlparser.get_apis(exclude_namespaces=SWAGGER_SETTINGS.get('exclude_namespaces'))
-        return urlparser.get_top_level_apis(apis)
+        resources = urlparser.get_top_level_apis(apis)
+
+        return resources
 
 
 class SwaggerApiView(APIDocView):
+
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request, path):
         apis = self.get_api_for_resource(path)

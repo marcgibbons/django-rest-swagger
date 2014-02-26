@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 from rest_framework_swagger import VERSION
 
-#README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+
 README = """
 Django REST Swagger
 
@@ -32,7 +32,6 @@ setup(
     install_requires=[
         'django>=1.5',
         'djangorestframework>=2.3.5',
-        'Unipath>=1.0'
     ],
 
     url='http://github.com/marcgibbons',
@@ -49,4 +48,3 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
 )
-
