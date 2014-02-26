@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 from rest_framework_swagger import VERSION
 
-#README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+
 README = """
 Django REST Swagger
 
@@ -48,4 +48,3 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
 )
-

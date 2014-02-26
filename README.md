@@ -115,6 +115,12 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * David Wolever (@wolever)
 * Brian Moe (@bmoe)
 * Ian Martin (@aztechian)
+* @pzrq
+* @jfelectron
+* Warnar Boekkooi (@boekkooi)
+* Darren Thompson (@WhiteDawn)
+* Lukasz Balcerzak (@lukaszb)
+* David Newgas (@davidn)
 
 
 ### Django REST Framework Docs contributors:
@@ -125,6 +131,12 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+
+### v0.1.12 (Feb 24, 2014)
+* Improved resource grouping
+* Alphabetical sorting of resources
+* Fixed CSRF headers
+* Misc bug fixes & improvements
 
 ### v0.1.11 (Dec 1, 2013)
 * Added proper unicode support for Python 2
