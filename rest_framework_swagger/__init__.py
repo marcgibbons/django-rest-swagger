@@ -1,4 +1,4 @@
-VERSION = '0.1.11'
+VERSION = '0.1.12'
 
 DEFAULT_SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
@@ -21,4 +21,3 @@ try:
 
 except:
     SWAGGER_SETTINGS = DEFAULT_SWAGGER_SETTINGS
-
