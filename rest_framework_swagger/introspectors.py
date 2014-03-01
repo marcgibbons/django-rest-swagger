@@ -331,6 +331,26 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         return self.retrieve_docstring()
 
 
+def multi_getattr(obj, attr, default=None):
+    """
+    Get a named attribute from an object; multi_getattr(x, 'a.b.c.d') is
+    equivalent to x.a.b.c.d. When a default argument is given, it is
+    returned when any attribute in the chain doesn't exist; without
+    it, an exception is raised when a missing attribute is encountered.
+
+    """
+    attributes = attr.split(".")
+    for i in attributes:
+        try:
+            obj = getattr(obj, i)
+        except AttributeError:
+            if default:
+                return default
+            else:
+                raise
+    return obj
+
+
 class YAMLDocstringParser(object):
     """
     Docstring parser powered by YAML syntax
@@ -505,48 +525,48 @@ class YAMLDocstringParser(object):
             return None
 
     @staticmethod
-    def _load_class(cls_name, callback):
+    def _load_class(cls_path, callback):
         """
         Dynamically load a class from a string
         """
-        if not cls_name or not callback or not hasattr(callback, '__module__'):
+        if not cls_path or not callback or not hasattr(callback, '__module__'):
             return None
 
-        if cls_name.find('.') == -1:
+        package = None
+
+        if '.' not in cls_path:
             # within current module/file
-            class_name = cls_name
+            class_name = cls_path
             module_path = callback.__module__
         else:
-            # relative lookup?
-            if cls_name[0] == '.':
-                module_path = callback.__module__
-                while cls_name[0] == '.':
-                    idx = module_path.rfind('.')
-                    if idx == -1:
-                        if module_path == '':
-                            return None
-                        module_path = ''
-                    else:
-                        module_path = module_path[:idx]
+            # relative or fully qualified path import
+            class_name = cls_path.split('.')[-1]
+            module_path = ".".join(cls_path.split('.')[:-1])
 
-                    cls_name = cls_name[1:]
-                    if len(cls_name) <= 1:
-                        return None
+            if cls_path.startswith('.'):
+                # relative lookup against current package
+                # ..serializers.FooSerializer
+                package = callback.__module__
 
-                if module_path:
-                    cls_name = module_path + '.' + cls_name
-
-            # extract class and module
-            parts = cls_name.split('.')
-            module_path, class_name = '.'.join(parts[:-1]), parts[-1]
-
+        class_obj = None
+        # Try to perform local or relative/fq import
         try:
-            module = importlib.import_module(module_path)
-            if hasattr(module, class_name):
-                return getattr(module, class_name)
+            module = importlib.import_module(module_path, package=package)
+            class_obj = getattr(module, class_name, None)
         except ImportError:
             pass
-        return None
+
+        # Class was not found, maybe it was imported to callback module?
+        # from app.serializers import submodule
+        # serializer: submodule.FooSerializer
+        if class_obj is None:
+            try:
+                module = importlib.import_module(callback.__module__)
+                class_obj = multi_getattr(module, cls_path, None)
+            except ImportError:
+                pass
+
+        return class_obj
 
     def get_serializer_class(self, callback):
         """
