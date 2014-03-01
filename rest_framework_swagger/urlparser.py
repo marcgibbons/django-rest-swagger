@@ -36,8 +36,9 @@ class UrlParser(object):
     def get_filtered_apis(self, apis, filter_path):
         filtered_list = []
 
+        match = "/{f}/".format(f=filter_path)
         for api in apis:
-            if filter_path in api['path'].strip('/'):
+            if api['path'].startswith(match):
                 filtered_list.append(api)
 
         return filtered_list
@@ -70,7 +71,7 @@ class UrlParser(object):
         filtered_paths = set()
         base_path = self.__get_base_path__(root_paths)
         for path in root_paths:
-            resource = path.lstrip(base_path).split('/')[0]
+            resource = path.replace(base_path, '').split('/')[0]
             filtered_paths.add(base_path + resource)
 
         return list(filtered_paths)
