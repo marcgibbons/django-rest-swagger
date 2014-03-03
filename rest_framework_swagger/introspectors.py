@@ -651,7 +651,7 @@ class YAMLDocstringParser(object):
                 f['maximum'] = field.get('maximum', 0)
 
             # enum options
-            enum = f.get('enum', [])
+            enum = field.get('enum', [])
             if enum:
                 f['enum'] = enum
 
