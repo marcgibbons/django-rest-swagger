@@ -78,6 +78,18 @@ class UrlParserTest(TestCase):
 
         self.assertEqual(len(self.url_patterns), len(apis))
 
+    def test_resources_starting_with_letters_from_base_path(self):
+        base_path = r'api/'
+        url_patterns = patterns('',
+                                url(r'test', MockApiView.as_view(), name='a test view'),
+                                url(r'pai_test', MockApiView.as_view(), name='start with letters a, p, i'),
+                                )
+        urls = patterns('', url(base_path, include(url_patterns)))
+        urlparser = UrlParser()
+        apis = urlparser.get_apis(urls)
+        resources = urlparser.get_top_level_apis(apis)
+        self.assertEqual(set(resources), set([base_path + url_pattern.regex.pattern for url_pattern in url_patterns]))
+
     def test_flatten_url_tree_with_filter(self):
         urlparser = UrlParser()
         apis = urlparser.get_apis(self.url_patterns, filter_path="a-view")
