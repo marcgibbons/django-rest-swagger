@@ -641,8 +641,12 @@ class YAMLDocstringParser(object):
                 'format': data_format,
                 'required': field.get('required', False),
                 'defaultValue': field.get('defaultValue', None),
-                'allowMultiple': field.get('allowMultiple', None),
+
             }
+
+            # Allow Multiple Values &f=1,2,3,4
+            if field.get('allowMultiple'):
+                f['allowMultiple'] = True
 
             # Min/Max are optional
             if 'minimum' in field and data_type == 'integer':
