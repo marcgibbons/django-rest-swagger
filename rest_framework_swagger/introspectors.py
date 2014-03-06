@@ -621,12 +621,12 @@ class YAMLDocstringParser(object):
 
             # Data Format
             data_format = field.get('format', None)
-            flattern_primitives = [
+            flatten_primitives = [
                 val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
                 for val in sublist
             ]
 
-            if data_format not in flattern_primitives:
+            if data_format not in flatten_primitives:
                 formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
                 if formats:
                     data_format = formats[0]
@@ -641,6 +641,7 @@ class YAMLDocstringParser(object):
                 'format': data_format,
                 'required': field.get('required', False),
                 'defaultValue': field.get('defaultValue', None),
+                'allowMultiple': field.get('allowMultiple', None),
             }
 
             # Min/Max are optional
