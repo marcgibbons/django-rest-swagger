@@ -121,6 +121,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Darren Thompson (@WhiteDawn)
 * Lukasz Balcerzak (@lukaszb)
 * David Newgas (@davidn)
+* Bozidar Benko (@bbenko)
 
 
 ### Django REST Framework Docs contributors:
@@ -131,6 +132,9 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Marlon Bailey (@avinash240)
 
 ## Release Notes:
+
+### v0.1.14 (March 7, 2014)
+* Fixed resource name truncation bug
 
 ### v0.1.13 (Feb 25, 2014)
 * Fixed grouping bug
