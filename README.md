@@ -64,6 +64,7 @@ SWAGGER_SETTINGS = {
     "api_key": '', # An API key
     "is_authenticated": False,  # Set to True to enforce user authentication,
     "is_superuser": False,  # Set to True to enforce admin only access
+    "permission_denied_handler": None, # If user has no permisssion, raise 403 error
 }
 ```
 
