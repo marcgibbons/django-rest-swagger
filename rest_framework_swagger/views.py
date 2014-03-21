@@ -47,7 +47,7 @@ class SwaggerUIView(View):
         permission_denied_handler = SWAGGER_SETTINGS.get('permission_denied_handler')
 
         if permission_denied_handler:
-            return permission_denied_handler(request.path)
+            return permission_denied_handler(request)
         else:
             raise PermissionDenied()
 
