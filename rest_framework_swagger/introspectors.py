@@ -563,7 +563,7 @@ class YAMLDocstringParser(object):
             try:
                 module = importlib.import_module(callback.__module__)
                 class_obj = multi_getattr(module, cls_path, None)
-            except ImportError:
+            except ImportError, AttributeError:
                 pass
 
         return class_obj
