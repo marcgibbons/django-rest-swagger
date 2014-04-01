@@ -684,6 +684,12 @@ class YAMLDocstringParser(object):
                 param_type, method_params, docstring_params
             )
 
+        # PATCH requests expects all fields except path fields to be optional
+        if inspector.get_http_method() == "PATCH":
+            for param in parameters:
+                if param['paramType'] != 'path':
+                    param['required'] = False
+
         return parameters
 
     def should_omit_parameters(self, param_type):
