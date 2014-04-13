@@ -1,5 +1,5 @@
 // swagger.js
-// version 2.0.23
+// version 2.0.27
 
 var __bind = function(fn, me){
   return function(){
@@ -697,6 +697,7 @@ var SwaggerOperation = function(nickname, path, method, parameters, summary, not
     if(type === 'array') {
       type = 'array[' + (param.items.$ref ? param.items.$ref : param.items.type) + ']';
     }
+    param.type = type;
 
     if(type.toLowerCase() === 'boolean') {
       param.allowableValues = {};
@@ -881,6 +882,21 @@ SwaggerOperation.prototype.pathXml = function() {
   return this.path.replace("{format}", "xml");
 };
 
+SwaggerOperation.prototype.encodePathParam = function(pathParam) {
+  var encParts, part, parts, _i, _len;
+  if (pathParam.indexOf("/") === -1) {
+    return encodeURIComponent(pathParam);
+  } else {
+    parts = pathParam.split("/");
+    encParts = [];
+    for (_i = 0, _len = parts.length; _i < _len; _i++) {
+      part = parts[_i];
+      encParts.push(encodeURIComponent(part));
+    }
+    return encParts.join("/");
+  }
+};
+
 SwaggerOperation.prototype.urlify = function(args) {
   var url = this.resource.basePath + this.pathJson();
   var params = this.parameters;
@@ -890,7 +906,7 @@ SwaggerOperation.prototype.urlify = function(args) {
       if(args[param.name]) {
         // apply path params and remove from args
         var reg = new RegExp('\{' + param.name + '[^\}]*\}', 'gi');
-        url = url.replace(reg, encodeURIComponent(args[param.name]));
+        url = url.replace(reg, this.encodePathParam(args[param.name]));
         delete args[param.name];
       }
       else
@@ -1380,7 +1396,8 @@ var PasswordAuthorization = function(name, username, password) {
 };
 
 PasswordAuthorization.prototype.apply = function(obj, authorizations) {
-  obj.headers["Authorization"] = "Basic " + this._btoa(this.username + ":" + this.password);
+  var base64encoder = this._btoa;
+  obj.headers["Authorization"] = "Basic " + base64encoder(this.username + ":" + this.password);
   return true;
 };
 
