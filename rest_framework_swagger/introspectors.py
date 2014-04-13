@@ -677,6 +677,14 @@ class YAMLDocstringParser(object):
         docstring_params = self.get_parameters()
         method_params = inspector.get_parameters()
 
+        # paramType may differ, overwrite first
+        # so strategy can be applied
+        for meth_param in method_params:
+            for doc_param in docstring_params:
+                if doc_param['name'] == meth_param['name']:
+                    if 'paramType' in doc_param:
+                        meth_param['paramType'] = doc_param['paramType']
+
         for param_type in self.PARAM_TYPES:
             if self.should_omit_parameters(param_type):
                 continue
