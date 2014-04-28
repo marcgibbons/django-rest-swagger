@@ -1,10 +1,18 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
-from abc import ABCMeta, abstractmethod
+
+import inspect
 import re
+import yaml
+import importlib
+
+from collections import OrderedDict
+from abc import ABCMeta, abstractmethod
 
 from django.contrib.admindocs.utils import trim_docstring
 
 from rest_framework.views import get_view_name, get_view_description
+from rest_framework.compat import apply_markdown, smart_text
+from rest_framework.utils import formatting
 
 
 def get_resolved_value(obj, attr, default=None):
@@ -18,30 +26,33 @@ class IntrospectorHelper(object):
     __metaclass__ = ABCMeta
 
     @staticmethod
-    def strip_params_from_docstring(docstring):
+    def strip_yaml_from_docstring(docstring):
         """
-        Strips the params from the docstring (ie. myparam -- Some param) will
-        not be removed from the text body
+        Strips YAML from the docstring.
         """
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
         for index, line in enumerate(split_lines):
             line = line.strip()
-            if line.find('--') != -1:
+            if line.startswith('---'):
                 cut_off = index
                 break
         if cut_off is not None:
             split_lines = split_lines[0:cut_off]
 
-        return "<br/>".join(split_lines)
+        return "\n".join(split_lines)
+
 
     @staticmethod
     def get_serializer_name(serializer):
         if serializer is None:
             return None
 
-        return serializer.__name__
+        if inspect.isclass(serializer):
+            return serializer.__name__
+
+        return serializer.__class__.__name__
 
 
     @staticmethod
@@ -81,6 +92,13 @@ class BaseViewIntrospector(object):
 class BaseMethodIntrospector(object):
     __metaclass__ = ABCMeta
 
+    PRIMITIVES = {
+        'integer': ['int32', 'int64'],
+        'number': ['float', 'double'],
+        'string': ['string', 'byte', 'date', 'date-time'],
+        'boolean': ['boolean'],
+    }
+
     def __init__(self, view_introspector, method):
         self.method = method
         self.parent = view_introspector
@@ -88,7 +106,11 @@ class BaseMethodIntrospector(object):
         self.path = view_introspector.path
 
     def get_serializer_class(self):
-        return self.parent.get_serializer_class()
+        parser = YAMLDocstringParser(docstring=self.get_docs())
+        serializer = parser.get_serializer_class(self.callback)
+        if serializer is None:
+            serializer = self.parent.get_serializer_class()
+        return serializer
 
     def get_summary(self):
         docs = self.get_docs()
@@ -112,16 +134,25 @@ class BaseMethodIntrospector(object):
         """
         docstring = ""
 
-        class_docs = trim_docstring(get_view_description(self.callback))
+        class_docs = self.callback.__doc__ or ''
+        class_docs = smart_text(class_docs)
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         method_docs = self.get_docs()
 
         if class_docs is not None:
-            docstring += class_docs
+            docstring += class_docs + "  \n"
         if method_docs is not None:
+            method_docs = formatting.dedent(smart_text(method_docs))
+            method_docs = IntrospectorHelper.strip_yaml_from_docstring(
+                method_docs
+            )
             docstring += '\n' + method_docs
 
-        docstring = IntrospectorHelper.strip_params_from_docstring(docstring)
-        docstring = docstring.replace("\n\n", "<br/>")
+        # Markdown is optional
+        if apply_markdown:
+            docstring = apply_markdown(docstring)
+        else:
+            docstring = docstring.replace("\n\n", "<br/>")
 
         return docstring
 
@@ -135,7 +166,6 @@ class BaseMethodIntrospector(object):
         path_params = self.build_path_parameters()
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
-        query_params = self.build_query_params_from_docstring()
 
         if path_params:
             params += path_params
@@ -145,9 +175,6 @@ class BaseMethodIntrospector(object):
 
             if not form_params and body_params is not None:
                 params.append(body_params)
-
-        if query_params:
-            params += query_params
 
         return params
 
@@ -177,7 +204,7 @@ class BaseMethodIntrospector(object):
 
         return {
             'name': serializer_name,
-            'dataType': serializer_name,
+            'type': serializer_name,
             'paramType': 'body',
         }
 
@@ -191,7 +218,7 @@ class BaseMethodIntrospector(object):
         for param in url_params:
             params.append({
                 'name': param,
-                'dataType': 'string',
+                'type': 'string',
                 'paramType': 'path',
                 'required': True
             })
@@ -216,49 +243,39 @@ class BaseMethodIntrospector(object):
                 continue
 
             data_type = field.type_label
-            max_length = getattr(field, 'max_length', None)
-            min_length = getattr(field, 'min_length', None)
-            allowable_values = None
 
-            if max_length is not None or min_length is not None:
-                allowable_values = {
-                    'max': max_length,
-                    'min': min_length,
-                    'valueType': 'RANGE'
-                }
+            # guess format
+            data_format = 'string'
+            if data_type in self.PRIMITIVES:
+                data_format = self.PRIMITIVES.get(data_type)[0]
 
-            data.append({
+            f = {
                 'paramType': 'form',
                 'name': name,
-                'dataType': data_type,
-                'allowableValues': allowable_values,
                 'description': getattr(field, 'help_text', ''),
+                'type': data_type,
+                'format': data_format,
+                'required': getattr(field, 'required', False),
                 'defaultValue': get_resolved_value(field, 'default'),
-                'required': getattr(field, 'required', None)
-            })
+            }
+
+            # Min/Max values
+            max_val = getattr(field, 'max_val', None)
+            min_val = getattr(field, 'min_val', None)
+            if max_val is not None and data_type == 'integer':
+                f['minimum'] = min_val
+
+            if max_val is not None and data_type == 'integer':
+                f['maximum'] = max_val
+
+            # ENUM options
+            if field.type_label == 'multiple choice' \
+                    and isinstance(field.choices, list):
+                f['enum'] = [k for k, v in field.choices]
+
+            data.append(f)
 
         return data
-
-    def build_query_params_from_docstring(self):
-        params = []
-
-        docstring = self.retrieve_docstring() if None else ''
-        docstring += "\n" + get_view_description(self.callback)
-
-        if docstring is None:
-            return params
-
-        split_lines = docstring.split('\n')
-
-        for line in split_lines:
-            param = line.split(' -- ')
-            if len(param) == 2:
-                params.append({'paramType': 'query',
-                               'name': param[0].strip(),
-                               'description': param[1].strip(),
-                               'dataType': ''})
-
-        return params
 
 
 class APIViewIntrospector(BaseViewIntrospector):
@@ -313,3 +330,458 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         """
         return self.retrieve_docstring()
 
+
+def multi_getattr(obj, attr, default=None):
+    """
+    Get a named attribute from an object; multi_getattr(x, 'a.b.c.d') is
+    equivalent to x.a.b.c.d. When a default argument is given, it is
+    returned when any attribute in the chain doesn't exist; without
+    it, an exception is raised when a missing attribute is encountered.
+
+    """
+    attributes = attr.split(".")
+    for i in attributes:
+        try:
+            obj = getattr(obj, i)
+        except AttributeError:
+            if default:
+                return default
+            else:
+                raise
+    return obj
+
+
+class YAMLDocstringParser(object):
+    """
+    Docstring parser powered by YAML syntax
+
+    This parser allows you override some parts of automatic method inspection
+    behaviours which are not always correct.
+
+    See the following documents for more information about YAML and Swagger:
+    - https://github.com/wordnik/swagger-core/wiki
+    - http://www.yaml.org/spec/1.2/spec.html
+    - https://github.com/wordnik/swagger-codegen/wiki/Creating-Swagger-JSON-from-YAML-files
+
+    1. Control over parameters
+    ============================================================================
+    Define parameters and its properties in docstrings:
+
+        parameters:
+            - name: some_param
+              description: Foobar long description goes here
+              required: true
+              type: integer
+              paramType: form
+              minimum: 10
+              maximum: 100
+            - name: other_foo
+              paramType: query
+            - name: avatar
+              type: file
+
+    It is possible to override parameters discovered by method inspector by
+    defining:
+        `parameters_strategy` option to either `merge` or `replace`
+
+    To define different strategies for different `paramType`'s use the
+    following syntax:
+        parameters_strategy:
+            form: replace
+            query: merge
+
+    By default strategy is set to `merge`
+
+
+    Sometimes method inspector produces wrong list of parameters that
+    you might not won't to see in SWAGGER form. To handle this situation
+    define `paramTypes` that should be omitted
+        omit_parameters:
+            - form
+
+    2. Control over serializers
+    ============================================================================
+    Once in a while you are using different serializers inside methods
+    but automatic method inspector cannot detect this. For that purpose there
+    is two explicit parameters that allows you to discard serializer detected
+    by method inspector OR replace it with another one
+
+        serializer: some.package.FooSerializer
+        omit_serializer: true
+
+    3. Custom Response Class
+    ============================================================================
+    If your view is not using serializer at all but instead outputs simple
+    data type such as JSON you may define custom response object in method
+    signature like follows:
+
+        type:
+          name:
+            required: true
+            type: string
+          url:
+            required: false
+            type: url
+
+    4. Response Messages (Error Codes)
+    ============================================================================
+    If you'd like to share common response errors that your APIView might throw
+    you can define them in docstring using following format:
+
+    responseMessages:
+        - code: 401
+          message: Not authenticated
+        - code: 403
+          message: Insufficient rights to call this procedure
+
+
+    5. Different models for reading and writing operations
+    ============================================================================
+    Since REST Framework won't output write_only fields in responses as well as
+    does not require read_only fields to be provided it is worth to
+    automatically register 2 separate models for reading and writing operations.
+
+    Discovered serializer will be registered with `Write` or `Read` prefix.
+    Response Class will be automatically adjusted if serializer class was
+    detected by method inspector.
+
+    You can also refer to this models in your parameters:
+
+    parameters:
+        - name: CigarSerializer
+          type: WriteCigarSerializer
+          paramType: body
+
+
+    SAMPLE DOCSTRING:
+    ============================================================================
+
+    ---
+    # API Docs
+    # Note: YAML always starts with `---`
+
+    type:
+      name:
+        required: true
+        type: string
+      url:
+        required: false
+        type: url
+      created_at:
+        required: true
+        type: string
+        format: date-time
+
+    serializer: .serializers.FooSerializer
+    omit_serializer: false
+
+    parameters_strategy: merge
+    omit_parameters:
+        - path
+    parameters:
+        - name: name
+          description: Foobar long description goes here
+          required: true
+          type: string
+          paramType: form
+        - name: other_foo
+          paramType: query
+        - name: other_bar
+          paramType: query
+        - name: avatar
+          type: file
+
+    responseMessages:
+        - code: 401
+          message: Not authenticated
+    """
+    PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
+    yaml_error = None
+
+    def __init__(self, docstring):
+        self.object = self.load_obj_from_docstring(docstring=docstring)
+        if self.object is None:
+            self.object = {}
+
+    def load_obj_from_docstring(self, docstring):
+        """Loads YAML from docstring"""
+        split_lines = trim_docstring(docstring).split('\n')
+
+        # Cut YAML from rest of docstring
+        for index, line in enumerate(split_lines):
+            line = line.strip()
+            if line.startswith('---'):
+                cut_from = index
+                break
+        else:
+            return None
+
+        yaml_string = "\n".join(split_lines[cut_from:])
+        yaml_string = formatting.dedent(yaml_string)
+        try:
+            return yaml.load(yaml_string)
+        except yaml.YAMLError, e:
+            self.yaml_error = e
+            return None
+
+    @staticmethod
+    def _load_class(cls_path, callback):
+        """
+        Dynamically load a class from a string
+        """
+        if not cls_path or not callback or not hasattr(callback, '__module__'):
+            return None
+
+        package = None
+
+        if '.' not in cls_path:
+            # within current module/file
+            class_name = cls_path
+            module_path = callback.__module__
+        else:
+            # relative or fully qualified path import
+            class_name = cls_path.split('.')[-1]
+            module_path = ".".join(cls_path.split('.')[:-1])
+
+            if cls_path.startswith('.'):
+                # relative lookup against current package
+                # ..serializers.FooSerializer
+                package = callback.__module__
+
+        class_obj = None
+        # Try to perform local or relative/fq import
+        try:
+            module = importlib.import_module(module_path, package=package)
+            class_obj = getattr(module, class_name, None)
+        except ImportError:
+            pass
+
+        # Class was not found, maybe it was imported to callback module?
+        # from app.serializers import submodule
+        # serializer: submodule.FooSerializer
+        if class_obj is None:
+            try:
+                module = importlib.import_module(callback.__module__)
+                class_obj = multi_getattr(module, cls_path, None)
+            except (ImportError, AttributeError):
+                pass
+
+        return class_obj
+
+    def get_serializer_class(self, callback):
+        """
+        Retrieves serializer class from YAML object
+        """
+        serializer = self.object.get('serializer', None)
+        try:
+            return self._load_class(serializer, callback)
+        except (ImportError, ValueError):
+            pass
+        return None
+
+    def get_response_type(self):
+        """
+        Docstring may define custom response class
+        """
+        return self.object.get('type', None)
+
+    def get_response_messages(self):
+        """
+        Retrieves response error codes from YAML object
+        """
+        messages = []
+        response_messages = self.object.get('responseMessages', [])
+        for message in response_messages:
+            messages.append({
+                'code': message.get('code', None),
+                'message': message.get('message', None),
+                'responseModel': message.get('responseModel', None),
+            })
+        return messages
+
+    def get_parameters(self):
+        """
+        Retrieves parameters from YAML object
+        """
+        params = []
+        fields = self.object.get('parameters', [])
+        for field in fields:
+            param_type = field.get('paramType', None)
+            if param_type not in self.PARAM_TYPES:
+                param_type = 'form'
+
+            # Data Type & Format
+            # See:
+            # https://github.com/wordnik/swagger-core/wiki/1.2-transition#wiki-additions-2
+            # https://github.com/wordnik/swagger-core/wiki/Parameters
+            data_type = field.get('type', 'string')
+            if param_type in ['path', 'query', 'header']:
+                if data_type not in BaseMethodIntrospector.PRIMITIVES:
+                    data_type = 'string'
+
+            # Data Format
+            data_format = field.get('format', None)
+            flatten_primitives = [
+                val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
+                for val in sublist
+            ]
+
+            if data_format not in flatten_primitives:
+                formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
+                if formats:
+                    data_format = formats[0]
+                else:
+                    data_format = 'string'
+
+            f = {
+                'paramType': param_type,
+                'name': field.get('name', None),
+                'description': field.get('description', None),
+                'type': data_type,
+                'format': data_format,
+                'required': field.get('required', False),
+                'defaultValue': field.get('defaultValue', None),
+
+            }
+
+            # Allow Multiple Values &f=1,2,3,4
+            if field.get('allowMultiple'):
+                f['allowMultiple'] = True
+
+            # Min/Max are optional
+            if 'minimum' in field and data_type == 'integer':
+                f['minimum'] = field.get('minimum', 0)
+
+            if 'maximum' in field and data_type == 'integer':
+                f['maximum'] = field.get('maximum', 0)
+
+            # enum options
+            enum = field.get('enum', [])
+            if enum:
+                f['enum'] = enum
+
+            # File support
+            if f['type'] == 'file':
+                f['paramType'] = 'body'
+
+            params.append(f)
+
+        return params
+
+    def discover_parameters(self, inspector):
+        """
+        Applies parameters strategy for parameters discovered
+        from method and docstring
+        """
+        parameters = []
+        docstring_params = self.get_parameters()
+        method_params = inspector.get_parameters()
+
+        # paramType may differ, overwrite first
+        # so strategy can be applied
+        for meth_param in method_params:
+            for doc_param in docstring_params:
+                if doc_param['name'] == meth_param['name']:
+                    if 'paramType' in doc_param:
+                        meth_param['paramType'] = doc_param['paramType']
+
+        for param_type in self.PARAM_TYPES:
+            if self.should_omit_parameters(param_type):
+                continue
+            parameters += self._apply_strategy(
+                param_type, method_params, docstring_params
+            )
+
+        # PATCH requests expects all fields except path fields to be optional
+        if inspector.get_http_method() == "PATCH":
+            for param in parameters:
+                if param['paramType'] != 'path':
+                    param['required'] = False
+
+        return parameters
+
+    def should_omit_parameters(self, param_type):
+        """
+        Checks if particular parameter types should be omitted explicitly
+        """
+        return param_type in self.object.get('omit_parameters', [])
+
+    def should_omit_serializer(self):
+        """
+        Checks if serializer should be intentionally omitted
+        """
+        return self.object.get('omit_serializer', False)
+
+    def _apply_strategy(self, param_type, method_params, docstring_params):
+        """
+        Applies strategy for subset of parameters filtered by `paramType`
+        """
+        strategy = self.get_parameters_strategy(param_type=param_type)
+        method_params = self._filter_params(
+            params=method_params,
+            key='paramType',
+            val=param_type
+        )
+        docstring_params = self._filter_params(
+            params=docstring_params,
+            key='paramType',
+            val=param_type
+        )
+
+        if strategy == 'replace':
+            return docstring_params or method_params
+        elif strategy == 'merge':
+            return self._merge_params(
+                method_params,
+                docstring_params,
+                key='name',
+            )
+
+        return []
+
+    @staticmethod
+    def _filter_params(params, key, val):
+        """
+        Returns filter function for parameters structure
+        """
+        fn = lambda o: o.get(key, None) == val
+        return filter(fn, params)
+
+    @staticmethod
+    def _merge_params(params1, params2, key):
+        """
+        Helper method.
+        Merges parameters lists by key
+        """
+        merged = OrderedDict()
+        for item in params1 + params2:
+            merged[item[key]] = item
+
+        return [val for (_, val) in merged.items()]
+
+    def get_parameters_strategy(self, param_type=None):
+        """
+        Get behaviour strategy for parameter types.
+
+        It can be either `merge` or `replace`:
+            - `merge` overwrites duplicate parameters signatures
+                discovered by inspector with the ones defined explicitly in
+                docstring
+            - `replace` strategy completely overwrites parameters discovered
+                by inspector with the ones defined explicitly in docstring.
+
+        Note: Strategy can be defined per `paramType` so `path` parameters can
+        use `merge` strategy while `form` parameters will use `replace`
+        strategy.
+
+        Default strategy: `merge`
+        """
+        default = 'merge'
+        strategy = self.object.get('parameters_strategy', default)
+        if hasattr(strategy, 'get') and param_type is not None:
+            strategy = strategy.get(param_type, default)
+
+        if strategy not in ['merge', 'replace']:
+            strategy = default
+
+        return strategy
