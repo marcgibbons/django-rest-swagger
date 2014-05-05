@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Handles the instrospection of REST Framework Views and ViewSets."""
 from abc import ABCMeta, abstractmethod
 import re
@@ -287,14 +289,21 @@ class ViewSetIntrospector(BaseViewIntrospector):
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def _resolve_methods(self):
-        if not hasattr(self.pattern.callback, 'func_code') or \
-                not hasattr(self.pattern.callback, 'func_closure') or \
-                not hasattr(self.pattern.callback.func_code, 'co_freevars') or \
-                'actions' not in self.pattern.callback.func_code.co_freevars:
+        callback = self.pattern.callback
+        try:
+            try:
+                closure = callback.func_closure
+            except AttributeError:
+                closure = callback.__closure__
+            try:
+                code = callback.func_code
+            except AttributeError:
+                code = callback.__code__
+            freevars = code.co_freevars
+        except AttributeError:
             raise RuntimeError('Unable to use callback invalid closure/function specified.')
 
-        idx = self.pattern.callback.func_code.co_freevars.index('actions')
-        return self.pattern.callback.func_closure[idx].cell_contents
+        return closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
