@@ -548,6 +548,31 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual(True, param['required'])
         self.assertEqual(203, param['defaultValue'])
 
+    def test_build_form_parameters_enum_values(self):
+        MY_CHOICES = (
+            ('val1', "Value1"),
+            ('val2', "Value2"),
+            ('val3', "Value3"),
+            ('val4', "Value4")
+        )
+
+        default_value = MY_CHOICES[0][0]
+        class MySerializer(serializers.Serializer):
+            choice_default = serializers.ChoiceField(choices=MY_CHOICES, default=default_value)
+            char_field = serializers.CharField()
+        class MyAPIView(ListCreateAPIView):
+            serializer_class = MySerializer
+        class_introspector = ViewSetIntrospector(MyAPIView, '/', RegexURLResolver(r'^/$', ''))
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_form_parameters()
+        self.assertEqual(2, len(params))
+        param = params[0]
+        self.assertEqual(default_value, param['defaultValue'])
+        self.assertEqual(4, len(param['enum']))
+        self.assertItemsEqual([item for item, _ in MY_CHOICES], param['enum'])
+        param = params[1]
+        self.assertFalse(hasattr(param, 'enum'))
+
 
 class YAMLDocstringParserTests(TestCase):
 
