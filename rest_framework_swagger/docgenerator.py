@@ -229,7 +229,7 @@ class DocumentationGenerator(object):
 
         return serializers
 
-    def _find_field_serializers(self, serializers):
+    def _find_field_serializers(self, serializers, found_serializers=set()):
         """
         Returns set of serializers discovered from fields
         """
@@ -239,6 +239,8 @@ class DocumentationGenerator(object):
             for name, field in fields.items():
                 if isinstance(field, BaseSerializer):
                     serializers_set.add(field)
+                    if field not in found_serializers:
+                        serializers_set.update(self._find_field_serializers((field.__class__, ), serializers_set))
 
         return serializers_set
 
