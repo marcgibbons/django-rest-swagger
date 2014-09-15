@@ -243,7 +243,7 @@ class BaseMethodIntrospector(object):
     def build_query_params_from_docstring(self):
         params = []
 
-        docstring = self.retrieve_docstring() if None else ''
+        docstring = self.retrieve_docstring() or ''
         docstring += "\n" + get_view_description(self.callback)
 
         if docstring is None:
