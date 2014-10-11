@@ -1,4 +1,4 @@
- # coding=utf-8
+# coding=utf-8
 """API Views for example application."""
 from rest_framework.views import Response, APIView
 from rest_framework import viewsets
@@ -90,7 +90,7 @@ class MyCustomView(APIView):
         param1 -- my param
 
         """
-        return Response({'foo':'bar'})
+        return Response({'foo': 'bar'})
 
     def post(self, request, *args, **kwargs):
         """
@@ -100,4 +100,3 @@ class MyCustomView(APIView):
 
         """
         return Response({'horse': request.GET.get('horse')})
-

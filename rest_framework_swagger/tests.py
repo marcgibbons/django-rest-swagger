@@ -48,7 +48,8 @@ class CommentSerializer(serializers.Serializer):
 
 class UrlParserTest(TestCase):
     def setUp(self):
-        self.url_patterns = patterns('',
+        self.url_patterns = patterns(
+            '',
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
             url(r'a-view/child2/?$', MockApiView.as_view()),
@@ -97,7 +98,8 @@ class UrlParserTest(TestCase):
         self.assertEqual(3, len(apis))
 
     def test_flatten_url_tree_excluded_namesapce(self):
-        urls = patterns('',
+        urls = patterns(
+            '',
             url(r'api/base/path/', include(self.url_patterns, namespace='exclude'))
         )
         urlparser = UrlParser()
@@ -120,7 +122,8 @@ class UrlParserTest(TestCase):
         router.register(r'more_views', MockApiViewSet)
 
         urls_app = patterns('', url(r'^', include(router.urls)))
-        urls = patterns('',
+        urls = patterns(
+            '',
             url(r'api/', include(urls_app)),
             url(r'test/', include(urls_app))
         )
@@ -138,7 +141,8 @@ class UrlParserTest(TestCase):
 
     def test_get_api_callback_not_rest_view(self):
         urlparser = UrlParser()
-        non_api = patterns('',
+        non_api = patterns(
+            '',
             url(r'something', NonApiView.as_view())
         )
         callback = urlparser.__get_pattern_api_callback__(non_api)
@@ -243,7 +247,8 @@ class NestedUrlParserTest(TestCase):
 
 class DocumentationGeneratorTest(TestCase):
     def setUp(self):
-        self.url_patterns = patterns('',
+        self.url_patterns = patterns(
+            '',
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
             url(r'a-view/<pk>/?$', MockApiView.as_view(), name="detailed view for mock"),
@@ -338,6 +343,7 @@ class DocumentationGeneratorTest(TestCase):
     def test_get_serializer_class_access_request_context(self):
         class MyListView(ListCreateAPIView):
             serializer_class = CommentSerializer
+
             def get_serializer_class(self):
                 self.serializer_class.context = {'request': self.request}
                 return self.serializer_class

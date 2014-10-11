@@ -76,7 +76,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -163,9 +163,9 @@ LOGGING = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": [],    #  List URL namespaces to ignore
+    "exclude_namespaces": [],    # List URL namespaces to ignore
     "api_version": '0.1.10',  # Specify your API's version (optional)
-    "enabled_methods": [ # Methods to enable in UI
+    "enabled_methods": [  # Methods to enable in UI
         'get',
         'post',
         'put',

@@ -45,7 +45,6 @@ class IntrospectorHelper(object):
 
         return serializer.__name__
 
-
     @staticmethod
     def get_view_description(callback):
         """
@@ -321,4 +320,3 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         will be used
         """
         return self.retrieve_docstring()
-
