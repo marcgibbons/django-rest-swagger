@@ -19,7 +19,7 @@ class SwaggerUIView(View):
     def get(self, request, *args, **kwargs):
 
         if not self.has_permission(request):
-            raise PermissionDenied()
+            return self.handle_permission_denied(request)
 
         template_name = "rest_framework_swagger/index.html"
         data = {
@@ -42,6 +42,14 @@ class SwaggerUIView(View):
             return False
 
         return True
+
+    def handle_permission_denied(self, request):
+        permission_denied_handler = SWAGGER_SETTINGS.get('permission_denied_handler')
+
+        if permission_denied_handler:
+            return permission_denied_handler(request)
+        else:
+            raise PermissionDenied()
 
 
 class SwaggerResourcesView(APIDocView):
