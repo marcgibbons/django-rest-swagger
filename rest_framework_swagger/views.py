@@ -1,9 +1,28 @@
 import json
+import six
 
 from django.views.generic import View
 from django.utils.safestring import mark_safe
 from django.shortcuts import render_to_response, RequestContext
 from django.core.exceptions import PermissionDenied
+try:
+    from django.utils.module_loading import import_string
+except ImportError:
+    def import_string(dotted_path):
+        from django.utils.importlib import import_module
+        from django.core.exceptions import ImproperlyConfigured
+        module, attr = dotted_path.rsplit('.', 1)
+        try:
+            mod = import_module(module)
+        except ImportError as e:
+            raise ImproperlyConfigured('Error importing module %s: "%s"' %
+                                       (module, e))
+        try:
+            view = getattr(mod, attr)
+        except AttributeError:
+            raise ImproperlyConfigured('Module "%s" does not define a "%s".'
+                                       % (module, attr))
+        return view
 
 from rest_framework.views import Response
 from rest_framework_swagger.urlparser import UrlParser
@@ -45,6 +64,8 @@ class SwaggerUIView(View):
 
     def handle_permission_denied(self, request):
         permission_denied_handler = SWAGGER_SETTINGS.get('permission_denied_handler')
+        if isinstance(permission_denied_handler, six.string_types):
+            permission_denied_handler = import_string(permission_denied_handler)
 
         if permission_denied_handler:
             return permission_denied_handler(request)
