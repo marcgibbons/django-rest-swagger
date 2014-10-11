@@ -14,8 +14,12 @@ if '--lintonly' in sys.argv:
         return ret
     exit_on_failure(flake8_main(FLAKE8_ARGS))
 else:
+    from django.core.management import execute_from_command_line
+
     sys.path.append("./tests/cigar_example")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cigar_example.settings")
-    from django.core.management import execute_from_command_line
     execute_from_command_line([sys.argv[0], "test"])
 
+    sys.path.append("./tests/auth_example")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "auth_example.settings")
+    execute_from_command_line([sys.argv[0], "test"])

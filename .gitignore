@@ -39,6 +39,6 @@ nosetests.xml
 .pydevproject
 
 tests/cigar_example/rest_framework_swagger
-tests/cigar_example/db.sql
+db.sql
 tests/cigar_example/static
 supervisord.log
