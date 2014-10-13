@@ -115,7 +115,8 @@ NOSE_ARGS = [
     '--nocapture',
     '--nologcapture',
     '--with-coverage',
-    '--cover-package=rest_framework_swagger'
+    '--cover-package=rest_framework_swagger',
+    'cigar_example',
 ]
 
 INSTALLED_APPS = (

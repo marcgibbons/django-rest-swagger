@@ -1,14 +1,15 @@
 # coding=utf-8
 """API Views for example application."""
 from rest_framework.views import Response, APIView
-from rest_framework import viewsets
-from rest_framework.decorators import action, link
+from rest_framework import viewsets, status
+from rest_framework.decorators import action, link, api_view
 from rest_framework.generics import ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
+from rest_framework_swagger.decorators import serializer_class
 
 from cigar_example.app.models import Cigar, Manufacturer, Country
 from .serializers import CigarSerializer, ManufacturerSerializer, \
-    CountrySerializer
+    CountrySerializer, JambalayaSerializer
 
 
 class CigarViewSet(viewsets.ModelViewSet):
@@ -100,3 +101,16 @@ class MyCustomView(APIView):
 
         """
         return Response({'horse': request.GET.get('horse')})
+
+
+@serializer_class(JambalayaSerializer)
+@api_view(['POST'])
+def jambalaya(request):
+    """
+    This is Sisko's jambalaya
+    """
+    serializer = JambalayaSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -289,12 +289,12 @@ class ViewSetIntrospector(BaseViewIntrospector):
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def _resolve_methods(self):
+        from rest_framework_swagger.decorators import unwrap_decorator
         callback = self.pattern.callback
         closure = six.get_function_closure(callback)
         code = six.get_function_code(callback)
         if code and code.co_name == 'wrapped_view':
-            code = six.get_function_code(closure[0].cell_contents)
-            closure = six.get_function_closure(closure[0].cell_contents)
+            closure, code = unwrap_decorator(callback)
         try:
             freevars = code.co_freevars
         except AttributeError:

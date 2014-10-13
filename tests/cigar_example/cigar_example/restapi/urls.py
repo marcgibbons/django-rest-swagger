@@ -16,6 +16,7 @@ urlpatterns = patterns(
 
     url(r'^countries/?$', views.CountryList.as_view(), name='list_of_countries'),
     url(r'^countries/(?P<pk>\d+)/?$', views.CountryDetails.as_view(), name='countries_details'),
+    url(r'^jambalaya/$', views.jambalaya, name='jambalaya'),
 )
 
 urlpatterns += router.urls

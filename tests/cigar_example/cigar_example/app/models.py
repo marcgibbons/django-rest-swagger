@@ -30,3 +30,7 @@ class Country(models.Model):
 
     class Meta:
         verbose_name_plural = "Countries"
+
+
+class Jambalaya(models.Model):
+    recipe = models.CharField(max_length=256, null=False, blank=False)

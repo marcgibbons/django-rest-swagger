@@ -20,3 +20,9 @@ class CountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Country
+
+
+class JambalayaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Jambalaya
