@@ -3,6 +3,7 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 from abc import ABCMeta, abstractmethod
 import re
+import six
 
 from django.contrib.admindocs.utils import trim_docstring
 
@@ -289,15 +290,9 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
     def _resolve_methods(self):
         callback = self.pattern.callback
+        closure = six.get_function_closure(callback)
+        code = six.get_function_code(callback)
         try:
-            try:
-                closure = callback.func_closure
-            except AttributeError:
-                closure = callback.__closure__
-            try:
-                code = callback.func_code
-            except AttributeError:
-                code = callback.__code__
             freevars = code.co_freevars
         except AttributeError:
             raise RuntimeError('Unable to use callback invalid closure/function specified.')
