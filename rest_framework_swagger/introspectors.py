@@ -289,18 +289,23 @@ class ViewSetIntrospector(BaseViewIntrospector):
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def _resolve_methods(self):
-        from rest_framework_swagger.decorators import unwrap_decorator
         callback = self.pattern.callback
-        closure = six.get_function_closure(callback)
-        code = six.get_function_code(callback)
-        if code and code.co_name == 'wrapped_view':
-            closure, code = unwrap_decorator(callback)
-        try:
-            freevars = code.co_freevars
-        except AttributeError:
-            raise RuntimeError('Unable to use callback invalid closure/function specified.')
 
-        return closure[freevars.index('actions')].cell_contents
+        try:
+            closure = six.get_function_closure(callback)
+            code = six.get_function_code(callback)
+
+            while getattr(code, 'co_name') != 'view':
+                # lets unwrap!
+                view = getattr(closure[0], 'cell_contents')
+                closure = six.get_function_closure(view)
+                code = six.get_function_code(view)
+
+            freevars = code.co_freevars
+        except (AttributeError, IndexError):
+            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+        else:
+            return closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
