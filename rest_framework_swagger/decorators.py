@@ -1,5 +1,5 @@
 import types
-import six
+from django.utils import six
 from collections import namedtuple
 
 

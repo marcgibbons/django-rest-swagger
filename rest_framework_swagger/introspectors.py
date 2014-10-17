@@ -3,7 +3,7 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 from abc import ABCMeta, abstractmethod
 import re
-import six
+from django.utils import six
 
 from django.contrib.admindocs.utils import trim_docstring
 

@@ -1,5 +1,5 @@
 import json
-import six
+from django.utils import six
 
 from django.views.generic import View
 from django.utils.safestring import mark_safe

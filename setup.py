@@ -32,7 +32,6 @@ setup(
     install_requires=[
         'django>=1.5',
         'djangorestframework>=2.3.5',
-        'six>=1.7',
     ],
 
     author='Marc Gibbons',
