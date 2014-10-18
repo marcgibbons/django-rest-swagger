@@ -7,7 +7,8 @@ DEFAULT_SWAGGER_SETTINGS = {
     'api_key': '',
     'enabled_methods': ['get', 'post', 'put', 'patch', 'delete'],
     'is_authenticated': False,
-    'is_superuser': False
+    'is_superuser': False,
+    'permission_denied_handler': None,
 }
 
 try:

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework import fields
-from cigar_example.app import models
+from auth_example.app import models
 
 
 class CigarSerializer(serializers.ModelSerializer):

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Handles the instrospection of REST Framework Views and ViewSets."""
 
 import inspect
@@ -7,6 +9,7 @@ import importlib
 
 from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
+from django.utils import six
 
 from django.contrib.admindocs.utils import trim_docstring
 
@@ -53,7 +56,6 @@ class IntrospectorHelper(object):
             return serializer.__name__
 
         return serializer.__class__.__name__
-
 
     @staticmethod
     def get_view_description(callback):
@@ -304,14 +306,23 @@ class ViewSetIntrospector(BaseViewIntrospector):
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def _resolve_methods(self):
-        if not hasattr(self.pattern.callback, 'func_code') or \
-                not hasattr(self.pattern.callback, 'func_closure') or \
-                not hasattr(self.pattern.callback.func_code, 'co_freevars') or \
-                'actions' not in self.pattern.callback.func_code.co_freevars:
-            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+        callback = self.pattern.callback
 
-        idx = self.pattern.callback.func_code.co_freevars.index('actions')
-        return self.pattern.callback.func_closure[idx].cell_contents
+        try:
+            closure = six.get_function_closure(callback)
+            code = six.get_function_code(callback)
+
+            while getattr(code, 'co_name') != 'view':
+                # lets unwrap!
+                view = getattr(closure[0], 'cell_contents')
+                closure = six.get_function_closure(view)
+                code = six.get_function_code(view)
+
+            freevars = code.co_freevars
+        except (AttributeError, IndexError):
+            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+        else:
+            return closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
@@ -520,7 +531,7 @@ class YAMLDocstringParser(object):
         yaml_string = formatting.dedent(yaml_string)
         try:
             return yaml.load(yaml_string)
-        except yaml.YAMLError, e:
+        except yaml.YAMLError as e:
             self.yaml_error = e
             return None
 
@@ -753,8 +764,9 @@ class YAMLDocstringParser(object):
         Helper method.
         Merges parameters lists by key
         """
+        import itertools
         merged = OrderedDict()
-        for item in params1 + params2:
+        for item in itertools.chain(params1, params2):
             merged[item[key]] = item
 
         return [val for (_, val) in merged.items()]
