@@ -19,6 +19,18 @@ https://github.com/ariovistus/django-rest-swagger
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+install_requires = [
+    'django>=1.5',
+    'djangorestframework>=2.3.5',
+    'PyYAML>=3.10',
+]
+
+import platform
+
+version = platform.python_version_tuple()
+if version < ('2','7'):
+    install_requires.append('importlib>=1.0.1')
+    install_requires.append('ordereddict>=1.1')
 
 setup(
     name='django-rest-swagger',
@@ -29,11 +41,7 @@ setup(
     license='FreeBSD License',
     description='Swagger UI for Django REST Framework 2.3+',
     long_description=README,
-    install_requires=[
-        'django>=1.5',
-        'djangorestframework>=2.3.5',
-        'PyYAML>=3.10',
-    ],
+    install_requires=install_requires,
 
     author='Marc Gibbons',
     author_email='marc_gibbons@rogers.com',

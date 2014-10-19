@@ -7,7 +7,11 @@ import re
 import yaml
 import importlib
 
-from collections import OrderedDict
+import platform
+if platform.python_version_tuple() < ("2", "7"):
+    from ordereddict import OrderedDict
+else:
+    from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
 
 from django.contrib.admindocs.utils import trim_docstring
