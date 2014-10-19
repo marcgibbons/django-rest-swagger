@@ -47,6 +47,25 @@ class IntrospectorHelper(object):
         return "\n".join(split_lines)
 
     @staticmethod
+    def strip_params_from_docstring(docstring):
+        """
+        Strips the params from the docstring (ie. myparam -- Some param) will
+        not be removed from the text body
+        """
+        split_lines = trim_docstring(docstring).split('\n')
+
+        cut_off = None
+        for index, line in enumerate(split_lines):
+            line = line.strip()
+            if line.find('--') != -1:
+                cut_off = index
+                break
+        if cut_off is not None:
+            split_lines = split_lines[0:cut_off]
+
+        return "<br/>".join(split_lines)
+
+    @staticmethod
     def get_serializer_name(serializer):
         if serializer is None:
             return None
@@ -141,6 +160,7 @@ class BaseMethodIntrospector(object):
         class_docs = self.callback.__doc__ or ''
         class_docs = smart_text(class_docs)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
         method_docs = self.get_docs()
 
         if class_docs is not None:
@@ -148,6 +168,9 @@ class BaseMethodIntrospector(object):
         if method_docs is not None:
             method_docs = formatting.dedent(smart_text(method_docs))
             method_docs = IntrospectorHelper.strip_yaml_from_docstring(
+                method_docs
+            )
+            method_docs = IntrospectorHelper.strip_params_from_docstring(
                 method_docs
             )
             docstring += '\n' + method_docs
@@ -170,6 +193,7 @@ class BaseMethodIntrospector(object):
         path_params = self.build_path_parameters()
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
+        query_params = self.build_query_params_from_docstring()
 
         if path_params:
             params += path_params
@@ -179,6 +203,9 @@ class BaseMethodIntrospector(object):
 
             if not form_params and body_params is not None:
                 params.append(body_params)
+
+        if query_params:
+            params += query_params
 
         return params
 
@@ -226,6 +253,27 @@ class BaseMethodIntrospector(object):
                 'paramType': 'path',
                 'required': True
             })
+
+        return params
+
+    def build_query_params_from_docstring(self):
+        params = []
+
+        docstring = self.retrieve_docstring() or ''
+        docstring += "\n" + get_view_description(self.callback)
+
+        if docstring is None:
+            return params
+
+        split_lines = docstring.split('\n')
+
+        for line in split_lines:
+            param = line.split(' -- ')
+            if len(param) == 2:
+                params.append({'paramType': 'query',
+                               'name': param[0].strip(),
+                               'description': param[1].strip(),
+                               'dataType': ''})
 
         return params
 
@@ -299,6 +347,7 @@ class WrappedAPIViewIntrospector(BaseViewIntrospector):
         class_docs = self.callback.__doc__ or ''
         class_docs = smart_text(class_docs)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
         return class_docs
 
 
