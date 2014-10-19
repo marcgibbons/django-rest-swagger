@@ -18,6 +18,8 @@ else:
 
     sys.path.append("./tests/cigar_example")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cigar_example.settings")
+    import django.conf as conf
+    conf.settings.NOSE_ARGS[-1] = 'rest_framework_swagger'
     execute_from_command_line([sys.argv[0], "test"])
 
     sys.path.append("./tests/auth_example")

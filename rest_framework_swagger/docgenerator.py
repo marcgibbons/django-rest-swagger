@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
 from .introspectors import APIViewIntrospector, \
+    WrappedAPIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
     get_resolved_value, YAMLDocstringParser
 
@@ -43,7 +44,10 @@ class DocumentationGenerator(object):
         callback = api['callback']
         callback.request = HttpRequest()
 
-        if issubclass(callback, viewsets.ViewSetMixin):
+        if str(callback) == \
+                "<class 'rest_framework.decorators.WrappedAPIView'>":
+            introspector = WrappedAPIViewIntrospector(callback, path, pattern)
+        elif issubclass(callback, viewsets.ViewSetMixin):
             introspector = ViewSetIntrospector(callback, path, pattern)
         else:
             introspector = APIViewIntrospector(callback, path, pattern)
@@ -53,8 +57,7 @@ class DocumentationGenerator(object):
                     method_introspector.get_http_method() == "OPTIONS":
                 continue  # No one cares. I impose JSON.
 
-            doc_parser = YAMLDocstringParser(
-                docstring=method_introspector.get_docs())
+            doc_parser = YAMLDocstringParser(method_introspector)
 
             serializer = self._get_method_serializer(
                 doc_parser, method_introspector)

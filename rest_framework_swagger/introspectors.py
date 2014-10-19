@@ -46,7 +46,6 @@ class IntrospectorHelper(object):
 
         return "\n".join(split_lines)
 
-
     @staticmethod
     def get_serializer_name(serializer):
         if serializer is None:
@@ -107,8 +106,11 @@ class BaseMethodIntrospector(object):
         self.callback = view_introspector.callback
         self.path = view_introspector.path
 
+    def get_module(self):
+        return self.callback.__module__
+
     def get_serializer_class(self):
-        parser = YAMLDocstringParser(docstring=self.get_docs())
+        parser = YAMLDocstringParser(method_introspector=self)
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
             serializer = self.parent.get_serializer_class()
@@ -287,6 +289,19 @@ class APIViewIntrospector(BaseViewIntrospector):
             yield APIViewMethodIntrospector(self, method)
 
 
+class WrappedAPIViewIntrospector(BaseViewIntrospector):
+    def __iter__(self):
+        methods = self.callback().allowed_methods
+        for method in methods:
+            yield WrappedAPIViewMethodIntrospector(self, method)
+
+    def get_notes(self):
+        class_docs = self.callback.__doc__ or ''
+        class_docs = smart_text(class_docs)
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
+        return class_docs
+
+
 class APIViewMethodIntrospector(BaseMethodIntrospector):
     def get_docs(self):
         """
@@ -295,6 +310,24 @@ class APIViewMethodIntrospector(BaseMethodIntrospector):
         will be used
         """
         return self.retrieve_docstring()
+
+
+class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
+    def get_docs(self):
+        """
+        Attempts to retrieve method specific docs for an
+        endpoint. If none are available, the class docstring
+        will be used
+        """
+        return self.callback.__doc__
+
+    def get_module(self):
+        from rest_framework_swagger.decorators import wrapper_to_func
+        func = wrapper_to_func(self.callback)
+        return func.__module__
+
+    def get_notes(self):
+        return self.parent.get_notes()
 
 
 class ViewSetIntrospector(BaseViewIntrospector):
@@ -509,8 +542,10 @@ class YAMLDocstringParser(object):
     PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
     yaml_error = None
 
-    def __init__(self, docstring):
-        self.object = self.load_obj_from_docstring(docstring=docstring)
+    def __init__(self, method_introspector):
+        self.method_introspector = method_introspector
+        self.object = self.load_obj_from_docstring(
+            docstring=self.method_introspector.get_docs())
         if self.object is None:
             self.object = {}
 
@@ -535,8 +570,7 @@ class YAMLDocstringParser(object):
             self.yaml_error = e
             return None
 
-    @staticmethod
-    def _load_class(cls_path, callback):
+    def _load_class(self, cls_path, callback):
         """
         Dynamically load a class from a string
         """
@@ -548,7 +582,7 @@ class YAMLDocstringParser(object):
         if '.' not in cls_path:
             # within current module/file
             class_name = cls_path
-            module_path = callback.__module__
+            module_path = self.method_introspector.get_module()
         else:
             # relative or fully qualified path import
             class_name = cls_path.split('.')[-1]
@@ -557,7 +591,7 @@ class YAMLDocstringParser(object):
             if cls_path.startswith('.'):
                 # relative lookup against current package
                 # ..serializers.FooSerializer
-                package = callback.__module__
+                package = self.method_introspector.get_module()
 
         class_obj = None
         # Try to perform local or relative/fq import
@@ -572,10 +606,11 @@ class YAMLDocstringParser(object):
         # serializer: submodule.FooSerializer
         if class_obj is None:
             try:
-                module = importlib.import_module(callback.__module__)
+                module = importlib.import_module(
+                    self.method_introspector.get_module())
                 class_obj = multi_getattr(module, cls_path, None)
             except (ImportError, AttributeError):
-                pass
+                raise Exception("Could not find %s, looked in %s" % (cls_path, module))
 
         return class_obj
 

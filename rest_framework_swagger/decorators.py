@@ -33,6 +33,19 @@ def closure_n_code(func):
         six.get_function_code(func))
 
 
-def unwrap_decorator(func):
+def get_closure_var(func, name=None):
     unwrap = closure_n_code(func)
-    return closure_n_code(unwrap.closure[0].cell_contents)
+    i = 0
+    if name:
+        i = unwrap.code.co_freevars.index(name)
+    return unwrap.closure[i].cell_contents
+
+
+def wrapper_to_func(wrapper):
+    noms = wrapper.http_method_names
+    handlers = [getattr(wrapper, m) for m in noms if m != 'options']
+    return get_closure_var(handlers[0], name="func")
+
+
+def func_to_wrapper(func):
+    return func.cls

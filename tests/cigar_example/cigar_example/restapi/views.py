@@ -103,9 +103,23 @@ class MyCustomView(APIView):
         return Response({'horse': request.GET.get('horse')})
 
 
+@api_view(['POST', 'GET'])
+def jambalaya(request):
+    """
+    This is Sisko's jambalaya
+    ---
+    serializer: JambalayaSerializer
+    """
+    serializer = JambalayaSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @serializer_class(JambalayaSerializer)
 @api_view(['POST'])
-def jambalaya(request):
+def jambalaya2(request):
     """
     This is Sisko's jambalaya
     """
