@@ -9,7 +9,6 @@ import importlib
 
 from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
-from django.utils import six
 
 from django.contrib.admindocs.utils import trim_docstring
 
@@ -91,6 +90,10 @@ class BaseViewIntrospector(object):
         self.path = path
         self.pattern = pattern
 
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        return parser
+
     @abstractmethod
     def __iter__(self):
         pass
@@ -107,6 +110,9 @@ class BaseViewIntrospector(object):
         Returns the first sentence of the first line of the class docstring
         """
         return IntrospectorHelper.get_view_description(self.callback)
+
+    def get_docs(self):
+        return self.callback.__doc__
 
 
 class BaseMethodIntrospector(object):
@@ -128,8 +134,28 @@ class BaseMethodIntrospector(object):
     def get_module(self):
         return self.callback.__module__
 
+    def check_yaml_methods(self, yaml_methods):
+        missing_set = set()
+        for key in yaml_methods:
+            if key not in self.parent.methods():
+                missing_set.add(key)
+        if missing_set:
+            raise Exception(
+                "methods %s in class docstring are not in view methods %s"
+                % (list(missing_set), list(self.parent.methods())))
+
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        parent_parser = YAMLDocstringParser(self.parent)
+        self.check_yaml_methods(parent_parser.object.keys())
+        new_object = {}
+        new_object.update(parent_parser.object.get(self.method, {}))
+        new_object.update(parser.object)
+        parser.object = new_object
+        return parser
+
     def get_serializer_class(self):
-        parser = YAMLDocstringParser(method_introspector=self)
+        parser = self.get_yaml_parser()
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
             serializer = self.parent.get_serializer_class()
@@ -332,16 +358,20 @@ class BaseMethodIntrospector(object):
 
 class APIViewIntrospector(BaseViewIntrospector):
     def __iter__(self):
-        methods = self.callback().allowed_methods
-        for method in methods:
+        for method in self.methods():
             yield APIViewMethodIntrospector(self, method)
+
+    def methods(self):
+        return self.callback().allowed_methods
 
 
 class WrappedAPIViewIntrospector(BaseViewIntrospector):
     def __iter__(self):
-        methods = self.callback().allowed_methods
-        for method in methods:
+        for method in self.methods():
             yield WrappedAPIViewMethodIntrospector(self, method)
+
+    def methods(self):
+        return self.callback().allowed_methods
 
     def get_notes(self):
         class_docs = self.callback.__doc__ or ''
@@ -378,33 +408,49 @@ class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
     def get_notes(self):
         return self.parent.get_notes()
 
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        return parser
+
 
 class ViewSetIntrospector(BaseViewIntrospector):
     """Handle ViewSet introspection."""
+
+    def __init__(self, callback, path, pattern, patterns=None):
+        super(ViewSetIntrospector, self).__init__(callback, path, pattern)
+        self.patterns = patterns or [pattern]
 
     def __iter__(self):
         methods = self._resolve_methods()
         for method in methods:
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
-    def _resolve_methods(self):
-        callback = self.pattern.callback
+    def methods(self):
+        stuff = []
+        for pattern in self.patterns:
+            if pattern.callback:
+                stuff.extend(self._resolve_methods(pattern).values())
+        return stuff
+
+    def _resolve_methods(self, pattern=None):
+        from .decorators import closure_n_code, get_closure_var
+        if pattern is None:
+            pattern = self.pattern
+        callback = pattern.callback
 
         try:
-            closure = six.get_function_closure(callback)
-            code = six.get_function_code(callback)
+            x = closure_n_code(callback)
 
-            while getattr(code, 'co_name') != 'view':
+            while getattr(x.code, 'co_name') != 'view':
                 # lets unwrap!
-                view = getattr(closure[0], 'cell_contents')
-                closure = six.get_function_closure(view)
-                code = six.get_function_code(view)
+                callback = get_closure_var(callback)
+                x = closure_n_code(callback)
 
-            freevars = code.co_freevars
+            freevars = x.code.co_freevars
         except (AttributeError, IndexError):
             raise RuntimeError('Unable to use callback invalid closure/function specified.')
         else:
-            return closure[freevars.index('actions')].cell_contents
+            return x.closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
