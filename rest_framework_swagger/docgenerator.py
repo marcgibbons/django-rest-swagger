@@ -8,6 +8,7 @@ from .introspectors import APIViewIntrospector, \
     WrappedAPIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
     get_resolved_value
+from .compat import OrderedDict
 
 
 class DocumentationGenerator(object):
@@ -255,12 +256,12 @@ class DocumentationGenerator(object):
         else:
             fields = serializer.get_fields()
 
-        data = {
+        data = OrderedDict({
             'fields': {},
             'required': [],
             'write_only': [],
             'read_only': [],
-        }
+        })
         for name, field in fields.items():
             if getattr(field, 'write_only', False):
                 data['write_only'].append(name)
