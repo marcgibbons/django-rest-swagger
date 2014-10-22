@@ -1,4 +1,7 @@
 # Django REST Swagger
+
+[![Build Status](https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master)](https://travis-ci.org/marcgibbons/django-rest-swagger)
+
 ####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
 
 For older versions of Django REST Framework, see [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs)
@@ -64,6 +67,7 @@ SWAGGER_SETTINGS = {
     "api_key": '', # An API key
     "is_authenticated": False,  # Set to True to enforce user authentication,
     "is_superuser": False,  # Set to True to enforce admin only access
+    "permission_denied_handler": None, # If user has no permisssion, raise 403 error
 }
 ```
 
@@ -121,10 +125,8 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Darren Thompson (@WhiteDawn)
 * Lukasz Balcerzak (@lukaszb)
 * David Newgas (@davidn)
-<<<<<<< HEAD
 * Bozidar Benko (@bbenko)
-=======
->>>>>>> b9401b6cb4d500600df632d6819fea5389eea402
+* @pySilver
 
 
 ### Django REST Framework Docs contributors:

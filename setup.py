@@ -19,6 +19,18 @@ https://github.com/marcgibbons/django-rest-swagger
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+install_requires = [
+    'django>=1.5',
+    'djangorestframework>=2.3.5',
+    'PyYAML>=3.10',
+]
+
+import platform
+
+version = platform.python_version_tuple()
+if version < ('2','7'):
+    install_requires.append('importlib>=1.0.1')
+    install_requires.append('ordereddict>=1.1')
 
 setup(
     name='django-rest-swagger',
@@ -29,22 +41,24 @@ setup(
     license='FreeBSD License',
     description='Swagger UI for Django REST Framework 2.3+',
     long_description=README,
-    install_requires=[
-        'django>=1.5',
-        'djangorestframework>=2.3.5',
-        'PyYAML>=3.10',
-    ],
+    install_requires=install_requires,
 
-    url='http://github.com/marcgibbons',
     author='Marc Gibbons',
     author_email='marc_gibbons@rogers.com',
+    maintainer='Ellery Newcomer',
+    maintainer_email='ellery-newcomer@utulsa.edu',
+    url='http://github.com/marcgibbons/django-rest-swagger',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],

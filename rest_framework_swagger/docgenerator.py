@@ -5,8 +5,10 @@ from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
 from .introspectors import APIViewIntrospector, \
+    WrappedAPIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_resolved_value, YAMLDocstringParser
+    get_resolved_value
+from .compat import OrderedDict
 
 
 class DocumentationGenerator(object):
@@ -28,23 +30,31 @@ class DocumentationGenerator(object):
             api_docs.append({
                 'description': IntrospectorHelper.get_view_description(api['callback']),
                 'path': api['path'],
-                'operations': self.get_operations(api),
+                'operations': self.get_operations(api, apis),
             })
 
         return api_docs
 
-    def get_operations(self, api):
+    def get_operations(self, api, apis=None):
         """
         Returns docs for the allowed methods of an API endpoint
         """
+        if apis is None:
+            apis = [api]
         operations = []
         path = api['path']
         pattern = api['pattern']
         callback = api['callback']
         callback.request = HttpRequest()
 
-        if issubclass(callback, viewsets.ViewSetMixin):
-            introspector = ViewSetIntrospector(callback, path, pattern)
+        if str(callback) == \
+                "<class 'rest_framework.decorators.WrappedAPIView'>":
+            introspector = WrappedAPIViewIntrospector(callback, path, pattern)
+        elif issubclass(callback, viewsets.ViewSetMixin):
+            patterns = [a['pattern'] for a in apis
+                        if a['callback'] == callback]
+            introspector = ViewSetIntrospector(callback, path, pattern,
+                                               patterns=patterns)
         else:
             introspector = APIViewIntrospector(callback, path, pattern)
 
@@ -53,11 +63,9 @@ class DocumentationGenerator(object):
                     method_introspector.get_http_method() == "OPTIONS":
                 continue  # No one cares. I impose JSON.
 
-            doc_parser = YAMLDocstringParser(
-                docstring=method_introspector.get_docs())
+            doc_parser = method_introspector.get_yaml_parser()
 
-            serializer = self._get_method_serializer(
-                doc_parser, method_introspector)
+            serializer = self._get_method_serializer(method_introspector)
 
             response_type = self._get_method_response_type(
                 doc_parser, serializer, introspector, method_introspector)
@@ -147,7 +155,7 @@ class DocumentationGenerator(object):
         models.update(self.fields_serializers)
         return models
 
-    def _get_method_serializer(self, doc_parser, method_inspector):
+    def _get_method_serializer(self, method_inspector):
         """
         Returns serializer used in method.
         Registers custom serializer from docstring in scope.
@@ -155,6 +163,7 @@ class DocumentationGenerator(object):
         Serializer might be ignored if explicitly told in docstring
         """
         serializer = method_inspector.get_serializer_class()
+        doc_parser = method_inspector.get_yaml_parser()
 
         docstring_serializer = doc_parser.get_serializer_class(
             callback=method_inspector.callback
@@ -247,12 +256,12 @@ class DocumentationGenerator(object):
         else:
             fields = serializer.get_fields()
 
-        data = {
+        data = OrderedDict({
             'fields': {},
             'required': [],
             'write_only': [],
             'read_only': [],
-        }
+        })
         for name, field in fields.items():
             if getattr(field, 'write_only', False):
                 data['write_only'].append(name)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Handles the instrospection of REST Framework Views and ViewSets."""
 
 import inspect
@@ -5,7 +7,7 @@ import re
 import yaml
 import importlib
 
-from collections import OrderedDict
+from .compat import OrderedDict
 from abc import ABCMeta, abstractmethod
 
 from django.contrib.admindocs.utils import trim_docstring
@@ -43,6 +45,24 @@ class IntrospectorHelper(object):
 
         return "\n".join(split_lines)
 
+    @staticmethod
+    def strip_params_from_docstring(docstring):
+        """
+        Strips the params from the docstring (ie. myparam -- Some param) will
+        not be removed from the text body
+        """
+        split_lines = trim_docstring(docstring).split('\n')
+
+        cut_off = None
+        for index, line in enumerate(split_lines):
+            line = line.strip()
+            if line.find('--') != -1:
+                cut_off = index
+                break
+        if cut_off is not None:
+            split_lines = split_lines[0:cut_off]
+
+        return "<br/>".join(split_lines)
 
     @staticmethod
     def get_serializer_name(serializer):
@@ -53,7 +73,6 @@ class IntrospectorHelper(object):
             return serializer.__name__
 
         return serializer.__class__.__name__
-
 
     @staticmethod
     def get_view_description(callback):
@@ -70,6 +89,10 @@ class BaseViewIntrospector(object):
         self.callback = callback
         self.path = path
         self.pattern = pattern
+
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        return parser
 
     @abstractmethod
     def __iter__(self):
@@ -88,6 +111,9 @@ class BaseViewIntrospector(object):
         """
         return IntrospectorHelper.get_view_description(self.callback)
 
+    def get_docs(self):
+        return self.callback.__doc__
+
 
 class BaseMethodIntrospector(object):
     __metaclass__ = ABCMeta
@@ -105,8 +131,31 @@ class BaseMethodIntrospector(object):
         self.callback = view_introspector.callback
         self.path = view_introspector.path
 
+    def get_module(self):
+        return self.callback.__module__
+
+    def check_yaml_methods(self, yaml_methods):
+        missing_set = set()
+        for key in yaml_methods:
+            if key not in self.parent.methods():
+                missing_set.add(key)
+        if missing_set:
+            raise Exception(
+                "methods %s in class docstring are not in view methods %s"
+                % (list(missing_set), list(self.parent.methods())))
+
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        parent_parser = YAMLDocstringParser(self.parent)
+        self.check_yaml_methods(parent_parser.object.keys())
+        new_object = {}
+        new_object.update(parent_parser.object.get(self.method, {}))
+        new_object.update(parser.object)
+        parser.object = new_object
+        return parser
+
     def get_serializer_class(self):
-        parser = YAMLDocstringParser(docstring=self.get_docs())
+        parser = self.get_yaml_parser()
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
             serializer = self.parent.get_serializer_class()
@@ -137,6 +186,7 @@ class BaseMethodIntrospector(object):
         class_docs = self.callback.__doc__ or ''
         class_docs = smart_text(class_docs)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
         method_docs = self.get_docs()
 
         if class_docs is not None:
@@ -144,6 +194,9 @@ class BaseMethodIntrospector(object):
         if method_docs is not None:
             method_docs = formatting.dedent(smart_text(method_docs))
             method_docs = IntrospectorHelper.strip_yaml_from_docstring(
+                method_docs
+            )
+            method_docs = IntrospectorHelper.strip_params_from_docstring(
                 method_docs
             )
             docstring += '\n' + method_docs
@@ -166,6 +219,7 @@ class BaseMethodIntrospector(object):
         path_params = self.build_path_parameters()
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
+        query_params = self.build_query_params_from_docstring()
 
         if path_params:
             params += path_params
@@ -175,6 +229,9 @@ class BaseMethodIntrospector(object):
 
             if not form_params and body_params is not None:
                 params.append(body_params)
+
+        if query_params:
+            params += query_params
 
         return params
 
@@ -222,6 +279,27 @@ class BaseMethodIntrospector(object):
                 'paramType': 'path',
                 'required': True
             })
+
+        return params
+
+    def build_query_params_from_docstring(self):
+        params = []
+
+        docstring = self.retrieve_docstring() or ''
+        docstring += "\n" + get_view_description(self.callback)
+
+        if docstring is None:
+            return params
+
+        split_lines = docstring.split('\n')
+
+        for line in split_lines:
+            param = line.split(' -- ')
+            if len(param) == 2:
+                params.append({'paramType': 'query',
+                               'name': param[0].strip(),
+                               'description': param[1].strip(),
+                               'dataType': ''})
 
         return params
 
@@ -280,9 +358,27 @@ class BaseMethodIntrospector(object):
 
 class APIViewIntrospector(BaseViewIntrospector):
     def __iter__(self):
-        methods = self.callback().allowed_methods
-        for method in methods:
+        for method in self.methods():
             yield APIViewMethodIntrospector(self, method)
+
+    def methods(self):
+        return self.callback().allowed_methods
+
+
+class WrappedAPIViewIntrospector(BaseViewIntrospector):
+    def __iter__(self):
+        for method in self.methods():
+            yield WrappedAPIViewMethodIntrospector(self, method)
+
+    def methods(self):
+        return self.callback().allowed_methods
+
+    def get_notes(self):
+        class_docs = self.callback.__doc__ or ''
+        class_docs = smart_text(class_docs)
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
+        return class_docs
 
 
 class APIViewMethodIntrospector(BaseMethodIntrospector):
@@ -295,23 +391,66 @@ class APIViewMethodIntrospector(BaseMethodIntrospector):
         return self.retrieve_docstring()
 
 
+class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
+    def get_docs(self):
+        """
+        Attempts to retrieve method specific docs for an
+        endpoint. If none are available, the class docstring
+        will be used
+        """
+        return self.callback.__doc__
+
+    def get_module(self):
+        from rest_framework_swagger.decorators import wrapper_to_func
+        func = wrapper_to_func(self.callback)
+        return func.__module__
+
+    def get_notes(self):
+        return self.parent.get_notes()
+
+    def get_yaml_parser(self):
+        parser = YAMLDocstringParser(self)
+        return parser
+
+
 class ViewSetIntrospector(BaseViewIntrospector):
     """Handle ViewSet introspection."""
+
+    def __init__(self, callback, path, pattern, patterns=None):
+        super(ViewSetIntrospector, self).__init__(callback, path, pattern)
+        self.patterns = patterns or [pattern]
 
     def __iter__(self):
         methods = self._resolve_methods()
         for method in methods:
             yield ViewSetMethodIntrospector(self, methods[method], method)
 
-    def _resolve_methods(self):
-        if not hasattr(self.pattern.callback, 'func_code') or \
-                not hasattr(self.pattern.callback, 'func_closure') or \
-                not hasattr(self.pattern.callback.func_code, 'co_freevars') or \
-                'actions' not in self.pattern.callback.func_code.co_freevars:
-            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+    def methods(self):
+        stuff = []
+        for pattern in self.patterns:
+            if pattern.callback:
+                stuff.extend(self._resolve_methods(pattern).values())
+        return stuff
 
-        idx = self.pattern.callback.func_code.co_freevars.index('actions')
-        return self.pattern.callback.func_closure[idx].cell_contents
+    def _resolve_methods(self, pattern=None):
+        from .decorators import closure_n_code, get_closure_var
+        if pattern is None:
+            pattern = self.pattern
+        callback = pattern.callback
+
+        try:
+            x = closure_n_code(callback)
+
+            while getattr(x.code, 'co_name') != 'view':
+                # lets unwrap!
+                callback = get_closure_var(callback)
+                x = closure_n_code(callback)
+
+            freevars = x.code.co_freevars
+        except (AttributeError, IndexError):
+            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+        else:
+            return x.closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
@@ -498,8 +637,10 @@ class YAMLDocstringParser(object):
     PARAM_TYPES = ['header', 'path', 'form', 'body', 'query']
     yaml_error = None
 
-    def __init__(self, docstring):
-        self.object = self.load_obj_from_docstring(docstring=docstring)
+    def __init__(self, method_introspector):
+        self.method_introspector = method_introspector
+        self.object = self.load_obj_from_docstring(
+            docstring=self.method_introspector.get_docs())
         if self.object is None:
             self.object = {}
 
@@ -520,12 +661,11 @@ class YAMLDocstringParser(object):
         yaml_string = formatting.dedent(yaml_string)
         try:
             return yaml.load(yaml_string)
-        except yaml.YAMLError, e:
+        except yaml.YAMLError as e:
             self.yaml_error = e
             return None
 
-    @staticmethod
-    def _load_class(cls_path, callback):
+    def _load_class(self, cls_path, callback):
         """
         Dynamically load a class from a string
         """
@@ -537,7 +677,7 @@ class YAMLDocstringParser(object):
         if '.' not in cls_path:
             # within current module/file
             class_name = cls_path
-            module_path = callback.__module__
+            module_path = self.method_introspector.get_module()
         else:
             # relative or fully qualified path import
             class_name = cls_path.split('.')[-1]
@@ -546,7 +686,7 @@ class YAMLDocstringParser(object):
             if cls_path.startswith('.'):
                 # relative lookup against current package
                 # ..serializers.FooSerializer
-                package = callback.__module__
+                package = self.method_introspector.get_module()
 
         class_obj = None
         # Try to perform local or relative/fq import
@@ -561,10 +701,11 @@ class YAMLDocstringParser(object):
         # serializer: submodule.FooSerializer
         if class_obj is None:
             try:
-                module = importlib.import_module(callback.__module__)
+                module = importlib.import_module(
+                    self.method_introspector.get_module())
                 class_obj = multi_getattr(module, cls_path, None)
             except (ImportError, AttributeError):
-                pass
+                raise Exception("Could not find %s, looked in %s" % (cls_path, module))
 
         return class_obj
 
@@ -753,8 +894,9 @@ class YAMLDocstringParser(object):
         Helper method.
         Merges parameters lists by key
         """
+        import itertools
         merged = OrderedDict()
-        for item in params1 + params2:
+        for item in itertools.chain(params1, params2):
             merged[item[key]] = item
 
         return [val for (_, val) in merged.items()]
