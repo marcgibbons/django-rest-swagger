@@ -1,6 +1,6 @@
 # Django REST Swagger
 
-[![Build Status](https://travis-ci.org/ariovistus/django-rest-swagger.svg?branch=master)](https://travis-ci.org/ariovistus/django-rest-swagger)
+[![Build Status](https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master)](https://travis-ci.org/marcgibbons/django-rest-swagger)
 
 ####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
 

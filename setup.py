@@ -14,7 +14,7 @@ From pip:
 pip install django-rest-swagger
 
 Docs & details @
-https://github.com/ariovistus/django-rest-swagger
+https://github.com/marcgibbons/django-rest-swagger
 """
 
 # allow setup.py to be run from any path
@@ -47,7 +47,7 @@ setup(
     author_email='marc_gibbons@rogers.com',
     maintainer='Ellery Newcomer',
     maintainer_email='ellery-newcomer@utulsa.edu',
-    url='http://github.com/ariovistus/django-rest-swagger',
+    url='http://github.com/marcgibbons/django-rest-swagger',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
