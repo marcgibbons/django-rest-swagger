@@ -557,9 +557,11 @@ class BaseMethodIntrospectorTest(TestCase):
         )
 
         default_value = MY_CHOICES[0][0]
+
         class MySerializer(serializers.Serializer):
             choice_default = serializers.ChoiceField(choices=MY_CHOICES, default=default_value)
             char_field = serializers.CharField()
+
         class MyAPIView(ListCreateAPIView):
             serializer_class = MySerializer
         class_introspector = ViewSetIntrospector(MyAPIView, '/', RegexURLResolver(r'^/$', ''))
@@ -569,7 +571,7 @@ class BaseMethodIntrospectorTest(TestCase):
         param = params[0]
         self.assertEqual(default_value, param['defaultValue'])
         self.assertEqual(4, len(param['enum']))
-        self.assertItemsEqual([item for item, _ in MY_CHOICES], param['enum'])
+        self.assertEqual([item for item, _ in MY_CHOICES], param['enum'])
         param = params[1]
         self.assertFalse(hasattr(param, 'enum'))
 
