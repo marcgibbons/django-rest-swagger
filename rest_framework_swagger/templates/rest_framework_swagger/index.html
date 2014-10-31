@@ -1,13 +1,48 @@
 {% load staticfiles %}
+{% spaceless %}
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Swagger UI</title>
+  <meta name="viewport" content="width=device-width initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>
+    Swagger UI
+  </title>
   <link href='//fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'/>
   <link href='{% static "rest_framework_swagger/css/highlight.default.css" %}' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='{% static "rest_framework_swagger/css/atelier-dune.light.css" %}' media='screen' rel='stylesheet' type='text/css'/>
   <link href='{% static "rest_framework_swagger/css/rest_framework_swagger.css" %}' media='screen' rel='stylesheet' type='text/css'/>
   <link href='{% static "rest_framework_swagger/css/screen.css" %}' media='screen' rel='stylesheet' type='text/css'/>
-  <script type="text/javascript" src="{% static 'rest_framework_swagger/lib/shred.bundle.js' %}"></script>
+</head>
+
+<body>
+  <div id='header'>
+    <div class="swagger-ui-wrap">
+      <a id="logo" href="http://swagger.wordnik.com">swagger</a>
+      <form id='api_selector'>
+        <div class='input icon-btn'>
+          <img id="show-wordnik-dev-icon" src="{% static 'rest_framework_swagger/images/wordnik_api.png' %}" title="Show Wordnik Developer Apis">
+        </div>
+        <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+        <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+        <div class='input'><a id="explore" href="#">Explore</a></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="django-rest-swagger">
+    <div class="swagger-ui-wrap">
+      <a href="https://github.com/marcgibbons/django-rest-swagger/">Django REST Swagger</a>
+    </div>
+  </div>
+
+  <div id="message-bar" class="swagger-ui-wrap">
+    &nbsp;
+  </div>
+  <div id="swagger-ui-container" class="swagger-ui-wrap">
+
+  </div>
+
+  <script src="{% static 'rest_framework_swagger/lib/shred.bundle.js' %}" type="text/javascript"></script>
   <script src='{% static "rest_framework_swagger/lib/jquery-1.8.0.min.js" %}' type='text/javascript'></script>
   <script src='{% static "rest_framework_swagger/lib/jquery.slideto.min.js" %}' type='text/javascript'></script>
   <script src='{% static "rest_framework_swagger/lib/jquery.wiggle.min.js" %}' type='text/javascript'></script>
@@ -18,7 +53,7 @@
   <script src='{% static "rest_framework_swagger/lib/backbone-min.js" %}' type='text/javascript'></script>
   <script src='{% static "rest_framework_swagger/lib/swagger.js" %}' type='text/javascript'></script>
   <script src='{% static "rest_framework_swagger/swagger-ui.min.js" %}' type='text/javascript'></script>
-  <script src='{% static "rest_framework_swagger/lib/highlight.7.3.pack.js" %}' type='text/javascript'></script>
+  <script src='{% static "rest_framework_swagger/lib/highlight.8.0.pack.js" %}' type='text/javascript'></script>
   <script type="text/javascript">
     $(function () {
       window.swaggerUi = new SwaggerUi({
@@ -27,66 +62,32 @@
       dom_id: "swagger-ui-container",
       supportedSubmitMethods: {{ swagger_settings.enabled_methods }},
       onComplete: function(swaggerApi, swaggerUi){
-        if(console) {
-          console.log("Loaded SwaggerUI")
-        }
+        log("Loaded SwaggerUI")
         $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
       },
       onFailure: function(data) {
-        if(console) {
-          console.log("Unable to Load SwaggerUI");
-          console.log(data);
-        }
+        log("Unable to Load SwaggerUI");
       },
       docExpansion: "none"
     });
 
     $('#input_apiKey').change(function() {
       var key = $('#input_apiKey')[0].value;
-      console.log("key: " + key);
+      log("key: " + key);
       if(key && key.trim() != "") {
         console.log("added key " + key);
         window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + key, "header"));
       }
     })
     {% if swagger_settings.api_key %}
-    window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + "{{ swagger_settings.api_key }}", "header"));
+      window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + "{{ swagger_settings.api_key }}", "header"));
     {% endif %}
     window.swaggerUi.load();
   });
 
   </script>
-</head>
-
-<body>
-<div id='header'>
-  <div class="swagger-ui-wrap">
-    <a id="logo" href="http://swagger.wordnik.com">swagger</a>
-
-    <form id='api_selector'>
-      <div class='input icon-btn'>
-        <img id="show-wordnik-dev-icon" src="{% static 'rest_framework_swagger/images/wordnik_api.png' %}" title="Show Wordnik Developer Apis">
-      </div>
-      <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
-      <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
-      <div class='input'><a id="explore" href="#">Explore</a></div>
-    </form>
-  </div>
-</div>
-
-<div id="django-rest-swagger">
-  <div class="swagger-ui-wrap">
-    <a href="https://github.com/marcgibbons/django-rest-swagger/">Django REST Swagger</a>
-  </div>
-</div>
-
-<div id="message-bar" class="swagger-ui-wrap">
-  &nbsp;
-</div>
-<div id="swagger-ui-container" class="swagger-ui-wrap">
-
-</div>
 
 </body>
 
 </html>
+{% endspaceless %}
