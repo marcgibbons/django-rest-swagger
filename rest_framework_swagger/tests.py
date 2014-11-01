@@ -1,6 +1,6 @@
 import datetime
 
-from django.core.urlresolvers import RegexURLResolver
+from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.contrib.auth.models import User
@@ -455,6 +455,49 @@ class BaseViewIntrospectorTest(TestCase):
     def test_get_serializer_class(self):
         introspector = APIViewIntrospector(MockApiView, '/', RegexURLResolver(r'^/', ''))
         self.assertEqual(None, introspector.get_serializer_class())
+
+    def test_get_serializer_class_url_kwargs(self):
+        class SerializerFoo(serializers.Serializer):
+            pass
+
+        class SerializerBar(serializers.Serializer):
+            pass
+
+        class TestView(APIView):
+            serializer_class = SerializerFoo
+
+            def get_serializer_class(self):
+                if 'b' in self.kwargs:
+                    return SerializerFoo
+                return SerializerBar
+        introspector = APIViewIntrospector(TestView, '/a', RegexURLPattern(r'^a/$', '', {'b': True}))
+        self.assertEqual(SerializerFoo, introspector.get_serializer_class())
+        introspector = APIViewIntrospector(TestView, '/a', RegexURLPattern(r'^a/$', ''))
+        self.assertEqual(SerializerBar, introspector.get_serializer_class())
+
+        urlparser = UrlParser()
+        url_patterns = patterns(
+            '',
+            url(r'^a/$', TestView.as_view()),
+        )
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        serializer_set = docgen._get_serializer_set(apis)
+        self.assertEqual(1, len(serializer_set))
+        self.assertEqual(SerializerBar, list(serializer_set)[0])
+
+        urlparser = UrlParser()
+        url_patterns = patterns(
+            '',
+            url(r'^a/b$', TestView.as_view(), {'b': True}),
+        )
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        serializer_set = docgen._get_serializer_set(apis)
+        self.assertEqual(1, len(serializer_set))
+        self.assertEqual(SerializerFoo, list(serializer_set)[0])
 
 
 class BaseMethodIntrospectorTest(TestCase):
