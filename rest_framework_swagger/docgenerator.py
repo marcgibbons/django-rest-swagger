@@ -225,7 +225,7 @@ class DocumentationGenerator(object):
         serializers = set()
 
         for api in apis:
-            serializer = self._get_serializer_class(api['callback'])
+            serializer = self._get_serializer_class(api['callback'], pattern=api['pattern'])
             if serializer is not None:
                 serializers.add(serializer)
 
@@ -322,6 +322,12 @@ class DocumentationGenerator(object):
 
         return data
 
-    def _get_serializer_class(self, callback):
+    def _get_serializer_class(self, callback, pattern=None):
         if hasattr(callback, 'get_serializer_class'):
-            return callback().get_serializer_class()
+            view = callback()
+            if not hasattr(view, 'kwargs'):
+                view.kwargs = dict()
+            if hasattr(pattern, 'default_args'):
+                if pattern.default_args:
+                    view.kwargs.update(pattern.default_args)
+            return view.get_serializer_class()
