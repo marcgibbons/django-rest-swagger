@@ -138,6 +138,10 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
+### v0.2.0 (October 31, 2014)
+* Added YAML Parser to docstring handling
+* Fixed Python 3 bugs
+
 ### v0.1.14 (March 7, 2014)
 * Fixed resource name truncation bug
 
