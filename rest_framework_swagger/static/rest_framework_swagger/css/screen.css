@@ -360,6 +360,7 @@ table {
   display: block;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 .swagger-ui-wrap .model-signature ul.signature-nav li:last-child {
   padding-right: 0;
