@@ -40,7 +40,7 @@ class SwaggerUIView(View):
         if not self.has_permission(request):
             return self.handle_permission_denied(request)
 
-        template_name = "rest_framework_swagger/index.html"
+        template_name = SWAGGER_SETTINGS.get('template_path')
         data = {
             'swagger_settings': {
                 'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),

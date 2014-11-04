@@ -9,6 +9,7 @@ DEFAULT_SWAGGER_SETTINGS = {
     'is_authenticated': False,
     'is_superuser': False,
     'permission_denied_handler': None,
+    'template_path': 'rest_framework_swagger/index.html',
 }
 
 try:
