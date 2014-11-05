@@ -69,7 +69,8 @@ SWAGGER_SETTINGS = {
     "is_superuser": False,  # Set to True to enforce admin only access
     "permission_denied_handler": None, # If user has no permisssion, raise 403 error
     "info": {
-        # Configure some Swagger UI variables 
+        # Configure some Swagger UI variables, for details see:
+        # https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md#513-info-object
         'contact': 'apiteam@wordnik.com',
         'description': 'This is a sample server Petstore server. '
                        'You can find out more about Swagger at '
