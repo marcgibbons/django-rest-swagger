@@ -102,8 +102,14 @@ class BaseViewIntrospector(object):
         return self.__iter__()
 
     def get_serializer_class(self):
+        # import pdb;pdb.set_trace()
         if hasattr(self.callback, 'get_serializer_class'):
-            return self.callback().get_serializer_class()
+            view = self.callback()
+            if not hasattr(view, 'kwargs'):
+                view.kwargs = dict()
+            if hasattr(self.pattern, 'default_args'):
+                view.kwargs.update(self.pattern.default_args)
+            return view.get_serializer_class()
 
     def get_description(self):
         """

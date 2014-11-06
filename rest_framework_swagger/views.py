@@ -99,7 +99,15 @@ class SwaggerResourcesView(APIDocView):
             'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
             'basePath': self.host.rstrip('/'),
-            'apis': apis
+            'apis': apis,
+            'info': SWAGGER_SETTINGS.get('info', {
+                'contact': '',
+                'description': '',
+                'license': '',
+                'licenseUrl': '',
+                'termsOfServiceUrl': '',
+                'title': '',
+            }),
         })
 
     def get_resources(self):

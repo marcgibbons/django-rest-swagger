@@ -1289,6 +1289,7 @@ ShredHttpClient.prototype.execute = function(obj) {
       url: response.request.url,
       method: response.request.method,
       status: response.status,
+      statusText: response._raw.xhr.statusText,
       data: response.content.data
     };
 

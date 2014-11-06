@@ -1960,7 +1960,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
       }
       response_body = pre;
       $(".request_url", $(this.el)).html("<pre>" + url + "</pre>");
-      $(".response_code", $(this.el)).html("<pre>" + response.status + "</pre>");
+      $(".response_code", $(this.el)).html("<pre>" + response.status + " " + response.statusText + "</pre>");
       $(".response_body", $(this.el)).html(response_body);
       $(".response_headers", $(this.el)).html("<pre>" + JSON.stringify(response.headers, null, "  ").replace(/\n/g, "<br>") + "</pre>");
       $(".response", $(this.el)).slideDown();
