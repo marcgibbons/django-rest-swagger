@@ -27,10 +27,19 @@ except ImportError:
 from rest_framework.views import Response
 from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.apidocview import APIDocView
-from rest_framework.renderers import JSONRenderer
 from rest_framework_swagger.docgenerator import DocumentationGenerator
 
 from rest_framework_swagger import SWAGGER_SETTINGS
+
+from rest_framework.settings import api_settings
+
+try:
+    JSONRenderer = list(filter(
+        lambda item: item.format == 'json',
+        api_settings.DEFAULT_RENDERER_CLASSES,
+    ))[0]
+except IndexError:
+    from rest_framework.renderers import JSONRenderer
 
 
 class SwaggerUIView(View):
