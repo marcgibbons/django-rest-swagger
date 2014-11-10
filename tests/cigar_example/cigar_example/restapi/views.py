@@ -128,3 +128,18 @@ def jambalaya2(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def jambalaya3(request):
+    """
+    This is Sisko's jambalaya
+    ---
+    request_serializer: JambalayaSerializer
+    response_serializer: CigarSerializer
+    """
+    serializer = JambalayaSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -13,6 +13,7 @@ from abc import ABCMeta, abstractmethod
 from django.contrib.admindocs.utils import trim_docstring
 
 from rest_framework.views import get_view_name, get_view_description
+from rest_framework import viewsets
 from rest_framework.compat import apply_markdown, smart_text
 from rest_framework.utils import formatting
 
@@ -102,7 +103,6 @@ class BaseViewIntrospector(object):
         return self.__iter__()
 
     def get_serializer_class(self):
-        # import pdb;pdb.set_trace()
         if hasattr(self.callback, 'get_serializer_class'):
             view = self.callback()
             if not hasattr(view, 'kwargs'):
@@ -165,6 +165,20 @@ class BaseMethodIntrospector(object):
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
             serializer = self.parent.get_serializer_class()
+        return serializer
+
+    def get_response_serializer_class(self):
+        parser = self.get_yaml_parser()
+        serializer = parser.get_response_serializer_class(self.callback)
+        if serializer is None:
+            serializer = self.get_serializer_class()
+        return serializer
+
+    def get_request_serializer_class(self):
+        parser = self.get_yaml_parser()
+        serializer = parser.get_request_serializer_class(self.callback)
+        if serializer is None:
+            serializer = self.get_serializer_class()
         return serializer
 
     def get_summary(self):
@@ -259,7 +273,7 @@ class BaseMethodIntrospector(object):
         return getattr(self.callback, method).__doc__
 
     def build_body_parameters(self):
-        serializer = self.get_serializer_class()
+        serializer = self.get_request_serializer_class()
         serializer_name = IntrospectorHelper.get_serializer_name(serializer)
 
         if serializer_name is None:
@@ -314,7 +328,7 @@ class BaseMethodIntrospector(object):
         Builds form parameters from the serializer class
         """
         data = []
-        serializer = self.get_serializer_class()
+        serializer = self.get_request_serializer_class()
 
         if serializer is None:
             return data
@@ -424,6 +438,8 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
     def __init__(self, callback, path, pattern, patterns=None):
         super(ViewSetIntrospector, self).__init__(callback, path, pattern)
+        if not issubclass(callback, viewsets.ViewSetMixin):
+            raise Exception("wrong callback passed to ViewSetIntrospector")
         self.patterns = patterns or [pattern]
 
     def __iter__(self):
@@ -720,6 +736,28 @@ class YAMLDocstringParser(object):
         Retrieves serializer class from YAML object
         """
         serializer = self.object.get('serializer', None)
+        try:
+            return self._load_class(serializer, callback)
+        except (ImportError, ValueError):
+            pass
+        return None
+
+    def get_request_serializer_class(self, callback):
+        """
+        Retrieves request serializer class from YAML object
+        """
+        serializer = self.object.get('request_serializer', None)
+        try:
+            return self._load_class(serializer, callback)
+        except (ImportError, ValueError):
+            pass
+        return None
+
+    def get_response_serializer_class(self, callback):
+        """
+        Retrieves response serializer class from YAML object
+        """
+        serializer = self.object.get('response_serializer', None)
         try:
             return self._load_class(serializer, callback)
         except (ImportError, ValueError):
