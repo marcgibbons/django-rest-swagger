@@ -328,6 +328,20 @@ class DocumentationGeneratorTest(TestCase):
         delta = datetime.timedelta(seconds=1)
         self.assertAlmostEqual(value, datetime.datetime.now(), delta=delta)
 
+    def test_get_models_ordering(self):
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        models = docgen.get_models(apis)
+
+        self.assertIn('CommentSerializer', models)
+        self.assertEqual(list(models['CommentSerializer']['properties'].keys()), ["email", "content", "created"])
+
     def test_get_serializer_set(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
