@@ -63,7 +63,7 @@ class IntrospectorHelper(object):
         if cut_off is not None:
             split_lines = split_lines[0:cut_off]
 
-        return "<br/>".join(split_lines)
+        return "\n".join(split_lines)
 
     @staticmethod
     def get_serializer_name(serializer):
@@ -187,7 +187,7 @@ class BaseMethodIntrospector(object):
         # If there is no docstring on the method, get class docs
         if docs is None:
             docs = self.parent.get_description()
-        docs = trim_docstring(docs).split('\n')[0]
+        docs = trim_docstring(docs).split("\n")[0].split(".")[0]
 
         return docs
 
