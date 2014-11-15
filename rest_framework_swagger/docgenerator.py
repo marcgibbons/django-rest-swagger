@@ -277,8 +277,11 @@ class DocumentationGenerator(object):
             if data_type in BaseMethodIntrospector.PRIMITIVES:
                 data_format = BaseMethodIntrospector.PRIMITIVES.get(data_type)[0]
 
+            description = getattr(field, 'help_text', '')
+            if not description or description.strip() == '':
+                description = None
             f = {
-                'description': getattr(field, 'help_text', ''),
+                'description': description,
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
