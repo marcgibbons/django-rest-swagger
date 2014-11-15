@@ -1,0 +1,4 @@
+selenium==2.44.0
+Pillow==2.6.1
+Markdown==2.5.1
+

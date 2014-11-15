@@ -5,11 +5,10 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, link, api_view
 from rest_framework.generics import ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
-from rest_framework_swagger.decorators import serializer_class
 
-from cigar_example.app.models import Cigar, Manufacturer, Country
+from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
 from .serializers import CigarSerializer, ManufacturerSerializer, \
-    CountrySerializer, JambalayaSerializer
+    CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer
 
 
 class CigarViewSet(viewsets.ModelViewSet):
@@ -37,9 +36,49 @@ class CigarViewSet(viewsets.ModelViewSet):
         return Response('20$')
 
 
-class ManufacturerList(ListCreateAPIView):
+class ArtisanCigarViewSet(viewsets.ModelViewSet):
 
-    """Get the list of cigar manufacturers from the database."""
+    """
+    Cigar resource.
+    ---
+    get_price:
+        omit_serializer: true
+    set_price:
+        omit_serializer: true
+        parameters_strategy:
+            form: replace
+        parameters:
+            - name: price
+              type: number
+    """
+
+    serializer_class = CigarSerializer
+    model = Cigar
+
+    def list(self, request, *args, **kwargs):
+        """
+        Return a list of objects.
+
+        """
+        return super(CigarViewSet, self).list(request, *args, **kwargs)
+
+    @action()
+    def set_price(self, request, pk):
+        """An example action to on the ViewSet."""
+        return Response('20$')
+
+    @link()
+    def get_price(self, request, pk):
+        """Return the price of a cigar."""
+        return Response('20$')
+
+
+class ManufacturerList(ListCreateAPIView):
+    """
+    Get the list of cigar manufacturers from the database.
+
+    Excludes artisan manufacturers.
+    """
 
     model = Manufacturer
     serializer_class = ManufacturerSerializer
@@ -103,40 +142,61 @@ class MyCustomView(APIView):
         return Response({'horse': request.GET.get('horse')})
 
 
-@api_view(['POST', 'GET'])
-def jambalaya(request):
+@api_view(['POST'])
+def find_jambalaya(request):
     """
-    This is Sisko's jambalaya
+    Retrieve a *jambalaya* recipe by name or country of origin
+    ---
+    request_serializer: JambalayaQuerySerializer
+    response_serializer: JambalayaSerializer
+    """
+    if request.method == 'POST':
+        serializer = JambalayaQuerySerializer(data=request.DATA)
+        if serializer.data['name'] is not None:
+            j = Jambalaya.objects.filter(recipe__contains='name=%s' % serializer.data['name'])
+        else:
+            j = Jambalaya.objects.filter(recipe__contains="country=%s" % serializer.data['origin'])
+        serializer = JambalayaSerializer(j, many=True)
+        return Response(serializer.data)
+    else:
+        return Response("", status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def retrieve_jambalaya(request):
+    """
+    Retrieve a jambalaya recipe by name or country of origin
     ---
     serializer: JambalayaSerializer
+    parameters:
+        - name: name
+          description: name as found in recipe
+          type: string
+          paramType: query
+          required: false
+        - name: origin
+          type: string
+          paramType: query
+          required: false
     """
-    serializer = JambalayaSerializer(data=request.DATA)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        serializer = JambalayaQuerySerializer(data=request.DATA)
+        if serializer.data['name'] is not None:
+            j = Jambalaya.objects.filter(recipe__contains='name=%s' % serializer.data['name'])
+        else:
+            j = Jambalaya.objects.filter(recipe__contains="country=%s" % serializer.data['origin'])
+        serializer = JambalayaSerializer(j, many=True)
+        return Response(serializer.data)
+    else:
+        return Response("", status=status.HTTP_400_BAD_REQUEST)
 
 
-@serializer_class(JambalayaSerializer)
 @api_view(['POST'])
-def jambalaya2(request):
+def create_jambalaya(request):
     """
-    This is Sisko's jambalaya
-    """
-    serializer = JambalayaSerializer(data=request.DATA)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-def jambalaya3(request):
-    """
-    This is Sisko's jambalaya
+    Create a jambalaya recipe
     ---
-    request_serializer: JambalayaSerializer
-    response_serializer: CigarSerializer
+    serializer: JambalayaSerializer
     """
     serializer = JambalayaSerializer(data=request.DATA)
     if serializer.is_valid():

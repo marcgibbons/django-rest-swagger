@@ -80,7 +80,11 @@ class IntrospectorHelper(object):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        return get_view_description(callback).split("\n")[0].split(".")[0]
+        from .compat import strip_tags
+        description = get_view_description(callback).split("\n")[0].split(".")[0]
+        if apply_markdown:
+            description = strip_tags(do_markdown(description))
+        return description
 
 
 class BaseViewIntrospector(object):
@@ -188,6 +192,9 @@ class BaseMethodIntrospector(object):
         if docs is None:
             docs = self.parent.get_description()
         docs = trim_docstring(docs).split("\n")[0].split(".")[0]
+        if apply_markdown:
+            from .compat import strip_tags
+            docs = strip_tags(do_markdown(docs))
 
         return docs
 
@@ -221,13 +228,7 @@ class BaseMethodIntrospector(object):
             )
             docstring += '\n' + method_docs
 
-        # Markdown is optional
-        if apply_markdown:
-            docstring = apply_markdown(docstring)
-        else:
-            docstring = docstring.replace("\n\n", "<br/>")
-
-        return docstring
+        return do_markdown(docstring)
 
     def get_parameters(self):
         """
@@ -398,7 +399,15 @@ class WrappedAPIViewIntrospector(BaseViewIntrospector):
         class_docs = smart_text(class_docs)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
-        return class_docs
+        return do_markdown(class_docs)
+
+
+def do_markdown(docstring):
+    # Markdown is optional
+    if apply_markdown:
+        return apply_markdown(docstring)
+    else:
+        return docstring.replace("\n\n", "<br/>")
 
 
 class APIViewMethodIntrospector(BaseMethodIntrospector):
@@ -835,10 +844,10 @@ class YAMLDocstringParser(object):
 
             # Min/Max are optional
             if 'minimum' in field and data_type == 'integer':
-                f['minimum'] = field.get('minimum', 0)
+                f['minimum'] = str(field.get('minimum', 0))
 
             if 'maximum' in field and data_type == 'integer':
-                f['maximum'] = field.get('maximum', 0)
+                f['maximum'] = str(field.get('maximum', 0))
 
             # enum options
             enum = field.get('enum', [])
