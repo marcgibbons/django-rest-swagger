@@ -23,7 +23,7 @@ class Cigar(models.Model):
 
 
 class Manufacturer(models.Model):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=25, help_text='name of company')
     country = models.ForeignKey('Country')
 
     def __unicode__(self):

@@ -26,3 +26,8 @@ class JambalayaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Jambalaya
+
+
+class JambalayaQuerySerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=20, required=False)
+    origin = serializers.CharField(max_length=20, required=False)

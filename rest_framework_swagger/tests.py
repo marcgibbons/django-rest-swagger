@@ -25,6 +25,18 @@ from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
     IntrospectorHelper, APIViewMethodIntrospector
 
 
+def no_markdown(func):
+    def func_sans_markdown(*args, **kwargs):
+        import rest_framework.compat
+        apply_markdown = rest_framework.compat.apply_markdown
+        try:
+            rest_framework.compat.apply_markdown = None
+            func(*args, **kwargs)
+        finally:
+            rest_framework.compat.apply_markdown = apply_markdown
+    return func_sans_markdown
+
+
 class MockApiView(APIView):
     """
     A Test View
@@ -883,6 +895,42 @@ class YAMLDocstringParserTests(TestCase):
         self.assertEqual(1, len(list(query_params)))
         self.assertEqual(1, len(list(form_params)))
 
+    def test_parameters_minimum_is_string(self):
+        '''
+        minimum and maximum of Parameter Object required by Swagger 1.2 spec to be string.
+        '''
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                My post view with custom post parameters
+
+                ---
+                parameters_strategy:
+                    form: replace
+                    query: replace
+                parameters:
+                    - name: name
+                      type: integer
+                      required: true
+                      minimum: 1
+                      maximum: 100
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = APIViewIntrospector(
+            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
+        )
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = introspector.get_yaml_parser()
+        params = parser.discover_parameters(introspector)
+        self.assertEqual(len(params), 1)
+        self.assertIn('minimum', params[0])
+        self.assertEqual(params[0]['minimum'], '1')
+        self.assertIn('maximum', params[0])
+        self.assertEqual(params[0]['maximum'], '100')
+
     def test_response_messages(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
@@ -1345,6 +1393,7 @@ class YAMLDocstringParserTests(TestCase):
         self.assertIn('SerializedAPIPostResponse',
                       generator.explicit_response_types)
 
+    @no_markdown
     def test_fbv_notes(self):
 
         @api_view(["POST"])
@@ -1365,6 +1414,37 @@ class YAMLDocstringParserTests(TestCase):
         notes = introspector.get_notes()
 
         self.assertEqual(notes, "Slimy toads")
+
+    def test_fbv_markdown(self):
+
+        @api_view(["POST"])
+        def a_view(request):
+            """
+            Slimy *toads*
+            """
+            return "blarg"
+
+        class_introspector = WrappedAPIViewIntrospector(
+            func_to_wrapper(a_view), '/', RegexURLResolver(r'^/$', '')
+        )
+
+        url_patterns = patterns('', url(r'my-api/', a_view))
+        urlparser = UrlParser()
+        generator = DocumentationGenerator()
+        apis = urlparser.get_apis(url_patterns)
+        notes = class_introspector.get_notes()
+        self.assertEqual(notes, "<p>Slimy <em>toads</em></p>")
+        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+
+        notes = introspector.get_notes()
+
+        self.assertEqual(notes, "<p>Slimy <em>toads</em></p>")
+        api_docs = generator.generate(apis)
+        self.assertEqual(len(api_docs), 1)
+        self.assertIn("description", api_docs[0])
+        self.assertEqual(api_docs[0]["description"], "Slimy toads")
+        self.assertIn('operations', api_docs[0])
+        self.assertEqual(api_docs[0]["operations"][0]['summary'], "Slimy toads")
 
     def test_apiview_models(self):
         from rest_framework.views import Response
