@@ -13,8 +13,8 @@ From pip:
 
 pip install django-rest-swagger
 
-Docs & details @
-https://github.com/marcgibbons/django-rest-swagger
+Project @ https://github.com/marcgibbons/django-rest-swagger
+Docs @ http://django-rest-swagger.readthedocs.org/
 """
 
 # allow setup.py to be run from any path

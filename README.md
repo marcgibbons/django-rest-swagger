@@ -4,91 +4,8 @@
 
 ####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
 
-For older versions of Django REST Framework, see [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs)
+Documentation: http://django-rest-swagger.readthedocs.org/
 
-## Installation
-From PyPI: `pip install django-rest-swagger`
-
-From source:
-- Download the source
-- Extract files
-- Run `python setup.py install`
-
-## Requirements
-This application was developed and tested on:
-
-* Django 1.5.1 - 1.6
-* Django REST Framework 2.3.8+
-* Python 2/3
-
-Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
-
-## Quick start
-**Note: This application will not work with Django REST Framework < 2.3**
-
-1. Add `rest_framework_swagger` to your `INSTALLED_APPS` setting like this:
-
-    ```python
-        INSTALLED_APPS = (
-            ...
-            'rest_framework_swagger',
-        )
-    ```
-
-2. Include the rest_framework_swagger URLs to a path of your choice
-
-    ```python
-    patterns = ('',
-        ...
-        url(r'^docs/', include('rest_framework_swagger.urls')),
-    )
-    ```
-
-## Configuration
-Further configuration can optionally be made from your project's `settings.py`.
-
-* **Exclude namespaces:** you may wish to exclude a set of URLs from documentation. By default, all views that are subclassed from Django REST Framework APIView will be included for documentation
-* **API Version:** your API's version. Default is blank.
-* **Enabled methods:** You may specify the methods that can be interacted with in the UI
-* **API key:** you can specify a key for your API. Default is blank
-
-```python
-SWAGGER_SETTINGS = {
-    "exclude_namespaces": [], # List URL namespaces to ignore
-    "api_version": '0.1',  # Specify your API's version
-    "api_path": "/",  # Specify the path to your API not a root level
-    "enabled_methods": [  # Specify which methods to enable in Swagger UI
-        'get',
-        'post',
-        'put',
-        'patch',
-        'delete'
-    ],
-    "api_key": '', # An API key
-    "is_authenticated": False,  # Set to True to enforce user authentication,
-    "is_superuser": False,  # Set to True to enforce admin only access
-    "permission_denied_handler": None, # If user has no permisssion, raise 403 error
-    "info": {
-        # Configure some Swagger UI variables, for details see:
-        # https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md#513-info-object
-        'contact': 'apiteam@wordnik.com',
-        'description': 'This is a sample server Petstore server. '
-                       'You can find out more about Swagger at '
-                       '<a href="http://swagger.wordnik.com">'
-                       'http://swagger.wordnik.com</a> '
-                       'or on irc.freenode.net, #swagger. '
-                       'For this sample, you can use the api key '
-                       '"special-key" to test '
-                       'the authorization filters',
-        'license': 'Apache 2.0',
-        'licenseUrl': 'http://www.apache.org/licenses/LICENSE-2.0.html',
-        'termsOfServiceUrl': 'http://helloreverb.com/terms/',
-        'title': 'Swagger Sample App',
-    },
-}
-```
-
-## How It Works
 This project is built on the [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) and uses the lovely [Swagger from Wordnik](https://developers.helloreverb.com/swagger/) as an interface. This application introspectively generates documentation based on your Django REST Framework API code. Comments are generated in combination from code analysis and comment extraction. Here are some of the features that are documented:
 
 * API title - taken from the class name
@@ -97,30 +14,11 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 * Field default values, minimum, maximum, read-only and required attributes
 * URL parameters (ie. /product/{id})
 * Field `help_text` property is used to create the description from the serializer or model.
-* Query parameters (user-defined) - Custom parameters. It is possible to customize a parameter list for your
-    API. To do so, include a key-value pair in the docstring of your API class
-    delimited by two hyphens ('--'). Example: 'start_time -- The first reading':
-
-```python
-    class Countries(APIView):
-        """
-        This text is the description for this API
-        param1 -- A first parameter
-        param2 -- A second parameter
-        """
-```
-
-## Example
-Included in this repository is a functioning example. Please clone the repo, copy or reference the `rest_framework_swagger` directory into the cigar_example folder. Install the required packages using `pip install -r requirements.txt`
-
-## Screenshots
-![](screenshots/api-list.png)
-![](screenshots/fields.png)
 
 ## Bugs & Contributions
 Please report bugs by opening an issue
 
-Contributions are welcome and are encouraged !
+Contributions are welcome and are encouraged!
 
 ## Special Thanks
 Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring initial development time.
@@ -155,6 +53,11 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
+### v0.2.1 (November 15, 2014)
+* add readthedocs based documentation 
+* add request and response serializer spec to yaml
+* preserve order of fields in serializers
+* support nested serializers
 ### v0.2.0 (October 31, 2014)
 * Added YAML Parser to docstring handling
 * Fixed Python 3 bugs
@@ -205,27 +108,3 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
 
 
-License
---------
-Copyright (c) 2013, Marc Gibbons
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
