@@ -76,13 +76,15 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -f source/_static/*.png
 
-html: $(SCREENSHOTS)
+html: 
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 source/_static:
 	mkdir source/_static
+
+screenshots: $(SCREENSHOTS)
 
 $(SCREENSHOTS): $(EXAMPLE_SOURCES) tests.py source/_static
 	PYTHONPATH=$(CIGAREXAMPLE)/cigar_example $(CIGAREXAMPLE)/manage.py test tests

@@ -76,11 +76,11 @@
       log("key: " + key);
       if(key && key.trim() != "") {
         console.log("added key " + key);
-        window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + key, "header"));
+        window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "{{ swagger_settings.token_type }} " + key, "header"));
       }
     })
     {% if swagger_settings.api_key %}
-      window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "Token " + "{{ swagger_settings.api_key }}", "header"));
+      window.authorizations.add("key", new ApiKeyAuthorization("Authorization", "{{ swagger_settings.token_type }} " + "{{ swagger_settings.api_key }}", "header"));
     {% endif %}
     window.swaggerUi.load();
   });
