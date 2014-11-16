@@ -31,3 +31,8 @@ class JambalayaSerializer(serializers.ModelSerializer):
 class JambalayaQuerySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=20, required=False)
     origin = serializers.CharField(max_length=20, required=False)
+
+
+class CigarJambalayaSerializer(serializers.Serializer):
+    cigar = CigarSerializer()
+    jambalaya = JambalayaSerializer()
