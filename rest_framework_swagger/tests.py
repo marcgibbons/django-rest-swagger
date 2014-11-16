@@ -394,6 +394,20 @@ class DocumentationGeneratorTest(TestCase):
 
         self.assertIs(serializer_class, CommentSerializer)
 
+    def test_nested_serializer(self):
+        class ASerializer(serializers.Serializer):
+            point = CommentSerializer()
+            query = QuerySerializer()
+
+        docgen = DocumentationGenerator()
+        serializerses = docgen._find_field_serializers([ASerializer])
+        self.assertTrue([s for s in serializerses
+                         if isinstance(s, CommentSerializer)])
+        self.assertTrue([s for s in serializerses
+                         if isinstance(s, QuerySerializer)])
+        self.assertFalse([s for s in serializerses
+                         if isinstance(s, ASerializer)])
+
 
 class IntrospectorHelperTest(TestCase):
     def test_strip_yaml_from_docstring(self):

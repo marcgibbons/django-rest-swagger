@@ -8,7 +8,8 @@ from rest_framework.generics import ListCreateAPIView, \
 
 from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
 from .serializers import CigarSerializer, ManufacturerSerializer, \
-    CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer
+    CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer, \
+    CigarJambalayaSerializer
 
 
 class CigarViewSet(viewsets.ModelViewSet):
@@ -202,4 +203,17 @@ def create_jambalaya(request):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def drop_cigar_in_jambalaya(request):
+    """
+    Make a cigar jambalaya
+    ---
+    serializer: ..serializers.CigarJambalayaSerializer
+    """
+    serializer = CigarJambalayaSerializer(data=request.DATA)
+    if serializer.is_valid():
+        return Response("mmm.. an acquired taste!", status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
