@@ -8,21 +8,21 @@ Example:
 .. code-block:: python
 
     SWAGGER_SETTINGS = {
-        "exclude_namespaces": [], 
-        "api_version": '0.1',  
-        "api_path": "/",  
-        "enabled_methods": [  
+        'exclude_namespaces': [], 
+        'api_version': '0.1',  
+        'api_path': '/',  
+        'enabled_methods': [  
             'get',
             'post',
             'put',
             'patch',
             'delete'
         ],
-        "api_key": '', 
-        "is_authenticated": False,  
-        "is_superuser": False, 
-        "permission_denied_handler": None, 
-        "info": {
+        'api_key': '', 
+        'is_authenticated': False,  
+        'is_superuser': False, 
+        'permission_denied_handler': None, 
+        'info': {
             'contact': 'apiteam@wordnik.com',
             'description': 'This is a sample server Petstore server. '
                            'You can find out more about Swagger at '
@@ -107,7 +107,7 @@ Example:
 .. code-block:: python
 
     SWAGGER_SETTINGS = {
-        "permission_denied_handler": "app.views.permission_denied_handler"
+        'permission_denied_handler': 'app.views.permission_denied_handler'
     }
 
 Then in app/views.py:
@@ -116,5 +116,11 @@ Then in app/views.py:
 
     def permission_denied_handler(request):
         from django.http import HttpResponse
-        return HttpResponse("you have no permissions!")
+        return HttpResponse('you have no permissions!')
 
+token_type
+----------
+
+Overrides authorization token type.
+
+Default: :code:`'Token'`
