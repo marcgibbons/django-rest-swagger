@@ -39,8 +39,7 @@ class DocumentationGenerator(object):
         path = api['path']
         pattern = api['pattern']
         callback = api['callback']
-        if str(callback) == \
-                "<class 'rest_framework.decorators.WrappedAPIView'>":
+        if callback.__module__ == 'rest_framework.decorators':
             return WrappedAPIViewIntrospector(callback, path, pattern)
         elif issubclass(callback, viewsets.ViewSetMixin):
             patterns = [a['pattern'] for a in apis
