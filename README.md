@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master)](https://travis-ci.org/marcgibbons/django-rest-swagger)
 
-####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
+####An API documentation generator for Swagger UI and Django REST Framework
 
 Documentation: http://django-rest-swagger.readthedocs.org/
 
@@ -14,6 +14,11 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 * Field default values, minimum, maximum, read-only and required attributes
 * URL parameters (ie. /product/{id})
 * Field `help_text` property is used to create the description from the serializer or model.
+
+## Requirements
+* Python (2.6.5+, 2.7, 3.2, 3.3, 3.4)
+* Django (1.5.5+, 1.6, 1.7)
+* Django REST framework (2.3.5+)
 
 ## Bugs & Contributions
 Please report bugs by opening an issue
@@ -58,6 +63,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * add request and response serializer spec to yaml
 * preserve order of fields in serializers
 * support nested serializers
+
 ### v0.2.0 (October 31, 2014)
 * Added YAML Parser to docstring handling
 * Fixed Python 3 bugs
