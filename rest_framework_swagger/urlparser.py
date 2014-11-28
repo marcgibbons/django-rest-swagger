@@ -19,7 +19,10 @@ class UrlParser(object):
         patterns -- supply list of patterns (optional)
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
-        if patterns is None:
+        if patterns is None and urlconf is not None:
+            urls = import_module(urlconf)
+            patterns = urls.urlpatterns
+        elif patterns is None and urlconf is None:
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
