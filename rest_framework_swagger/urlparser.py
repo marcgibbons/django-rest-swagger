@@ -12,7 +12,7 @@ from .apidocview import APIDocView
 
 class UrlParser(object):
 
-    def get_apis(self, patterns=None, filter_path=None, exclude_namespaces=[]):
+    def get_apis(self, urlconf=None, patterns=None, filter_path=None, exclude_namespaces=[]):
         """
         Returns all the DRF APIViews found in the project URLs
 
