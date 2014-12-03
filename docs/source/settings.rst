@@ -37,6 +37,7 @@ Example:
             'termsOfServiceUrl': 'http://helloreverb.com/terms/',
             'title': 'Swagger Sample App',
         },
+        'doc_expansion': 'none',
     }
 
 api_version
@@ -58,6 +59,14 @@ api_key
 an api key
 
 Defaults to :code:`''`
+
+doc_expansion
+-----------------------
+
+The docExpansion parameter as defined in the Swagger UI spec. Potential values include "none", "list", or "full".
+
+Defaults to :code:`'none'`
+
 
 enabled_methods
 -----------------------

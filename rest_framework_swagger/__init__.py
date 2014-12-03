@@ -11,6 +11,7 @@ DEFAULT_SWAGGER_SETTINGS = {
     'is_superuser': False,
     'permission_denied_handler': None,
     'template_path': 'rest_framework_swagger/index.html',
+    'doc_expansion': 'none',
 }
 
 try:
