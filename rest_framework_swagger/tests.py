@@ -16,6 +16,7 @@ from rest_framework import serializers
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view
+import rest_framework
 
 from .decorators import wrapper_to_func, func_to_wrapper
 from .urlparser import UrlParser
@@ -585,14 +586,40 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual('CommentSerializer', params['name'])
 
     def test_build_form_parameters(self):
+        MY_CHOICES = (
+            ('val1', "Value1"),
+            ('val2', "Value2"),
+            ('val3', "Value3"),
+            ('val4', "Value4")
+        )
+
+        class SomeSerializer(serializers.Serializer):
+            email = serializers.EmailField()
+            content = serializers.CharField(max_length=200)
+            created = serializers.DateTimeField(default=datetime.datetime.now)
+            expires = serializers.DateField()
+            expires_by = serializers.TimeField()
+            age = serializers.IntegerField()
+            flagged = serializers.BooleanField()
+            url = serializers.URLField()
+            slug = serializers.SlugField()
+            choice = serializers.ChoiceField(
+                choices=MY_CHOICES, default=MY_CHOICES[0][0])
+            regex = serializers.RegexField("[a-f]+")
+            float = serializers.FloatField()
+            decimal = serializers.DecimalField(max_digits=5, decimal_places=1)
+            file = serializers.FileField()
+            image = serializers.ImageField()
+            joop = serializers.PrimaryKeyRelatedField(queryset=1)
+
         class SerializedAPI(ListCreateAPIView):
-            serializer_class = CommentSerializer
+            serializer_class = SomeSerializer
 
         class_introspector = APIViewIntrospector(SerializedAPI, '/', RegexURLResolver(r'^/$', ''))
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         params = introspector.build_form_parameters()
 
-        self.assertEqual(len(CommentSerializer().get_fields()), len(params))
+        self.assertEqual(len(SomeSerializer().get_fields()), len(params))
 
     def test_build_form_parameters_allowable_values(self):
 
@@ -612,7 +639,10 @@ class BaseMethodIntrospectorTest(TestCase):
 
         self.assertEqual('content', param['name'])
         self.assertEqual('form', param['paramType'])
-        self.assertEqual(True, param['required'])
+        if rest_framework.VERSION < '3.0.0':
+            self.assertEqual(True, param['required'])
+        else:
+            self.assertEqual(False, param['required'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
 
     def test_build_form_parameters_callable_default_value_is_resolved(self):
@@ -632,7 +662,10 @@ class BaseMethodIntrospectorTest(TestCase):
 
         self.assertEqual('content', param['name'])
         self.assertEqual('form', param['paramType'])
-        self.assertEqual(True, param['required'])
+        if rest_framework.VERSION < '3.0.0':
+            self.assertEqual(True, param['required'])
+        else:
+            self.assertEqual(False, param['required'])
         self.assertEqual(203, param['defaultValue'])
 
     def test_build_form_parameters_enum_values(self):

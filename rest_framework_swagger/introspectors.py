@@ -341,7 +341,7 @@ class BaseMethodIntrospector(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = field.type_label
+            data_type = get_data_type(field)
 
             # guess format
             data_format = 'string'
@@ -368,13 +368,53 @@ class BaseMethodIntrospector(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if field.type_label in ['multiple choice', 'choice'] \
-                    and isinstance(field.choices, list):
-                f['enum'] = [k for k, v in field.choices]
+            if get_data_type(field) in ['multiple choice', 'choice']:
+                if isinstance(field.choices, list):
+                    f['enum'] = [k for k, v in field.choices]
+                elif isinstance(field.choices, dict):
+                    f['enum'] = [k for k, v in field.choices.items()]
 
             data.append(f)
 
         return data
+
+
+def get_data_type(field):
+    from rest_framework import fields
+    if hasattr(field, 'type_label'):
+        return field.type_label
+    elif isinstance(field, fields.BooleanField):
+        return 'boolean'
+    elif isinstance(field, fields.CharField):
+        return 'string'
+    elif isinstance(field, fields.URLField):
+        return 'url'
+    elif isinstance(field, fields.SlugField):
+        return 'slug'
+    elif isinstance(field, fields.ChoiceField):
+        return 'choice'
+    elif isinstance(field, fields.EmailField):
+        return 'email'
+    elif isinstance(field, fields.RegexField):
+        return 'regex'
+    elif isinstance(field, fields.DateField):
+        return 'date'
+    elif isinstance(field, fields.DateTimeField):
+        return 'datetime'
+    elif isinstance(field, fields.TimeField):
+        return 'time'
+    elif isinstance(field, fields.IntegerField):
+        return 'integer'
+    elif isinstance(field, fields.FloatField):
+        return 'float'
+    elif isinstance(field, fields.DecimalField):
+        return 'decimal'
+    elif isinstance(field, fields.FileField):
+        return 'file'
+    elif isinstance(field, fields.ImageField):
+        return 'image upload'
+    else:
+        return 'field'
 
 
 class APIViewIntrospector(BaseViewIntrospector):
