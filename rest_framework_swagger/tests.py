@@ -586,14 +586,40 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual('CommentSerializer', params['name'])
 
     def test_build_form_parameters(self):
+        MY_CHOICES = (
+            ('val1', "Value1"),
+            ('val2', "Value2"),
+            ('val3', "Value3"),
+            ('val4', "Value4")
+        )
+
+        class SomeSerializer(serializers.Serializer):
+            email = serializers.EmailField()
+            content = serializers.CharField(max_length=200)
+            created = serializers.DateTimeField(default=datetime.datetime.now)
+            expires = serializers.DateField()
+            expires_by = serializers.TimeField()
+            age = serializers.IntegerField()
+            flagged = serializers.BooleanField()
+            url = serializers.URLField()
+            slug = serializers.SlugField()
+            choice = serializers.ChoiceField(
+                choices=MY_CHOICES, default=MY_CHOICES[0][0])
+            regex = serializers.RegexField("[a-f]+")
+            float = serializers.FloatField()
+            decimal = serializers.DecimalField(max_digits=5, decimal_places=1)
+            file = serializers.FileField()
+            image = serializers.ImageField()
+            joop = serializers.PrimaryKeyRelatedField(queryset=1)
+
         class SerializedAPI(ListCreateAPIView):
-            serializer_class = CommentSerializer
+            serializer_class = SomeSerializer
 
         class_introspector = APIViewIntrospector(SerializedAPI, '/', RegexURLResolver(r'^/$', ''))
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         params = introspector.build_form_parameters()
 
-        self.assertEqual(len(CommentSerializer().get_fields()), len(params))
+        self.assertEqual(len(SomeSerializer().get_fields()), len(params))
 
     def test_build_form_parameters_allowable_values(self):
 

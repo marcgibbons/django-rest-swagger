@@ -414,7 +414,7 @@ def get_data_type(field):
     elif isinstance(field, fields.ImageField):
         return 'image upload'
     else:
-        assert False, "unknown field data type"
+        return 'field'
 
 
 class APIViewIntrospector(BaseViewIntrospector):
