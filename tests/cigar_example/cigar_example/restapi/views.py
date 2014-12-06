@@ -2,7 +2,17 @@
 """API Views for example application."""
 from rest_framework.views import Response, APIView
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, link, api_view
+import rest_framework
+if rest_framework.VERSION < '3.0.0':
+    from rest_framework.decorators import action, link, api_view
+else:
+    from rest_framework.decorators import detail_route, api_view
+
+    def action():
+        return lambda func: detail_route(methods=['post'])(func)
+
+    def link():
+        return lambda func: detail_route()(func)
 from rest_framework.generics import ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
 

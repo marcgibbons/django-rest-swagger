@@ -16,6 +16,7 @@ from rest_framework import serializers
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view
+import rest_framework
 
 from .decorators import wrapper_to_func, func_to_wrapper
 from .urlparser import UrlParser
@@ -612,7 +613,10 @@ class BaseMethodIntrospectorTest(TestCase):
 
         self.assertEqual('content', param['name'])
         self.assertEqual('form', param['paramType'])
-        self.assertEqual(True, param['required'])
+        if rest_framework.VERSION < '3.0.0':
+            self.assertEqual(True, param['required'])
+        else:
+            self.assertEqual(False, param['required'])
         self.assertEqual('Vandalay Industries', param['defaultValue'])
 
     def test_build_form_parameters_callable_default_value_is_resolved(self):
@@ -632,7 +636,10 @@ class BaseMethodIntrospectorTest(TestCase):
 
         self.assertEqual('content', param['name'])
         self.assertEqual('form', param['paramType'])
-        self.assertEqual(True, param['required'])
+        if rest_framework.VERSION < '3.0.0':
+            self.assertEqual(True, param['required'])
+        else:
+            self.assertEqual(False, param['required'])
         self.assertEqual(203, param['defaultValue'])
 
     def test_build_form_parameters_enum_values(self):

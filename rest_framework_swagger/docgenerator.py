@@ -7,7 +7,7 @@ from rest_framework.serializers import BaseSerializer
 from .introspectors import APIViewIntrospector, \
     WrappedAPIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_resolved_value
+    get_resolved_value, get_data_type
 from .compat import OrderedDict
 
 
@@ -271,7 +271,7 @@ class DocumentationGenerator(object):
             if getattr(field, 'required', False):
                 data['required'].append(name)
 
-            data_type = field.type_label
+            data_type = get_data_type(field)
 
             # guess format
             data_format = 'string'
@@ -300,7 +300,7 @@ class DocumentationGenerator(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if field.type_label == 'multiple choice' \
+            if get_data_type(field) == 'multiple choice' \
                     and isinstance(field.choices, list):
                 f['enum'] = [k for k, v in field.choices]
 
