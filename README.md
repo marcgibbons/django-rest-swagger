@@ -58,6 +58,11 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
+### v0.2.2 (December 7, 2014)
+* add support for Django Rest Framework 3
+* add docExpansion to settings
+* add `token_type` to settings
+
 ### v0.2.1 (November 15, 2014)
 * add readthedocs based documentation 
 * add request and response serializer spec to yaml
