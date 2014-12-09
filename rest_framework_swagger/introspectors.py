@@ -12,17 +12,22 @@ from abc import ABCMeta, abstractmethod
 
 from django.contrib.admindocs.utils import trim_docstring
 
+import rest_framework
 from rest_framework.views import get_view_name, get_view_description
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown, smart_text
 from rest_framework.utils import formatting
 
 
-def get_resolved_value(obj, attr, default=None):
-    value = getattr(obj, attr, default)
-    if callable(value):
-        value = value()
-    return value
+def get_default_value(field):
+    default_value = getattr(field, 'default')
+    if rest_framework.VERSION >= '3.0.0':
+        from rest_framework.fields import empty
+        if default_value == empty:
+            default_value = None
+    if callable(default_value):
+        default_value = default_value()
+    return default_value
 
 
 class IntrospectorHelper(object):
@@ -355,7 +360,7 @@ class BaseMethodIntrospector(object):
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
-                'defaultValue': get_resolved_value(field, 'default'),
+                'defaultValue': get_default_value(field),
             }
 
             # Min/Max values
