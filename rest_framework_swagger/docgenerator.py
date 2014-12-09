@@ -1,13 +1,14 @@
 """Generates API documentation by introspection."""
 from django.http import HttpRequest
 
+import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
 from .introspectors import APIViewIntrospector, \
     WrappedAPIViewIntrospector, \
     ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_resolved_value, get_data_type
+    get_default_value, get_data_type
 from .compat import OrderedDict
 
 
@@ -286,7 +287,7 @@ class DocumentationGenerator(object):
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
-                'defaultValue': get_resolved_value(field, 'default'),
+                'defaultValue': get_default_value(field),
                 'readOnly': getattr(field, 'read_only', None),
             }
 
@@ -312,7 +313,12 @@ class DocumentationGenerator(object):
                     field_serializer = "Write{}".format(field_serializer)
 
                 f['type'] = field_serializer
-                if field.many:
+                if rest_framework.VERSION < '3.0.0':
+                    has_many = field.many
+                else:
+                    from rest_framework.serializers import ListSerializer
+                    has_many = isinstance(field, ListSerializer)
+                if has_many:
                     f['type'] = 'array'
                     if data_type in BaseMethodIntrospector.PRIMITIVES:
                         f['items'] = {'type': data_type}

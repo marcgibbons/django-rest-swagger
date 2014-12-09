@@ -373,12 +373,37 @@ class DocumentationGeneratorTest(TestCase):
         fields = docgen._get_serializer_fields(CommentSerializer)
 
         self.assertEqual(3, len(fields['fields']))
+        self.assertEqual(fields['fields']['email']['defaultValue'], None)
 
     def test_get_serializer_fields_api_with_no_serializer(self):
         docgen = DocumentationGenerator()
         fields = docgen._get_serializer_fields(None)
 
         self.assertIsNone(fields)
+
+    def test_get_serializer_fields_api_with_nested(self):
+        class SomeSerializer(serializers.Serializer):
+            thing1 = serializers.CharField()
+
+        class OtherSerializer(serializers.Serializer):
+            thing2 = SomeSerializer()
+        docgen = DocumentationGenerator()
+        fields = docgen._get_serializer_fields(OtherSerializer)
+
+        self.assertEqual(1, len(fields['fields']))
+        self.assertEqual("SomeSerializer", fields['fields']['thing2']['type'])
+
+    def test_get_serializer_fields_api_with_nested_many(self):
+        class SomeSerializer(serializers.Serializer):
+            thing1 = serializers.CharField()
+
+        class OtherSerializer(serializers.Serializer):
+            thing2 = SomeSerializer(many=True)
+        docgen = DocumentationGenerator()
+        fields = docgen._get_serializer_fields(OtherSerializer)
+
+        self.assertEqual(1, len(fields['fields']))
+        self.assertEqual("array", fields['fields']['thing2']['type'])
 
     def test_get_serializer_class_access_request_context(self):
         class MyListView(ListCreateAPIView):
@@ -620,6 +645,8 @@ class BaseMethodIntrospectorTest(TestCase):
         params = introspector.build_form_parameters()
 
         self.assertEqual(len(SomeSerializer().get_fields()), len(params))
+        self.assertEqual(params[0]['name'], 'email')
+        self.assertIsNone(params[0]['defaultValue'])
 
     def test_build_form_parameters_allowable_values(self):
 
