@@ -74,6 +74,11 @@ class IntrospectorHelper(object):
     def get_serializer_name(serializer):
         if serializer is None:
             return None
+        if rest_framework.VERSION >= '3.0.0':
+            from rest_framework.serializers import ListSerializer
+            assert serializer != ListSerializer, "uh oh, what now?"
+            if isinstance(serializer, ListSerializer):
+                serializer = serializer.child
 
         if inspect.isclass(serializer):
             return serializer.__name__

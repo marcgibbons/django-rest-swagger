@@ -21,6 +21,7 @@ urlpatterns = patterns(
     url(r'^jambalaya_find/$', views.find_jambalaya, name='find-jambalaya'),
     url(r'^jambalaya_retrieve/$', views.retrieve_jambalaya, name='retrieve-jambalaya'),
     url(r'^drop_cigar_in_jambalaya/$', views.drop_cigar_in_jambalaya, name='cigar-jambalaya'),
+    url(r'^mix_cigars_in_jambalaya/$', views.mix_cigars_in_jambalaya, name='mix-cigars-jambalaya'),
 )
 
 urlpatterns += router.urls

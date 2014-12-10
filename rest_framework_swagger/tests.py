@@ -434,6 +434,20 @@ class DocumentationGeneratorTest(TestCase):
         self.assertFalse([s for s in serializerses
                          if isinstance(s, ASerializer)])
 
+    def test_nested_many_serializer(self):
+        class ASerializer(serializers.Serializer):
+            point = CommentSerializer()
+            query = QuerySerializer(many=True)
+
+        docgen = DocumentationGenerator()
+        serializerses = docgen._find_field_serializers([ASerializer])
+        self.assertTrue([s for s in serializerses
+                         if isinstance(s, CommentSerializer)])
+        self.assertTrue([s for s in serializerses
+                         if isinstance(s, QuerySerializer)])
+        self.assertFalse([s for s in serializerses
+                         if isinstance(s, ASerializer)])
+
 
 class IntrospectorHelperTest(TestCase):
     def test_strip_yaml_from_docstring(self):
@@ -466,6 +480,27 @@ class IntrospectorHelperTest(TestCase):
         expected = 'Creates a new user.\nReturns: token - auth token'
 
         self.assertEqual(expected, docstring)
+
+    def test_get_serializer_name1(self):
+        self.assertEqual(
+            "CommentSerializer",
+            IntrospectorHelper.get_serializer_name(CommentSerializer))
+        self.assertEqual(
+            "CommentSerializer",
+            IntrospectorHelper.get_serializer_name(CommentSerializer()))
+
+    def test_get_serializer_name2(self):
+        class DaSerializer(serializers.Serializer):
+            comments = CommentSerializer(many=True)
+
+        serializer = DaSerializer()
+        comments = serializer.get_fields()["comments"]
+        self.assertEqual(
+            "DaSerializer",
+            IntrospectorHelper.get_serializer_name(serializer))
+        self.assertEqual(
+            "CommentSerializer",
+            IntrospectorHelper.get_serializer_name(comments))
 
 
 class ViewSetTestIntrospectorTest(TestCase):

@@ -19,7 +19,7 @@ from rest_framework.generics import ListCreateAPIView, \
 from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
 from .serializers import CigarSerializer, ManufacturerSerializer, \
     CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer, \
-    CigarJambalayaSerializer
+    CigarJambalayaSerializer, JambalayaCigarsSerializer
 
 
 class CigarViewSet(viewsets.ModelViewSet):
@@ -224,6 +224,21 @@ def drop_cigar_in_jambalaya(request):
     serializer: ..serializers.CigarJambalayaSerializer
     """
     serializer = CigarJambalayaSerializer(data=request.DATA)
+    if serializer.is_valid():
+        return Response("mmm.. an acquired taste!", status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def mix_cigars_in_jambalaya(request):
+    """
+    Make a diverse cigar jambalaya. (In case you're wondering, I have no idea
+    how to try out this api, it just illustrates what nested many=True
+    serializers look like in swagger)
+    ---
+    serializer: ..serializers.JambalayaCigarsSerializer
+    """
+    serializer = JambalayaCigarsSerializer(data=request.DATA)
     if serializer.is_valid():
         return Response("mmm.. an acquired taste!", status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
