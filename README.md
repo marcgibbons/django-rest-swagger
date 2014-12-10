@@ -58,10 +58,13 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
-### v0.2.3 (December 7, 2014)
+### v0.2.4 (December 7, 2014)
 * fix support for Django Rest Framework 3
 
-### v0.2.2 (December 7, 2014)
+### v0.2.3 (December 8, 2014)
+* fix support for Django Rest Framework 3
+
+### v0.2.2 (December 9, 2014)
 * add support for Django Rest Framework 3
 * add docExpansion to settings
 * add `token_type` to settings
