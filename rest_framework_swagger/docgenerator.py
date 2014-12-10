@@ -233,14 +233,24 @@ class DocumentationGenerator(object):
         """
         Returns set of serializers discovered from fields
         """
+        def get_thing(field, key):
+            if rest_framework.VERSION >= '3.0.0':
+                from rest_framework.serializers import ListSerializer
+                if isinstance(field, ListSerializer):
+                    return key(field.child)
+            return key(field)
+
         serializers_set = set()
         for serializer in serializers:
             fields = serializer().get_fields()
             for name, field in fields.items():
                 if isinstance(field, BaseSerializer):
-                    serializers_set.add(field)
+                    serializers_set.add(get_thing(field, lambda f: f))
                     if field not in found_serializers:
-                        serializers_set.update(self._find_field_serializers((field.__class__, ), serializers_set))
+                        serializers_set.update(
+                            self._find_field_serializers(
+                                (get_thing(field, lambda f: f.__class__),),
+                                serializers_set))
 
         return serializers_set
 

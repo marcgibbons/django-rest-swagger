@@ -36,3 +36,7 @@ class JambalayaQuerySerializer(serializers.Serializer):
 class CigarJambalayaSerializer(serializers.Serializer):
     cigar = CigarSerializer()
     jambalaya = JambalayaSerializer()
+
+
+class JambalayaCigarsSerializer(serializers.Serializer):
+    cigar = CigarSerializer(many=True)
