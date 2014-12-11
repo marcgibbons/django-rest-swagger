@@ -381,6 +381,15 @@ class DocumentationGeneratorTest(TestCase):
 
         self.assertIsNone(fields)
 
+    def test_get_serializer_fields_with_field(self):
+        class SomeSerializer(serializers.Serializer):
+            thing1 = serializers.Field()
+
+        docgen = DocumentationGenerator()
+        fields = docgen._get_serializer_fields(SomeSerializer)
+
+        self.assertEqual(1, len(fields['fields']))
+
     def test_get_serializer_fields_api_with_nested(self):
         class SomeSerializer(serializers.Serializer):
             thing1 = serializers.CharField()
