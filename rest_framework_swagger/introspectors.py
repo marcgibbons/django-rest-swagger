@@ -20,7 +20,7 @@ from rest_framework.utils import formatting
 
 
 def get_default_value(field):
-    default_value = getattr(field, 'default')
+    default_value = getattr(field, 'default', None)
     if rest_framework.VERSION >= '3.0.0':
         from rest_framework.fields import empty
         if default_value == empty:
