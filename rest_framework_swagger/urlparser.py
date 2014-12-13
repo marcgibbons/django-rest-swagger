@@ -12,14 +12,17 @@ from .apidocview import APIDocView
 
 class UrlParser(object):
 
-    def get_apis(self, patterns=None, filter_path=None, exclude_namespaces=[]):
+    def get_apis(self, patterns=None, urlconf=None, filter_path=None, exclude_namespaces=[]):
         """
         Returns all the DRF APIViews found in the project URLs
 
         patterns -- supply list of patterns (optional)
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
-        if patterns is None:
+        if patterns is None and urlconf is not None:
+            urls = import_module(urlconf)
+            patterns = urls.urlpatterns
+        elif patterns is None and urlconf is None:
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
