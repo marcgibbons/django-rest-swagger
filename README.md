@@ -58,6 +58,9 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 
 ## Release Notes:
 
+### v0.2.6 (December 12, 2014)
+* fix for DRF 3.0.1
+
 ### v0.2.5 (December 10, 2014)
 * fix support for Django Rest Framework 3
 
