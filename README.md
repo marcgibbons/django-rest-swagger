@@ -1,6 +1,8 @@
 # Django REST Swagger
 
-[![Build Status](https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master)](https://travis-ci.org/marcgibbons/django-rest-swagger)
+[![build-status-badge]][build-status]
+[![pypi-version]][pypi]
+[![license-badge]][license]
 
 ####An API documentation generator for Swagger UI and Django REST Framework
 
@@ -131,3 +133,9 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
 
 
+[build-status-badge]: https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master
+[build-status]: https://travis-ci.org/marcgibbons/django-rest-swagger
+[pypi-version]: https://pypip.in/version/django-rest-swagger/badge.svg
+[pypi]: https://pypi.python.org/pypi/django-rest-swagger
+[license-badge]: https://pypip.in/license/django-rest-swagger/badge.svg
+[license]: https://pypi.python.org/pypi/django-rest-swagger/
