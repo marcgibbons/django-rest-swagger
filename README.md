@@ -3,10 +3,9 @@
 [![build-status-badge]][build-status]
 [![pypi-version]][pypi]
 [![license-badge]][license]
+[![docs-badge]][docs]
 
 ####An API documentation generator for Swagger UI and Django REST Framework
-
-Documentation: http://django-rest-swagger.readthedocs.org/
 
 This project is built on the [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) and uses the lovely [Swagger from Wordnik](https://developers.helloreverb.com/swagger/) as an interface. This application introspectively generates documentation based on your Django REST Framework API code. Comments are generated in combination from code analysis and comment extraction. Here are some of the features that are documented:
 
@@ -139,3 +138,5 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 [pypi]: https://pypi.python.org/pypi/django-rest-swagger
 [license-badge]: https://pypip.in/license/django-rest-swagger/badge.svg
 [license]: https://pypi.python.org/pypi/django-rest-swagger/
+[docs-badge]: https://readthedocs.org/projects/django-rest-swagger/badge/
+[docs]: http://django-rest-swagger.readthedocs.org/
