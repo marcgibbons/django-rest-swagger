@@ -10,6 +10,8 @@ import importlib
 from .compat import OrderedDict
 from abc import ABCMeta, abstractmethod
 
+from django.http import HttpRequest
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.admindocs.utils import trim_docstring
 from django.utils.encoding import smart_text
 
@@ -117,15 +119,6 @@ class BaseViewIntrospector(object):
     def get_iterator(self):
         return self.__iter__()
 
-    def get_serializer_class(self):
-        if hasattr(self.callback, 'get_serializer_class'):
-            view = self.callback()
-            if not hasattr(view, 'kwargs'):
-                view.kwargs = dict()
-            if hasattr(self.pattern, 'default_args'):
-                view.kwargs.update(self.pattern.default_args)
-            return view.get_serializer_class()
-
     def get_description(self):
         """
         Returns the first sentence of the first line of the class docstring
@@ -175,11 +168,27 @@ class BaseMethodIntrospector(object):
         parser.object = new_object
         return parser
 
+    def ask_for_serializer_class(self):
+        if hasattr(self.callback, 'get_serializer_class'):
+            view = self.create_view()
+            return view.get_serializer_class()
+
+    def create_view(self):
+        view = self.callback()
+        if not hasattr(view, 'kwargs'):
+            view.kwargs = dict()
+        if hasattr(self.parent.pattern, 'default_args'):
+            view.kwargs.update(self.parent.pattern.default_args)
+        view.request = HttpRequest()
+        view.request.user = AnonymousUser()
+        view.request.method = self.method
+        return view
+
     def get_serializer_class(self):
         parser = self.get_yaml_parser()
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
-            serializer = self.parent.get_serializer_class()
+            serializer = self.ask_for_serializer_class()
         return serializer
 
     def get_response_serializer_class(self):
@@ -551,6 +560,13 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         """
         return self.retrieve_docstring()
 
+    def create_view(self):
+        view = super().create_view()
+        if not hasattr(view, 'action'):
+            setattr(view, 'action', self.method)
+        view.request.method = self.http_method
+        return view
+
 
 def multi_getattr(obj, attr, default=None):
     """
@@ -818,6 +834,8 @@ class YAMLDocstringParser(object):
         Retrieves response serializer class from YAML object
         """
         serializer = self.object.get('response_serializer', None)
+        if isinstance(serializer, list):
+            serializer = serializer[0]
         try:
             return self._load_class(serializer, callback)
         except (ImportError, ValueError):
