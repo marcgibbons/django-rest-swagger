@@ -1,6 +1,4 @@
 """Generates API documentation by introspection."""
-from django.http import HttpRequest
-
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
@@ -57,8 +55,6 @@ class DocumentationGenerator(object):
         if apis is None:
             apis = [api]
         operations = []
-        callback = api['callback']
-        callback.request = HttpRequest()
 
         introspector = self.get_introspector(api, apis)
 
@@ -339,13 +335,3 @@ class DocumentationGenerator(object):
             data['fields'][name] = f
 
         return data
-
-    def _get_serializer_class(self, callback, pattern=None):
-        if hasattr(callback, 'get_serializer_class'):
-            view = callback()
-            if not hasattr(view, 'kwargs'):
-                view.kwargs = dict()
-            if hasattr(pattern, 'default_args'):
-                if pattern.default_args:
-                    view.kwargs.update(pattern.default_args)
-            return view.get_serializer_class()
