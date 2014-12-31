@@ -184,3 +184,17 @@ You can also refer to this models in your parameters:
           paramType: body
 
 
+view_mocker
+-----------
+Specify a function to modify (or replace entirely) the view that 
+django-rest-swagger uses to introspect serializer class.
+
+django-rest-swagger passes this function a view object, and expects a view 
+object to be returned, or None, in which case this bit of introspection is 
+skipped.
+
+.. literalinclude:: ../../rest_framework_swagger/tests.py
+    :pyobject: ViewMockerNeedingAPI
+
+.. literalinclude:: ../../rest_framework_swagger/tests.py
+    :pyobject: my_view_mocker

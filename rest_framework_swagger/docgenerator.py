@@ -55,7 +55,6 @@ class DocumentationGenerator(object):
         if apis is None:
             apis = [api]
         operations = []
-        callback = api['callback']
 
         introspector = self.get_introspector(api, apis)
 

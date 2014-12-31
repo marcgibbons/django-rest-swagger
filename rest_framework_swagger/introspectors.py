@@ -20,6 +20,7 @@ from rest_framework.views import get_view_name, get_view_description
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
 from rest_framework.utils import formatting
+from django.utils import six
 
 
 def get_default_value(field):
@@ -171,7 +172,11 @@ class BaseMethodIntrospector(object):
     def ask_for_serializer_class(self):
         if hasattr(self.callback, 'get_serializer_class'):
             view = self.create_view()
-            return view.get_serializer_class()
+            parser = self.get_yaml_parser()
+            mock_view = parser.get_view_mocker(self.callback)
+            view = mock_view(view)
+            if view is not None:
+                return view.get_serializer_class()
 
     def create_view(self):
         view = self.callback()
@@ -561,7 +566,7 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         return self.retrieve_docstring()
 
     def create_view(self):
-        view = super().create_view()
+        view = super(ViewSetMethodIntrospector, self).create_view()
         if not hasattr(view, 'action'):
             setattr(view, 'action', self.method)
         view.request.method = self.http_method
@@ -861,6 +866,12 @@ class YAMLDocstringParser(object):
                 'responseModel': message.get('responseModel', None),
             })
         return messages
+
+    def get_view_mocker(self, callback):
+        view_mocker = self.object.get('view_mocker', lambda a: a)
+        if isinstance(view_mocker, six.string_types):
+            view_mocker = self._load_class(view_mocker, callback)
+        return view_mocker
 
     def get_parameters(self):
         """

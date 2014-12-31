@@ -645,7 +645,7 @@ class BaseViewIntrospectorTest(TestCase):
 class BaseMethodIntrospectorTest(TestCase):
     def make_introspector(self, view_class):
         return APIViewIntrospector(
-            view_class, '/{pk}', 
+            view_class, '/{pk}',
             RegexURLResolver(r'^/(?P<{pk}>[^/]+)$', ''))
 
     def make_introspector2(self, view_class):
@@ -874,6 +874,9 @@ class BaseMethodIntrospectorTest(TestCase):
 
 
 class YAMLDocstringParserTests(TestCase):
+    def make_introspector(self, view_class):
+        return APIViewIntrospector(
+            view_class, '/', RegexURLResolver(r'^/$', ''))
 
     def test_yaml_loader(self):
         class AnAPIView(APIView):
@@ -886,9 +889,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 pass
 
-        class_introspector = APIViewIntrospector(
-            AnAPIView, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(AnAPIView)
         introspector = APIViewMethodIntrospector(class_introspector, 'GET')
         doc_parser = introspector.get_yaml_parser()
         self.assertEqual(doc_parser.object['param'], 'my param')
@@ -909,9 +910,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 pass
 
-        class_introspector = APIViewIntrospector(
-            AnAPIView, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(AnAPIView)
         class_introspector.methods = lambda: ['GET']
         introspector = APIViewMethodIntrospector(class_introspector, 'GET')
         doc_parser = introspector.get_yaml_parser()
@@ -932,9 +931,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 pass
 
-        class_introspector = APIViewIntrospector(
-            AnAPIView, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(AnAPIView)
         class_introspector.methods = lambda: ['GET']
         introspector = APIViewMethodIntrospector(class_introspector, 'GET')
         doc_parser = introspector.get_yaml_parser()
@@ -1020,9 +1017,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         params = parser.discover_parameters(introspector)
@@ -1046,9 +1041,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         params = parser.discover_parameters(introspector)
@@ -1073,9 +1066,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         params = parser.discover_parameters(introspector)
@@ -1104,9 +1095,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'GET')
         parser = introspector.get_yaml_parser()
         params = introspector.build_form_parameters()
@@ -1143,9 +1132,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         params = parser.discover_parameters(introspector)
@@ -1170,9 +1157,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         messages = parser.get_response_messages()
@@ -1192,9 +1177,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1292,9 +1275,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1312,9 +1293,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1346,9 +1325,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1371,9 +1348,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1395,9 +1370,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1419,9 +1392,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1444,9 +1415,7 @@ class YAMLDocstringParserTests(TestCase):
 
             def post(self, request, *args, **kwargs):
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1469,9 +1438,7 @@ class YAMLDocstringParserTests(TestCase):
 
             def post(self, request, *args, **kwargs):
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1494,9 +1461,7 @@ class YAMLDocstringParserTests(TestCase):
 
             def post(self, request, *args, **kwargs):
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1518,9 +1483,7 @@ class YAMLDocstringParserTests(TestCase):
 
             def post(self, request, *args, **kwargs):
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1542,9 +1505,7 @@ class YAMLDocstringParserTests(TestCase):
 
             def post(self, request, *args, **kwargs):
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1572,9 +1533,7 @@ class YAMLDocstringParserTests(TestCase):
                     response_serializer: CommentSerializer
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1601,9 +1560,7 @@ class YAMLDocstringParserTests(TestCase):
                 """
                 return super(SerializedAPI, self).post(request, *args, **kwargs)
 
-        class_introspector = APIViewIntrospector(
-            SerializedAPI, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         generator = DocumentationGenerator()
@@ -1695,3 +1652,56 @@ class YAMLDocstringParserTests(TestCase):
         generator = DocumentationGenerator()
         models = generator.get_models(apis)
         self.assertEqual(type(models), dict)
+
+    def test_view_mocker(self):
+
+        class_introspector = self.make_introspector(ViewMockerNeedingAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        generator = DocumentationGenerator()
+        serializer = generator._get_method_serializer(introspector)
+        self.assertEqual(CommentSerializer, serializer)
+
+    def test_view_mocker_null(self):
+
+        class SerializedAPI(ListCreateAPIView):
+            def get_serializer_class(self):
+                if self.request.tacos == 'tasty':
+                    return CommentSerializer
+                else:
+                    return QuerySerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                view_mocker: my_view_mocker2
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+        class_introspector = self.make_introspector(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        generator = DocumentationGenerator()
+        serializer = generator._get_method_serializer(introspector)
+        self.assertIsNone(serializer)
+
+
+class ViewMockerNeedingAPI(ListCreateAPIView):
+    def get_serializer_class(self):
+        if self.request.tacos == 'tasty':
+            return CommentSerializer
+        else:
+            return QuerySerializer
+
+    def post(self, request, *args, **kwargs):
+        """
+        ---
+        view_mocker: my_view_mocker
+        """
+        return super(ViewMockerNeedingAPI, self).post(request, *args, **kwargs)
+
+
+def my_view_mocker(view):
+    view.request.tacos = 'tasty'
+    return view
+
+
+def my_view_mocker2(view):
+    pass

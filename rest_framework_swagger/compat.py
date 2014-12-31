@@ -40,3 +40,22 @@ def strip_tags(html):
     s = MLStripper()
     s.feed(html)
     return s.get_data()
+
+try:
+    from django.utils.module_loading import import_string
+except ImportError:
+    def import_string(dotted_path):
+        from django.utils.importlib import import_module
+        from django.core.exceptions import ImproperlyConfigured
+        module, attr = dotted_path.rsplit('.', 1)
+        try:
+            mod = import_module(module)
+        except ImportError as e:
+            raise ImproperlyConfigured('Error importing module %s: "%s"' %
+                                       (module, e))
+        try:
+            view = getattr(mod, attr)
+        except AttributeError:
+            raise ImproperlyConfigured('Module "%s" does not define a "%s".'
+                                       % (module, attr))
+        return view
