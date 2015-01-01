@@ -595,7 +595,7 @@ class ViewSetMethodIntrospectorTests(TestCase):
             url(
                 r'^/api/endpoint/(?P<{pk}>[^/]+)$',
                 view_class.as_view({
-                    'get': 'retrieve',
+                    'get': 'list',
                     'post': 'create',
                     'put': 'update',
                     'patch': 'partial_update',
@@ -616,9 +616,11 @@ class ViewSetMethodIntrospectorTests(TestCase):
 
         introspector = self.make_view_introspector(MyViewSet)
         method_introspectors = get_introspectors(introspector)
-        serializer_class = method_introspectors['create'].get_serializer_class()
+        serializer_class = method_introspectors['create'] \
+            .get_serializer_class()
         self.assertIs(serializer_class, CommentSerializer)
-        serializer_class = method_introspectors['retrieve'].get_serializer_class()
+        serializer_class = method_introspectors['update'] \
+            .get_serializer_class()
         self.assertIs(serializer_class, QuerySerializer)
 
     def test_get_serializer_class_access_method(self):
@@ -630,10 +632,44 @@ class ViewSetMethodIntrospectorTests(TestCase):
                     return CommentSerializer
                 return QuerySerializer
         class_introspector = self.make_view_introspector(MyViewSet)
-        introspector = get_introspectors(class_introspector)['retrieve']
-        self.assertEqual(CommentSerializer, introspector.get_serializer_class())
+        introspector = get_introspectors(class_introspector)['list']
+        self.assertEqual(
+            CommentSerializer,
+            introspector.get_serializer_class())
         introspector = get_introspectors(class_introspector)['create']
-        self.assertEqual(QuerySerializer, introspector.get_serializer_class())
+        self.assertEqual(
+            QuerySerializer,
+            introspector.get_serializer_class())
+
+    def test_builds_pagination_parameters_list(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['list']
+        params = introspector.build_query_parameters()
+        page = [p for p in params if p['name'] == 'page']
+        self.assertEqual(1, len(page))
+        page_by = [p for p in params if p['name'] == 'page_this_by']
+        self.assertEqual(1, len(page_by))
+
+    def test_no_builds_pagination_parameters_for_create(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        params = introspector.build_query_parameters()
+        page = [p for p in params if p['name'] == 'page']
+        self.assertEqual(0, len(page))
+        page_by = [p for p in params if p['name'] == 'page_this_by']
+        self.assertEqual(0, len(page_by))
 
 
 class BaseViewIntrospectorTest(TestCase):
