@@ -9,13 +9,12 @@ import os.path
 class ImageExtractionAndTests(LiveServerTestCase):
 
     def setUp(self):
-        self.browser = webdriver.Firefox();
+        self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
         self.browser.get(self.live_server_url)
-        import time
         # let swagger load itself
         # todo - figure out what swagger is doing and wait on that
-        time.sleep(1)
+        time.sleep(4)
 
     def tearDown(self):
         self.browser.quit()
@@ -38,7 +37,7 @@ class ImageExtractionAndTests(LiveServerTestCase):
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
         im = im.crop((left, top, right, bottom))
-        im.save(os.path.join('source','_static',file_name))
+        im.save(os.path.join('source', '_static', file_name))
 
     def get_toggle(self, endpoint):
         path = self.by_css(".path", src=endpoint)
@@ -64,7 +63,7 @@ class ImageExtractionAndTests(LiveServerTestCase):
             lambda b: a2.is_displayed()
         )
 
-        endpoints = [e for e in endpoints 
+        endpoints = [e for e in endpoints
                      if self.get_toggle(e).text == '/api/cigars/']
         toggle = self.get_toggle(endpoints[0])
         toggle.click()
@@ -72,8 +71,9 @@ class ImageExtractionAndTests(LiveServerTestCase):
         span, divs = self.get_model_lines(endpoints[0])
         self.assertEqual(span.text, "CigarSerializer {")
         self.assertEqual(len(divs), 10)
-        self.assertEqual(divs[0].text, "url (url),")
-        self.assertEqual(divs[1].text, "id (integer),")
+        durp = ["url (url),", "id (integer),"]
+        self.assertIn(divs[0].text, durp)
+        self.assertIn(divs[1].text, durp)
         self.assertEqual(divs[2].text, "name (string): Cigar Name,")
         self.assertEqual(divs[3].text, "colour (string),")
         self.assertEqual(divs[4].text, "form (multiple choice) = ['parejo' or 'torpedo' or 'pyramid' or 'perfecto' or 'presidente'],")
@@ -92,7 +92,7 @@ class ImageExtractionAndTests(LiveServerTestCase):
             lambda b: a2.is_displayed()
         )
 
-        endpoints = [e for e in endpoints 
+        endpoints = [e for e in endpoints
                      if self.get_toggle(e).text == '/api/artisan_cigars/{pk}/set_price/']
         toggle = self.get_toggle(endpoints[0])
         toggle.click()
@@ -103,27 +103,31 @@ class ImageExtractionAndTests(LiveServerTestCase):
         http_method = self.by_css(".http_method", src=e)
         self.assertEqual(http_method.text, "POST")
         self.save_screenshot(cigars, "artisan_cigar.png")
-    
+
     def test_manufacturer_list(self):
         manufacturers = self.by_css("#resource_manufacturers")
         a = self.by_css(
-            "a[href='#!/manufacturers']", 
+            "a[href='#!/manufacturers']",
             src=manufacturers
         )
         a.click()
         time.sleep(1)
         manufacturers = self.by_css("#resource_manufacturers")
+
         def is_from_list(endpoint):
             return self.get_toggle(endpoint).text == '/api/manufacturers/'
-        def get_endpoints():
-            return [e for e in self.by_css("li.endpoint", many=True, src=manufacturers)
-                         if self.get_toggle(e).text == '/api/manufacturers/']
 
-        WebDriverWait(self.browser, 10).until(lambda b: len(get_endpoints()) == 2)
+        def get_endpoints():
+            return [e for e in
+                    self.by_css("li.endpoint", many=True, src=manufacturers)
+                    if is_from_list(e)]
+
+        WebDriverWait(self.browser, 10).until(
+            lambda b: len(get_endpoints()) == 2)
         for e in get_endpoints():
             toggle = self.get_toggle(e)
             toggle.click()
-            content = self.by_css(".content", src=e)
+            self.by_css(".content", src=e)
             # wait for animation
             time.sleep(1)
             span, divs = self.get_model_lines(e)
@@ -139,21 +143,26 @@ class ImageExtractionAndTests(LiveServerTestCase):
     def test_find_jambalaya(self):
         jambalaya = self.by_css("#resource_jambalaya_find")
         a = self.by_css(
-            "a[href='#!/jambalaya_find']", 
+            "a[href='#!/jambalaya_find']",
             src=jambalaya
         )
         a.click()
         time.sleep(1)
         jambalaya = self.by_css("#resource_jambalaya_find")
+
+        def is_from_list(endpoint):
+            return self.get_toggle(endpoint).text == '/api/jambalaya_find/'
+
         def get_endpoints():
-            return [e for e in self.by_css("li.endpoint", many=True, src=jambalaya)
-                         if self.get_toggle(e).text == '/api/jambalaya_find/']
+            return [e for e in
+                    self.by_css("li.endpoint", many=True, src=jambalaya)
+                    if is_from_list(e)]
 
         WebDriverWait(self.browser, 10).until(lambda b: len(get_endpoints()) == 1)
         e = get_endpoints()[0]
         toggle = self.get_toggle(e)
         toggle.click()
-        content = self.by_css(".content", src=e)
+        self.by_css(".content", src=e)
         # wait for animation
         time.sleep(1)
         span, divs = self.get_model_lines(e)
@@ -164,3 +173,25 @@ class ImageExtractionAndTests(LiveServerTestCase):
         http_method = self.by_css(".http_method", src=e)
         self.save_screenshot(jambalaya, "jambalaya_find-%s.png" % http_method.text)
         toggle.click()
+
+    def test_raw_json(self):
+        top = self.by_css("#resource_custom_create")
+        a = self.by_css("a[href='#!/custom_create']", src=top)
+        a.click()
+        time.sleep(1)
+        a = self.by_css("a[href='#!/custom_create/Create_Cigar2']", src=top)
+        a.click()
+
+        def is_from_list(endpoint):
+            return self.get_toggle(endpoint).text == '/api/custom_create/'
+
+        def get_endpoints():
+            return [e for e in self.by_css("li.endpoint", many=True, src=top)
+                    if is_from_list(e)]
+
+        WebDriverWait(self.browser, 10).until(lambda b: len(get_endpoints()) == 1)
+        b = self.by_css(".operation-params", src=top)
+        a = self.by_css(".snippet-link", src=b)
+        a.click()
+        time.sleep(1)
+        self.save_screenshot(top, "raw_json.png")

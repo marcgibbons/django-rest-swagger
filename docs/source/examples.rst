@@ -43,6 +43,14 @@ the name of the method of interest:
 
 .. image:: _static/artisan_cigar.png
 
+
+Raw JSON objects
+----------------
+.. literalinclude:: ../../tests/cigar_example/cigar_example/restapi/views.py
+    :pyobject: create_cigar2
+
+.. image:: _static/raw_json.png
+
 ..
     Other things we need to show (and implement..): 
     * how to provide response classes

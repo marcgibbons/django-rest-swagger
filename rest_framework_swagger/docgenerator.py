@@ -222,6 +222,10 @@ class DocumentationGenerator(object):
                 serializer = self._get_method_serializer(method_introspector)
                 if serializer is not None:
                     serializers.add(serializer)
+                extras = method_introspector.get_extra_serializer_classes()
+                for extra in extras:
+                    if extra is not None:
+                        serializers.add(extra)
 
         return serializers
 

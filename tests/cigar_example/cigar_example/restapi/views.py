@@ -19,7 +19,7 @@ from rest_framework.generics import ListCreateAPIView, \
 from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
 from .serializers import CigarSerializer, ManufacturerSerializer, \
     CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer, \
-    CigarJambalayaSerializer, JambalayaCigarsSerializer
+    CigarJambalayaSerializer, JambalayaCigarsSerializer, CigarSerializerMinimal
 
 
 class CigarViewSet(viewsets.ModelViewSet):
@@ -240,5 +240,42 @@ def mix_cigars_in_jambalaya(request):
     """
     serializer = JambalayaCigarsSerializer(data=request.DATA)
     if serializer.is_valid():
-        return Response("mmm.. an acquired taste!", status=status.HTTP_201_CREATED)
+        return Response("mmm.. an acquired taste!",
+                        status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def create_cigar2(request):
+    """
+    ---
+    response_serializer: CigarSerializer
+    parameters:
+        - name: body
+          pytype: CigarSerializerMinimal
+          paramType: body
+    """
+    in_serializer = CigarSerializerMinimal(data=request.DATA)
+    if in_serializer.is_valid():
+        cigar = Cigar()
+        cigar.name = in_serializer.data['name']
+        cigar.gauge = in_serializer.data['gauge']
+        cigar.length = 2
+        cigar.price = 2
+        manufacturer = Manufacturer.objects.first()
+        if manufacturer is None:
+            manufacturer = Manufacturer()
+            manufacturer.name = 'Taco tobacco'
+            country = Country.objects.first()
+            if country is None:
+                country = Country()
+                country.name = "Watchacallistan"
+                country.save()
+            manufacturer.country = country
+            manufacturer.save()
+        cigar.manufacturer = manufacturer
+        cigar.save()
+        out_serializer = CigarSerializer(cigar)
+        return Response(out_serializer.data,
+                        status=status.HTTP_201_CREATED)
+    return Response(in_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

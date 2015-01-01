@@ -43,3 +43,5 @@ tests/cigar_example/rest_framework_swagger
 db.sql
 tests/cigar_example/static
 supervisord.log
+tests/cigar_example/static_root/
+dist

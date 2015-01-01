@@ -10,6 +10,12 @@ class CigarSerializer(serializers.ModelSerializer):
         model = models.Cigar
 
 
+class CigarSerializerMinimal(serializers.ModelSerializer):
+    class Meta:
+        model = models.Cigar
+        fields = ('name', 'gauge')
+
+
 class ManufacturerSerializer(serializers.ModelSerializer):
 
     class Meta:

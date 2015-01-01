@@ -21,8 +21,8 @@ from .decorators import wrapper_to_func, func_to_wrapper
 from .urlparser import UrlParser
 from .docgenerator import DocumentationGenerator
 from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
-    WrappedAPIViewIntrospector, WrappedAPIViewMethodIntrospector, \
-    IntrospectorHelper, APIViewMethodIntrospector
+    WrappedAPIViewMethodIntrospector, IntrospectorHelper, \
+    APIViewMethodIntrospector
 
 
 def no_markdown(func):
@@ -798,6 +798,32 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual(params[0]['name'], 'email')
         self.assertIsNone(params[0]['defaultValue'])
 
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        urlparser = UrlParser()
+        generator = DocumentationGenerator()
+        apis = urlparser.get_apis(url_patterns)
+        models = generator.get_models(apis)
+        self.assertIn("SomeSerializer", models)
+        properties = models["SomeSerializer"]['properties']
+        self.assertEqual("email", properties["email"]["type"])
+        self.assertEqual("string", properties["content"]["type"])
+        self.assertEqual("datetime", properties["created"]["type"])
+        self.assertEqual("date", properties["expires"]["type"])
+        self.assertEqual("time", properties["expires_by"]["type"])
+        self.assertEqual("integer", properties["age"]["type"])
+        self.assertEqual("boolean", properties["flagged"]["type"])
+        self.assertEqual("url", properties["url"]["type"])
+        self.assertEqual("slug", properties["slug"]["type"])
+        self.assertIn(
+            properties["choice"]["type"],
+            ["choice", "multiple choice"])
+        self.assertEqual("regex", properties["regex"]["type"])
+        self.assertEqual("float", properties["float"]["type"])
+        self.assertEqual("decimal", properties["decimal"]["type"])
+        self.assertEqual("file upload", properties["file"]["type"])
+        self.assertEqual("image upload", properties["image"]["type"])
+        self.assertEqual("field", properties["joop"]["type"])
+
     def test_build_form_parameters_allowable_values(self):
 
         class MySerializer(serializers.Serializer):
@@ -877,6 +903,12 @@ class YAMLDocstringParserTests(TestCase):
     def make_introspector(self, view_class):
         return APIViewIntrospector(
             view_class, '/', RegexURLResolver(r'^/$', ''))
+
+    def make_fbv_introspector(self, view):
+        from .introspectors import WrappedAPIViewIntrospector
+        return WrappedAPIViewIntrospector(
+            func_to_wrapper(view), '/', RegexURLResolver(r'^/$', '')
+        )
 
     def test_yaml_loader(self):
         class AnAPIView(APIView):
@@ -1195,9 +1227,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            func_to_wrapper(SerializedAPI2), '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_fbv_introspector(SerializedAPI2)
         introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
@@ -1213,9 +1243,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            SerializedAPI2.cls, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_fbv_introspector(SerializedAPI2)
         wrapper_to_func(SerializedAPI2.cls)
         introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1232,9 +1260,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            SerializedAPI2.cls, '/', RegexURLResolver(r'^/$', '')
-        )
+        class_introspector = self.make_fbv_introspector(SerializedAPI2)
         wrapper_to_func(SerializedAPI2.cls)
         introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1251,10 +1277,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            SerializedAPI2.cls, '/', RegexURLResolver(r'^/$', '')
-        )
-        wrapper_to_func(SerializedAPI2.cls)
+        class_introspector = self.make_fbv_introspector(SerializedAPI2)
         introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
         try:
@@ -1583,10 +1606,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            func_to_wrapper(a_view), '/', RegexURLResolver(r'^/$', '')
-        )
-
+        class_introspector = self.make_fbv_introspector(a_view)
         notes = class_introspector.get_notes()
         self.assertEqual(notes, "Slimy toads")
         introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
@@ -1604,10 +1624,7 @@ class YAMLDocstringParserTests(TestCase):
             """
             return "blarg"
 
-        class_introspector = WrappedAPIViewIntrospector(
-            func_to_wrapper(a_view), '/', RegexURLResolver(r'^/$', '')
-        )
-
+        class_introspector = self.make_fbv_introspector(a_view)
         url_patterns = patterns('', url(r'my-api/', a_view))
         urlparser = UrlParser()
         generator = DocumentationGenerator()
@@ -1662,7 +1679,6 @@ class YAMLDocstringParserTests(TestCase):
         self.assertEqual(CommentSerializer, serializer)
 
     def test_view_mocker_null(self):
-
         class SerializedAPI(ListCreateAPIView):
             def get_serializer_class(self):
                 if self.request.tacos == 'tasty':
@@ -1681,6 +1697,40 @@ class YAMLDocstringParserTests(TestCase):
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
         self.assertIsNone(serializer)
+
+    def test_pytype(self):
+        @api_view(["POST"])
+        def a_view(request):
+            """
+            ---
+            response_serializer: CommentSerializer
+            parameters:
+                - name: stuff
+                  paramType: body
+                  pytype: QuerySerializer
+                  type: int
+            """
+            from rest_framework.views import Response
+            return Response("o noes!")
+        generator = DocumentationGenerator()
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', a_view))
+        apis = urlparser.get_apis(url_patterns)
+        serializers = generator._get_serializer_set(apis)
+        self.assertIn(CommentSerializer, serializers)
+        self.assertIn(QuerySerializer, serializers)
+        api = {
+            'path': 'a-path/',
+            'callback': func_to_wrapper(a_view),
+            'pattern': patterns('')
+        }
+        operations = generator.get_operations(api)
+        self.assertEqual(len(operations), 1)
+        parameters = operations[0]['parameters']
+        self.assertEqual(len(parameters), 1)
+        self.assertNotIn("pytype", parameters[0])
+        self.assertEqual(parameters[0]['name'], 'stuff')
+        self.assertEqual(parameters[0]['type'], 'QuerySerializer')
 
 
 class ViewMockerNeedingAPI(ListCreateAPIView):
