@@ -3,7 +3,7 @@ import os
 import sys
 if '--lintonly' in sys.argv:
     import subprocess
-    FLAKE8_ARGS = ['rest_framework_swagger', 'tests', '--ignore=E501']
+    FLAKE8_ARGS = ['rest_framework_swagger', 'tests', '--ignore=E501', 'docs']
     def exit_on_failure(ret, message=None):
         if ret:
             sys.exit(ret)

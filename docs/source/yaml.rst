@@ -77,6 +77,18 @@ fields and the
 
 Exceptions: `$ref`, `items`, and `uniqueItems` are not currently supported.
 
+parameters meta-fields
+----------------------
+pytype
+~~~~~~
+
+Specify a serializer you want to use to populate :code:`type`.
+
+Overriding paramters
+--------------------
+
+parameters_strategy
+~~~~~~~~~~~~~~~~~~~
 It is possible to override parameters discovered by method inspector by
 defining:
 `parameters_strategy` option to either `merge` or `replace`
@@ -92,6 +104,8 @@ following syntax:
 
 By default strategy is set to `merge`
 
+omit_parameters
+~~~~~~~~~~~~~~~
 
 Sometimes the method inspector produces a list of parameters that
 you might not want to see in SWAGGER form. To handle this situation
@@ -198,3 +212,5 @@ skipped.
 
 .. literalinclude:: ../../rest_framework_swagger/tests.py
     :pyobject: my_view_mocker
+
+

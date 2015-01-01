@@ -169,6 +169,10 @@ class BaseMethodIntrospector(object):
         parser.object = new_object
         return parser
 
+    def get_extra_serializer_classes(self):
+        return self.get_yaml_parser().get_extra_serializer_classes(
+            self.callback)
+
     def ask_for_serializer_class(self):
         if hasattr(self.callback, 'get_serializer_class'):
             view = self.create_view()
@@ -410,8 +414,6 @@ def get_data_type(field):
         return field.type_label
     elif isinstance(field, fields.BooleanField):
         return 'boolean'
-    elif isinstance(field, fields.CharField):
-        return 'string'
     elif isinstance(field, fields.URLField):
         return 'url'
     elif isinstance(field, fields.SlugField):
@@ -434,10 +436,12 @@ def get_data_type(field):
         return 'float'
     elif isinstance(field, fields.DecimalField):
         return 'decimal'
-    elif isinstance(field, fields.FileField):
-        return 'file'
     elif isinstance(field, fields.ImageField):
         return 'image upload'
+    elif isinstance(field, fields.FileField):
+        return 'file upload'
+    elif isinstance(field, fields.CharField):
+        return 'string'
     else:
         return 'field'
 
@@ -823,6 +827,22 @@ class YAMLDocstringParser(object):
             pass
         return None
 
+    def get_extra_serializer_classes(self, callback):
+        """
+        Retrieves serializer classes from pytype YAML objects
+        """
+        parameters = self.object.get('parameters', [])
+        serializers = []
+        for parameter in parameters:
+            serializer = parameter.get('pytype', None)
+            if serializer is not None:
+                try:
+                    serializer = self._load_class(serializer, callback)
+                    serializers.append(serializer)
+                except (ImportError, ValueError):
+                    pass
+        return serializers
+
     def get_request_serializer_class(self, callback):
         """
         Retrieves request serializer class from YAML object
@@ -873,7 +893,7 @@ class YAMLDocstringParser(object):
             view_mocker = self._load_class(view_mocker, callback)
         return view_mocker
 
-    def get_parameters(self):
+    def get_parameters(self, callback):
         """
         Retrieves parameters from YAML object
         """
@@ -889,6 +909,14 @@ class YAMLDocstringParser(object):
             # https://github.com/wordnik/swagger-core/wiki/1.2-transition#wiki-additions-2
             # https://github.com/wordnik/swagger-core/wiki/Parameters
             data_type = field.get('type', 'string')
+            pytype = field.get('pytype', None)
+            if pytype is not None:
+                try:
+                    serializer = self._load_class(pytype, callback)
+                    data_type = IntrospectorHelper.get_serializer_name(
+                        serializer)
+                except (ImportError, ValueError):
+                    pass
             if param_type in ['path', 'query', 'header']:
                 if data_type not in BaseMethodIntrospector.PRIMITIVES:
                     data_type = 'string'
@@ -948,7 +976,7 @@ class YAMLDocstringParser(object):
         from method and docstring
         """
         parameters = []
-        docstring_params = self.get_parameters()
+        docstring_params = self.get_parameters(inspector.callback)
         method_params = inspector.get_parameters()
 
         # paramType may differ, overwrite first

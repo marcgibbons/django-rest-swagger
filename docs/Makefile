@@ -87,6 +87,8 @@ source/_static:
 screenshots: $(SCREENSHOTS)
 
 $(SCREENSHOTS): $(EXAMPLE_SOURCES) tests.py source/_static
+
+	$(CIGAREXAMPLE)/manage.py collectstatic --noinput
 	PYTHONPATH=$(CIGAREXAMPLE)/cigar_example $(CIGAREXAMPLE)/manage.py test tests
 
 
