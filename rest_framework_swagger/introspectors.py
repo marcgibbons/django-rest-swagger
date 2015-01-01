@@ -95,7 +95,8 @@ class IntrospectorHelper(object):
         Returns the first sentence of the first line of the class docstring
         """
         from .compat import strip_tags
-        description = get_view_description(callback).split("\n")[0].split(".")[0]
+        description = get_view_description(callback) \
+            .split("\n")[0].split(".")[0]
         if apply_markdown:
             description = strip_tags(do_markdown(description))
         return description
@@ -269,7 +270,7 @@ class BaseMethodIntrospector(object):
         path_params = self.build_path_parameters()
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
-        query_params = self.build_query_params_from_docstring()
+        query_params = self.build_query_parameters()
 
         if path_params:
             params += path_params
@@ -332,7 +333,7 @@ class BaseMethodIntrospector(object):
 
         return params
 
-    def build_query_params_from_docstring(self):
+    def build_query_parameters(self):
         params = []
 
         docstring = self.retrieve_docstring() or ''
@@ -548,7 +549,9 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
             freevars = x.code.co_freevars
         except (AttributeError, IndexError):
-            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+            raise RuntimeError(
+                'Unable to use callback invalid closure/function ' +
+                'specified.')
         else:
             return x.closure[freevars.index('actions')].cell_contents
 
@@ -575,6 +578,23 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
             setattr(view, 'action', self.method)
         view.request.method = self.http_method
         return view
+
+    def build_query_parameters(self):
+        parameters = super(ViewSetMethodIntrospector, self) \
+            .build_query_parameters()
+        view = self.create_view()
+        if self.method == 'list' and view.paginate_by:
+            parameters.append({'paramType': 'query',
+                               'name': view.page_kwarg,
+                               'description': None,
+                               'dataType': 'integer'})
+        if self.method == 'list' and view.paginate_by and \
+                view.paginate_by_param:
+            parameters.append({'paramType': 'query',
+                               'name': view.paginate_by_param,
+                               'description': None,
+                               'dataType': 'integer'})
+        return parameters
 
 
 def multi_getattr(obj, attr, default=None):
