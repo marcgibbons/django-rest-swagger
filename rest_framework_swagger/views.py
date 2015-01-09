@@ -3,18 +3,21 @@ from django.utils import six
 
 from django.views.generic import View
 from django.utils.safestring import mark_safe
+from django.utils.encoding import smart_text
 from django.shortcuts import render_to_response, RequestContext
 from django.core.exceptions import PermissionDenied
 from .compat import import_string
 
 from rest_framework.views import Response
+from rest_framework.settings import api_settings
+from rest_framework.utils import formatting
+
 from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.apidocview import APIDocView
 from rest_framework_swagger.docgenerator import DocumentationGenerator
 
 from rest_framework_swagger import SWAGGER_SETTINGS
 
-from rest_framework.settings import api_settings
 
 try:
     JSONRenderer = list(filter(
@@ -23,6 +26,17 @@ try:
     ))[0]
 except IndexError:
     from rest_framework.renderers import JSONRenderer
+
+
+def get_restructuredtext(view_cls, html=False):
+    from docutils import core
+    description = view_cls.__doc__ or ''
+    description = formatting.dedent(smart_text(description))
+    if html:
+        parts = core.publish_parts(source=description, writer_name='html')
+        html = parts['body_pre_docinfo'] + parts['fragment']
+        return mark_safe(html)
+    return description
 
 
 class SwaggerUIView(View):

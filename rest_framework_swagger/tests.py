@@ -6,6 +6,7 @@ from django.conf.urls import patterns, url, include
 from django.contrib.auth.models import User
 from django.contrib.admindocs.utils import trim_docstring
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils.importlib import import_module
 from django.views.generic import View
 
@@ -587,22 +588,26 @@ def get_introspectors(introspector):
     return dict((x.method, x) for x in iter(introspector))
 
 
+def make_viewset_introspector(view_class):
+    return ViewSetIntrospector(
+        view_class,
+        '/api/endpoint/{pk}',
+        url(
+            r'^/api/endpoint/(?P<{pk}>[^/]+)$',
+            view_class.as_view({
+                'get': 'list',
+                'post': 'create',
+                'put': 'update',
+                'patch': 'partial_update',
+                'delete': 'destroy'
+            })
+        )
+    )
+
+
 class ViewSetMethodIntrospectorTests(TestCase):
     def make_view_introspector(self, view_class):
-        return ViewSetIntrospector(
-            view_class,
-            '/api/endpoint/{pk}',
-            url(
-                r'^/api/endpoint/(?P<{pk}>[^/]+)$',
-                view_class.as_view({
-                    'get': 'list',
-                    'post': 'create',
-                    'put': 'update',
-                    'patch': 'partial_update',
-                    'delete': 'destroy'
-                })
-            )
-        )
+        return make_viewset_introspector(view_class)
 
     def test_get_serializer_class_access_action(self):
         class MyViewSet(ModelViewSet):
@@ -670,6 +675,86 @@ class ViewSetMethodIntrospectorTests(TestCase):
         self.assertEqual(0, len(page))
         page_by = [p for p in params if p['name'] == 'page_this_by']
         self.assertEqual(0, len(page_by))
+
+    def test_get_summary_empty(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("", summary)
+
+    def test_get_summary_view(self):
+        class MyViewSet(ModelViewSet):
+            """
+            *Slimy angels*
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("Slimy angels", summary)
+
+    @no_markdown
+    def test_get_summary_view_nomarkdown(self):
+        class MyViewSet(ModelViewSet):
+            """
+            *Slimy angels*
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("*Slimy angels*", summary)
+
+    def test_get_summary_method(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+            def create(self, request):
+                """
+                *Slimy angels*
+                """
+                pass
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("Slimy angels", summary)
+
+    @no_markdown
+    def test_get_summary_method_nomarkdown(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+            def create(self, request):
+                """
+                *Slimy angels*
+                """
+                pass
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("*Slimy angels*", summary)
 
 
 class BaseViewIntrospectorTest(TestCase):
@@ -1791,3 +1876,100 @@ def my_view_mocker(view):
 
 def my_view_mocker2(view):
     pass
+
+
+reST_SETTINGS = {
+    'REST_FRAMEWORK': {
+        'VIEW_DESCRIPTION_FUNCTION':
+        'rest_framework_swagger.views.get_restructuredtext'
+    }
+}
+
+
+@override_settings(**reST_SETTINGS)
+class RESTDocstringTests(TestCase):
+    def test_get_summary_empty(self):
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("", summary)
+
+    def test_get_summary_view(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            ============
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("Oh yes this is reST", summary)
+
+    def test_get_yaml(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            ---
+            # Oh no, this isn't reST
+            create:
+                param: my param
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        docs = introspector.get_notes()
+        self.assertIn('Oh yes this is reST', docs)
+        doc_parser = introspector.get_yaml_parser()
+        self.assertEqual(doc_parser.object['param'], 'my param')
+
+    def test_dont_get_yaml(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            -------------------
+            Oh yes so is this
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        docs = introspector.get_notes()
+        self.assertIn('Oh yes this is reST', docs)
+        self.assertIn('Oh yes so is this', docs)
+
+    def test_dont_get_params(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            -------------------
+            Oh yes so is this
+            -- this isnt
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        docs = introspector.get_notes()
+        self.assertIn('Oh yes this is reST', docs)
+        self.assertIn('Oh yes so is this', docs)

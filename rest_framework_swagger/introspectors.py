@@ -7,7 +7,7 @@ import re
 import yaml
 import importlib
 
-from .compat import OrderedDict
+from .compat import OrderedDict, strip_tags
 from abc import ABCMeta, abstractmethod
 
 from django.http import HttpRequest
@@ -55,9 +55,10 @@ class IntrospectorHelper(object):
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
-        for index, line in enumerate(split_lines):
+        for index in range(len(split_lines) - 1, -1, -1):
+            line = split_lines[index]
             line = line.strip()
-            if line.startswith('---'):
+            if line == '---':
                 cut_off = index
                 break
         if cut_off is not None:
@@ -71,12 +72,13 @@ class IntrospectorHelper(object):
         Strips the params from the docstring (ie. myparam -- Some param) will
         not be removed from the text body
         """
+        params_pattern = re.compile(r'(?:^|[^-])--(?:$|[^-])')
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
         for index, line in enumerate(split_lines):
             line = line.strip()
-            if line.find('--') != -1:
+            if params_pattern.search(line):
                 cut_off = index
                 break
         if cut_off is not None:
@@ -100,15 +102,13 @@ class IntrospectorHelper(object):
         return serializer.__class__.__name__
 
     @staticmethod
-    def get_view_description(callback):
+    def get_summary(callback, docstring=None):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        from .compat import strip_tags
-        description = get_view_description(callback) \
+        description = strip_tags(get_view_description(
+            callback, html=True, docstring=docstring)) \
             .split("\n")[0].split(".")[0]
-        if apply_markdown:
-            description = strip_tags(do_markdown(description))
         return description
 
 
@@ -135,7 +135,7 @@ class BaseViewIntrospector(object):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        return IntrospectorHelper.get_view_description(self.callback)
+        return IntrospectorHelper.get_summary(self.callback)
 
     def get_docs(self):
         return get_view_description(self.callback)
@@ -226,17 +226,10 @@ class BaseMethodIntrospector(object):
         return serializer
 
     def get_summary(self):
-        docs = self.get_docs()
-
         # If there is no docstring on the method, get class docs
-        if docs is None or docs == '':
-            docs = self.parent.get_description()
-        docs = trim_docstring(docs).split("\n")[0].split(".")[0]
-        if apply_markdown:
-            from .compat import strip_tags
-            docs = strip_tags(do_markdown(docs))
-
-        return docs
+        return IntrospectorHelper.get_summary(
+            self.callback,
+            self.get_docs() or self.parent.get_description())
 
     def get_nickname(self):
         """ Returns the APIView's nickname """
