@@ -16,11 +16,21 @@ from django.contrib.admindocs.utils import trim_docstring
 from django.utils.encoding import smart_text
 
 import rest_framework
-from rest_framework.views import get_view_name, get_view_description
+from rest_framework.views import get_view_name
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
 from rest_framework.utils import formatting
 from django.utils import six
+
+
+def get_view_description(view_cls, html=False, docstring=None):
+    if docstring is not None:
+        view_cls = type(
+            view_cls.__name__ + '_fake',
+            (view_cls,),
+            {'__doc__': docstring})
+    return rest_framework.settings.api_settings \
+        .VIEW_DESCRIPTION_FUNCTION(view_cls, html)
 
 
 def get_default_value(field):
@@ -128,7 +138,7 @@ class BaseViewIntrospector(object):
         return IntrospectorHelper.get_view_description(self.callback)
 
     def get_docs(self):
-        return self.callback.__doc__
+        return get_view_description(self.callback)
 
 
 class BaseMethodIntrospector(object):
@@ -219,7 +229,7 @@ class BaseMethodIntrospector(object):
         docs = self.get_docs()
 
         # If there is no docstring on the method, get class docs
-        if docs is None:
+        if docs is None or docs == '':
             docs = self.parent.get_description()
         docs = trim_docstring(docs).split("\n")[0].split(".")[0]
         if apply_markdown:
@@ -240,8 +250,7 @@ class BaseMethodIntrospector(object):
         """
         docstring = ""
 
-        class_docs = self.callback.__doc__ or ''
-        class_docs = smart_text(class_docs)
+        class_docs = get_view_description(self.callback)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
         method_docs = self.get_docs()
@@ -301,7 +310,8 @@ class BaseMethodIntrospector(object):
         method = str(self.method).lower()
         if not hasattr(self.callback, method):
             return None
-        return getattr(self.callback, method).__doc__
+
+        return get_view_description(getattr(self.callback, method))
 
     def build_body_parameters(self):
         serializer = self.get_request_serializer_class()
@@ -465,11 +475,13 @@ class WrappedAPIViewIntrospector(BaseViewIntrospector):
         return self.callback().allowed_methods
 
     def get_notes(self):
-        class_docs = self.callback.__doc__ or ''
-        class_docs = smart_text(class_docs)
-        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
-        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
-        return do_markdown(class_docs)
+        class_docs = get_view_description(self.callback)
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(
+            class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(
+            class_docs)
+        return get_view_description(
+            self.callback, html=True, docstring=class_docs)
 
 
 def do_markdown(docstring):
@@ -497,7 +509,7 @@ class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
         endpoint. If none are available, the class docstring
         will be used
         """
-        return self.callback.__doc__
+        return get_view_description(self.callback)
 
     def get_module(self):
         from rest_framework_swagger.decorators import wrapper_to_func
@@ -558,7 +570,8 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
     def __init__(self, view_introspector, method, http_method):
-        super(ViewSetMethodIntrospector, self).__init__(view_introspector, method)
+        super(ViewSetMethodIntrospector, self) \
+            .__init__(view_introspector, method)
         self.http_method = http_method.upper()
 
     def get_http_method(self):
