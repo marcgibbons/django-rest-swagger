@@ -42,6 +42,9 @@ setup(
     description='Swagger UI for Django REST Framework 2.3+',
     long_description=README,
     install_requires=install_requires,
+    extras_require = {
+        'reST': ['docutils>=0.8'],
+    },
 
     author='Marc Gibbons',
     author_email='marc_gibbons@rogers.com',
