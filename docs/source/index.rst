@@ -21,7 +21,7 @@ Overview
 
 Django REST Swagger is a library that generates 
 `Swagger <https://developers.helloreverb.com/swagger/>`_
-documentation from you `Django Rest Framework <http://www.django-rest-framework.org/>`_ API code.
+documentation from your `Django Rest Framework <http://www.django-rest-framework.org/>`_ API code.
 
 Supports `Swagger 1.2 <https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md>`_.
 
