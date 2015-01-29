@@ -589,17 +589,20 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         parameters = super(ViewSetMethodIntrospector, self) \
             .build_query_parameters()
         view = self.create_view()
+        if not hasattr(view, 'paginate_by'):
+            return parameters
+
         if self.method == 'list' and view.paginate_by:
             parameters.append({'paramType': 'query',
                                'name': view.page_kwarg,
                                'description': None,
                                'dataType': 'integer'})
-        if self.method == 'list' and view.paginate_by and \
-                view.paginate_by_param:
-            parameters.append({'paramType': 'query',
-                               'name': view.paginate_by_param,
-                               'description': None,
-                               'dataType': 'integer'})
+
+            if hasattr(view, 'paginate_by_param') and view.paginate_by_param:
+                parameters.append({'paramType': 'query',
+                                   'name': view.paginate_by_param,
+                                   'description': None,
+                                   'dataType': 'integer'})
         return parameters
 
 
