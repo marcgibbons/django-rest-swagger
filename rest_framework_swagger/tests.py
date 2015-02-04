@@ -95,7 +95,7 @@ class UrlParserTest(TestCase):
     def test_get_apis_urlconf_import(self):
         urlparser = UrlParser()
         urlconf = MockUrlconfModule(self.url_patterns)
-        with patch.dict('sys.modules', { 'mock_urls': urlconf }):
+        with patch.dict('sys.modules', {'mock_urls': urlconf}):
             apis = urlparser.get_apis(urlconf='mock_urls')
             for api in apis:
                 self.assertIn(api['pattern'], self.url_patterns)
