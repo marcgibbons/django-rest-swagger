@@ -1,4 +1,5 @@
 import os
+import six
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -20,7 +21,7 @@ class UrlParser(object):
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
         if patterns is None and urlconf is not None:
-            if type(urlconf) in (str, unicode):
+            if isinstance(urlconf, six.string_types):
                 urls = import_module(urlconf)
             else:
                 urls = urlconf
