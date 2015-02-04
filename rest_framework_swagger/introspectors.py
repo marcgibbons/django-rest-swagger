@@ -418,6 +418,8 @@ def get_data_type(field):
         return field.type_label
     elif isinstance(field, fields.BooleanField):
         return 'boolean'
+    elif isinstance(field, fields.NullBooleanField):
+        return 'boolean'
     elif isinstance(field, fields.URLField):
         return 'url'
     elif isinstance(field, fields.SlugField):
