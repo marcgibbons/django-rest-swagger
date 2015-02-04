@@ -20,7 +20,7 @@ class UrlParser(object):
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
         if patterns is None and urlconf is not None:
-            if type(urlconf) in ('str', 'unicode'):
+            if type(urlconf) in (str, unicode):
                 urls = import_module(urlconf)
             else:
                 urls = urlconf
