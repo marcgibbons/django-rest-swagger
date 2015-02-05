@@ -496,6 +496,12 @@ class IntrospectorHelperTest(TestCase):
 
         self.assertEqual("My comments are here", docstring)
 
+    def test_strip_yaml_from_docstring_mac_newlines(self):
+        docstring = "abc\r\n---\r\nparam: my param"
+        docstring2 = IntrospectorHelper.strip_yaml_from_docstring(docstring)
+        self.assertIn('abc', docstring2)
+        self.assertNotIn('param', docstring2)
+
     def test_strip_params_from_docstring_multiline(self):
         class TestView(APIView):
             """
@@ -603,6 +609,12 @@ def make_viewset_introspector(view_class):
             })
         )
     )
+
+
+def make_apiview_introspector(view_class):
+    return APIViewIntrospector(
+        view_class, '/{pk}',
+        RegexURLResolver(r'^/(?P<{pk}>[^/]+)$', ''))
 
 
 class ViewSetMethodIntrospectorTests(TestCase):
@@ -765,9 +777,7 @@ class BaseViewIntrospectorTest(TestCase):
 
 class BaseMethodIntrospectorTest(TestCase):
     def make_introspector(self, view_class):
-        return APIViewIntrospector(
-            view_class, '/{pk}',
-            RegexURLResolver(r'^/(?P<{pk}>[^/]+)$', ''))
+        return make_apiview_introspector(view_class)
 
     def make_introspector2(self, view_class):
         return APIViewIntrospector(
@@ -1916,7 +1926,26 @@ class RESTDocstringTests(TestCase):
         summary = introspector.get_summary()
         self.assertEqual("Oh yes this is reST", summary)
 
-    def test_get_yaml(self):
+    def test_get_summary_raw(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            ============
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        from rest_framework_swagger.introspectors import IntrospectorHelper
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        tx = IntrospectorHelper.get_summary(
+            introspector.callback,
+            'My comment\n---\nomit_serializer: true')
+        self.assertEqual("My comment", tx)
+
+    def test_get_yaml_viewset(self):
         class MyViewSet(ModelViewSet):
             """
             Oh yes this is reST
@@ -1934,6 +1963,26 @@ class RESTDocstringTests(TestCase):
         introspector = get_introspectors(class_introspector)['create']
         docs = introspector.get_notes()
         self.assertIn('Oh yes this is reST', docs)
+        self.assertNotIn("Oh no, this isn't reST", docs)
+        doc_parser = introspector.get_yaml_parser()
+        self.assertEqual(doc_parser.object['param'], 'my param')
+
+    def test_get_yaml_apiview(self):
+        class TestApiView(APIView):
+            def post(self, *args):
+                """
+                Oh yes this is reST
+                ---
+                # Oh no, this isn't reST
+                param: my param
+                """
+                pass
+
+        class_introspector = make_apiview_introspector(TestApiView)
+        introspector = get_introspectors(class_introspector)['POST']
+        docs = introspector.get_notes()
+        self.assertIn('Oh yes this is reST', docs)
+        self.assertNotIn("Oh no, this isn't reST", docs)
         doc_parser = introspector.get_yaml_parser()
         self.assertEqual(doc_parser.object['param'], 'my param')
 
