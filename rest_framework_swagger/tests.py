@@ -1,4 +1,5 @@
 import datetime
+from mock import patch
 
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.conf import settings
@@ -56,6 +57,12 @@ class NonApiView(View):
     pass
 
 
+class MockUrlconfModule:
+    """ A mock of an `app.urls`-like module. """
+    def __init__(self, urlpatterns):
+        self.urlpatterns = urlpatterns
+
+
 class CommentSerializer(serializers.Serializer):
     email = serializers.EmailField()
     content = serializers.CharField(max_length=200)
@@ -82,7 +89,21 @@ class UrlParserTest(TestCase):
         # Overwrite settings with test patterns
         urls.urlpatterns = self.url_patterns
         apis = urlparser.get_apis()
+        for api in apis:
+            self.assertIn(api['pattern'], self.url_patterns)
 
+    def test_get_apis_urlconf_import(self):
+        urlparser = UrlParser()
+        urlconf = MockUrlconfModule(self.url_patterns)
+        with patch.dict('sys.modules', {'mock_urls': urlconf}):
+            apis = urlparser.get_apis(urlconf='mock_urls')
+            for api in apis:
+                self.assertIn(api['pattern'], self.url_patterns)
+
+    def test_get_apis_urlconf_module(self):
+        urlparser = UrlParser()
+        urlconf = MockUrlconfModule(self.url_patterns)
+        apis = urlparser.get_apis(urlconf=urlconf)
         for api in apis:
             self.assertIn(api['pattern'], self.url_patterns)
 
