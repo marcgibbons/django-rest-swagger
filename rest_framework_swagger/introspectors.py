@@ -1083,8 +1083,9 @@ class YAMLDocstringParser(object):
         """
         Returns filter function for parameters structure
         """
-        fn = lambda o: o.get(key, None) == val
-        return filter(fn, params)
+        def filter_by(o):
+            return o.get(key, None) == val
+        return filter(filter_by, params)
 
     @staticmethod
     def _merge_params(params1, params2, key):

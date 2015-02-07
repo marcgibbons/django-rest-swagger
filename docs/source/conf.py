@@ -13,6 +13,7 @@
 # serve to show the default.
 
 import sys
+from rest_framework_swagger import VERSION
 
 extensions = []
 
@@ -26,7 +27,6 @@ project = 'django-rest-swagger'
 copyright = '2014, Marc Gibbons'
 
 sys.path.append("../../")
-from rest_framework_swagger import VERSION
 version = VERSION
 release = VERSION
 

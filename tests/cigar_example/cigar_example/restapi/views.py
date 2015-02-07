@@ -3,6 +3,15 @@
 from rest_framework.views import Response, APIView
 from rest_framework import viewsets, status
 import rest_framework
+
+from rest_framework.generics import ListCreateAPIView, \
+    RetrieveUpdateDestroyAPIView
+
+from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
+from .serializers import CigarSerializer, ManufacturerSerializer, \
+    CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer, \
+    CigarJambalayaSerializer, JambalayaCigarsSerializer, CigarSerializerMinimal
+
 if rest_framework.VERSION < '3.0.0':
     from rest_framework.decorators import action, link, api_view
 else:
@@ -13,13 +22,6 @@ else:
 
     def link():
         return lambda func: detail_route()(func)
-from rest_framework.generics import ListCreateAPIView, \
-    RetrieveUpdateDestroyAPIView
-
-from cigar_example.app.models import Cigar, Manufacturer, Country, Jambalaya
-from .serializers import CigarSerializer, ManufacturerSerializer, \
-    CountrySerializer, JambalayaSerializer, JambalayaQuerySerializer, \
-    CigarJambalayaSerializer, JambalayaCigarsSerializer, CigarSerializerMinimal
 
 
 class CigarViewSet(viewsets.ModelViewSet):
