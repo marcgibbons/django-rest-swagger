@@ -283,7 +283,7 @@ class BaseMethodIntrospector(object):
         if path_params:
             params += path_params
 
-        if self.get_http_method() not in ["GET", "DELETE"]:
+        if self.get_http_method() not in ["GET", "DELETE", "HEAD"]:
             params += form_params
 
             if not form_params and body_params is not None:
