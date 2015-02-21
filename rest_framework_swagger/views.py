@@ -30,6 +30,7 @@ except IndexError:
 
 def get_restructuredtext(view_cls, html=False):
     from docutils import core
+
     description = view_cls.__doc__ or ''
     description = formatting.dedent(smart_text(description))
     if html:
@@ -39,8 +40,15 @@ def get_restructuredtext(view_cls, html=False):
     return description
 
 
-class SwaggerUIView(View):
+def get_full_base_path(request):
+    protocol = SWAGGER_SETTINGS.get('protocol', 'http')
+    if 'base_path' in SWAGGER_SETTINGS:
+        return ("%s://%s" % (protocol, SWAGGER_SETTINGS.get('base_path', '').rstrip('/'))).rstrip('/')
+    else:
+        return ('%s://%s%s' % (protocol, request.get_host(), request.path)).rstrip('/')
 
+
+class SwaggerUIView(View):
     def get(self, request, *args, **kwargs):
 
         if not self.has_permission(request):
@@ -49,7 +57,7 @@ class SwaggerUIView(View):
         template_name = SWAGGER_SETTINGS.get('template_path')
         data = {
             'swagger_settings': {
-                'discovery_url': "%sapi-docs/" % request.build_absolute_uri(),
+                'discovery_url': "%s/api-docs/" % get_full_base_path(request),
                 'api_key': SWAGGER_SETTINGS.get('api_key', ''),
                 'token_type': SWAGGER_SETTINGS.get('token_type'),
                 'enabled_methods': mark_safe(
@@ -82,7 +90,6 @@ class SwaggerUIView(View):
 
 
 class SwaggerResourcesView(APIDocView):
-
     renderer_classes = (JSONRenderer,)
 
     def get(self, request):
@@ -97,7 +104,7 @@ class SwaggerResourcesView(APIDocView):
         return Response({
             'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
-            'basePath': self.host.rstrip('/'),
+            'basePath': self.get_base_path(),
             'apis': apis,
             'info': SWAGGER_SETTINGS.get('info', {
                 'contact': '',
@@ -109,6 +116,13 @@ class SwaggerResourcesView(APIDocView):
             }),
         })
 
+    def get_base_path(self):
+        protocol = SWAGGER_SETTINGS.get('protocol', 'http')
+        if 'base_path' in SWAGGER_SETTINGS:
+            return ("%s://%s/api-docs" % (protocol, SWAGGER_SETTINGS.get('base_path', '').rstrip('/')))
+        else:
+            return ('%s://%s%s' % (protocol, self.request.get_host(), self.request.path)).rstrip('/')
+
     def get_resources(self):
         urlparser = UrlParser()
         urlconf = getattr(self.request, "urlconf", None)
@@ -118,7 +132,6 @@ class SwaggerResourcesView(APIDocView):
 
 
 class SwaggerApiView(APIDocView):
-
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, path):
