@@ -21,7 +21,9 @@ Example:
         'api_key': '', 
         'is_authenticated': False,  
         'is_superuser': False, 
-        'permission_denied_handler': None, 
+        'permission_denied_handler': None,
+	'protocol': http',
+	'base_path':'helloreverb.com/docs' 
         'info': {
             'contact': 'apiteam@wordnik.com',
             'description': 'This is a sample server Petstore server. '
@@ -59,6 +61,13 @@ api_key
 an api key
 
 Defaults to :code:`''`
+
+base_path
+-----------------------
+
+the url to where your main Swagger documentation page will live without the protocol. Optional.
+
+If not provided, it will generate the base_path from the :code:`request.get_host()` method.
 
 doc_expansion
 -----------------------
@@ -133,3 +142,10 @@ token_type
 Overrides authorization token type.
 
 Default: :code:`'Token'`
+
+protocol
+--------
+
+The protocol of the application, e.g 'http' or 'https'. Optional
+
+Defaults to 'https' if the :code:`request.is_secure()` returns true, otherwise defaults to 'http'
