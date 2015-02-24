@@ -55,7 +55,7 @@ Example:
 
 parameters
 --------------------------
-Define parameters and its properties in docstrings:
+Define parameters and their properties in docstrings:
 
 .. code-block:: yaml
 
@@ -84,7 +84,7 @@ pytype
 
 Specify a serializer you want to use to populate :code:`type`.
 
-Overriding paramters
+Overriding parameters
 --------------------
 
 parameters_strategy
@@ -188,7 +188,7 @@ The discovered serializer will be registered with `Write` or `Read` prefix.
 Response Class will be automatically adjusted if serializer class was
 detected by method inspector.
 
-You can also refer to this models in your parameters:
+You can also refer to these models in your parameters:
 
 .. code-block:: yaml
 

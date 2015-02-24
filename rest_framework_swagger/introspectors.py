@@ -106,9 +106,15 @@ class IntrospectorHelper(object):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        description = strip_tags(get_view_description(
-            callback, html=True, docstring=docstring)) \
+        description = get_view_description(
+            callback, html=False, docstring=docstring) \
             .split("\n")[0].split(".")[0]
+        description = IntrospectorHelper.strip_yaml_from_docstring(
+            description)
+        description = IntrospectorHelper.strip_params_from_docstring(
+            description)
+        description = strip_tags(get_view_description(
+            callback, html=True, docstring=description))
         return description
 
 
@@ -277,7 +283,7 @@ class BaseMethodIntrospector(object):
         if path_params:
             params += path_params
 
-        if self.get_http_method() not in ["GET", "DELETE"]:
+        if self.get_http_method() not in ["GET", "DELETE", "HEAD"]:
             params += form_params
 
             if not form_params and body_params is not None:
@@ -425,6 +431,8 @@ def get_data_type(field):
     if hasattr(field, 'type_label'):
         return field.type_label
     elif isinstance(field, fields.BooleanField):
+        return 'boolean'
+    elif isinstance(field, fields.NullBooleanField):
         return 'boolean'
     elif isinstance(field, fields.URLField):
         return 'url'
@@ -597,17 +605,20 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         parameters = super(ViewSetMethodIntrospector, self) \
             .build_query_parameters()
         view = self.create_view()
+        if not hasattr(view, 'paginate_by'):
+            return parameters
+
         if self.method == 'list' and view.paginate_by:
             parameters.append({'paramType': 'query',
                                'name': view.page_kwarg,
                                'description': None,
                                'dataType': 'integer'})
-        if self.method == 'list' and view.paginate_by and \
-                view.paginate_by_param:
-            parameters.append({'paramType': 'query',
-                               'name': view.paginate_by_param,
-                               'description': None,
-                               'dataType': 'integer'})
+
+            if hasattr(view, 'paginate_by_param') and view.paginate_by_param:
+                parameters.append({'paramType': 'query',
+                                   'name': view.paginate_by_param,
+                                   'description': None,
+                                   'dataType': 'integer'})
         return parameters
 
 
@@ -1080,8 +1091,9 @@ class YAMLDocstringParser(object):
         """
         Returns filter function for parameters structure
         """
-        fn = lambda o: o.get(key, None) == val
-        return filter(fn, params)
+        def filter_by(o):
+            return o.get(key, None) == val
+        return filter(filter_by, params)
 
     @staticmethod
     def _merge_params(params1, params2, key):

@@ -10,7 +10,10 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DJANGO_ROOT = dirname(dirname(abspath(__file__)))
-root = lambda *x: abspath(join(abspath(DJANGO_ROOT), *x))
+
+
+def root(*x):
+    return abspath(join(abspath(DJANGO_ROOT), *x))
 
 DATABASES = {
     'default': {
