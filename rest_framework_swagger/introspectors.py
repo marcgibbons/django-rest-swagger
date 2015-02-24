@@ -374,22 +374,30 @@ class BaseMethodIntrospector(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = get_data_type(field)
+            data_type = get_data_type(field) or 'string'
 
             # guess format
             data_format = 'string'
             if data_type in self.PRIMITIVES:
                 data_format = self.PRIMITIVES.get(data_type)[0]
-
+            
             f = {
                 'paramType': 'form',
                 'name': name,
-                'description': getattr(field, 'help_text', ''),
+                'description': getattr(field, 'help_text', '') or '',
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
                 'defaultValue': get_default_value(field),
             }
+
+            # Swagger type is a primitive, format is more specific
+            if f['type'] == f['format']:
+                del f['format']
+
+            # defaultValue of null is not allowed, it is specific to type
+            if f['defaultValue'] == None:
+                del f['defaultValue']
 
             # Min/Max values
             max_val = getattr(field, 'max_val', None)
@@ -447,7 +455,7 @@ def get_data_type(field):
     elif isinstance(field, fields.CharField):
         return 'string'
     else:
-        return 'field'
+        return 'string'
 
 
 class APIViewIntrospector(BaseViewIntrospector):

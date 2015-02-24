@@ -207,7 +207,7 @@ class DocumentationGenerator(object):
             if serializer_name is not None:
                 return serializer_name
 
-            return None
+            return 'object'
 
     def _get_serializer_set(self, apis):
         """
@@ -282,7 +282,7 @@ class DocumentationGenerator(object):
             if getattr(field, 'required', False):
                 data['required'].append(name)
 
-            data_type = get_data_type(field)
+            data_type = get_data_type(field) or 'string'
 
             # guess format
             data_format = 'string'
@@ -300,6 +300,14 @@ class DocumentationGenerator(object):
                 'defaultValue': get_default_value(field),
                 'readOnly': getattr(field, 'read_only', None),
             }
+            
+            # Swagger type is a primitive, format is more specific
+            if f['type'] == f['format']:
+                del f['format']
+
+            # defaultValue of null is not allowed, it is specific to type
+            if f['defaultValue'] == None:
+                del f['defaultValue']
 
             # Min/Max values
             max_val = getattr(field, 'max_val', None)
