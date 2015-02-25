@@ -386,7 +386,7 @@ class BaseMethodIntrospector(object):
             data_format = 'string'
             if data_type in self.PRIMITIVES:
                 data_format = self.PRIMITIVES.get(data_type)[0]
-            
+
             f = {
                 'paramType': 'form',
                 'name': name,

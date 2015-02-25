@@ -300,7 +300,7 @@ class DocumentationGenerator(object):
                 'defaultValue': get_default_value(field),
                 'readOnly': getattr(field, 'read_only', None),
             }
-            
+
             # Swagger type is a primitive, format is more specific
             if f['type'] == f['format']:
                 del f['format']
