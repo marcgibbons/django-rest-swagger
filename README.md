@@ -16,6 +16,28 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 * URL parameters (ie. /product/{id})
 * Field `help_text` property is used to create the description from the serializer or model.
 
+## Quick start
+
+1. ```pip install django-rest-swagger```
+
+2. Add `rest_framework_swagger` to your `INSTALLED_APPS` setting:
+
+    ```python
+        INSTALLED_APPS = (
+            ...
+            'rest_framework_swagger',
+        )
+    ```
+
+3. Include the rest_framework_swagger URLs to a path of your choice
+
+    ```python
+    patterns = ('',
+        ...
+        url(r'^docs/', include('rest_framework_swagger.urls')),
+    )
+    ```
+
 ## Requirements
 * Python (2.6.5+, 2.7, 3.2, 3.3, 3.4)
 * Django (1.5.5+, 1.6, 1.7)
