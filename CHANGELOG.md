@@ -1,5 +1,10 @@
 ## Release Notes:
 
+### v0.2.9 (March 6, 2015)
+* fix reStructuredText in docstring
+* fix NullBooleanField data type detection
+* support non-string urlconf
+
 ### v0.2.8 (January 11, 2015)
 * reStructuredText in docstrings
 * show pagination parameters automatically

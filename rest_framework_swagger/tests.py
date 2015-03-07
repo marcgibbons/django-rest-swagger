@@ -82,7 +82,8 @@ class UrlParserTest(TestCase):
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
             url(r'a-view/child2/?$', MockApiView.as_view()),
-            url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
+            url(r'another-view/?$', MockApiView.as_view(),
+                name='another test view'),
         )
 
     def test_get_apis(self):
@@ -124,15 +125,19 @@ class UrlParserTest(TestCase):
 
     def test_resources_starting_with_letters_from_base_path(self):
         base_path = r'api/'
-        url_patterns = patterns('',
-                                url(r'test', MockApiView.as_view(), name='a test view'),
-                                url(r'pai_test', MockApiView.as_view(), name='start with letters a, p, i'),
-                                )
+        url_patterns = patterns(
+            '',
+            url(r'test', MockApiView.as_view(), name='a test view'),
+            url(r'pai_test', MockApiView.as_view(),
+                name='start with letters a, p, i'),
+        )
         urls = patterns('', url(base_path, include(url_patterns)))
         urlparser = UrlParser()
         apis = urlparser.get_apis(urls)
         resources = urlparser.get_top_level_apis(apis)
-        self.assertEqual(set(resources), set([base_path + url_pattern.regex.pattern for url_pattern in url_patterns]))
+        self.assertEqual(set(resources),
+                         set([base_path + url_pattern.regex.pattern
+                              for url_pattern in url_patterns]))
 
     def test_flatten_url_tree_with_filter(self):
         urlparser = UrlParser()
@@ -149,10 +154,12 @@ class UrlParserTest(TestCase):
     def test_flatten_url_tree_excluded_namesapce(self):
         urls = patterns(
             '',
-            url(r'api/base/path/', include(self.url_patterns, namespace='exclude'))
+            url(r'api/base/path/',
+                include(self.url_patterns, namespace='exclude'))
         )
         urlparser = UrlParser()
-        apis = urlparser.__flatten_patterns_tree__(patterns=urls, exclude_namespaces='exclude')
+        apis = urlparser.__flatten_patterns_tree__(
+            patterns=urls, exclude_namespaces='exclude')
 
         self.assertEqual([], apis)
 
@@ -179,8 +186,10 @@ class UrlParserTest(TestCase):
         urlparser = UrlParser()
         apis = urlparser.get_apis(urls)
 
-        self.assertEqual(sum(api['path'].find('api') != -1 for api in apis), 4)
-        self.assertEqual(sum(api['path'].find('test') != -1 for api in apis), 4)
+        self.assertEqual(
+            4, sum(api['path'].find('api') != -1 for api in apis))
+        self.assertEqual(
+            4, sum(api['path'].find('test') != -1 for api in apis))
 
     def test_get_api_callback(self):
         urlparser = UrlParser()
@@ -200,7 +209,8 @@ class UrlParserTest(TestCase):
 
     def test_get_top_level_api(self):
         urlparser = UrlParser()
-        apis = urlparser.get_top_level_apis(urlparser.get_apis(self.url_patterns))
+        apis = urlparser.get_top_level_apis(
+            urlparser.get_apis(self.url_patterns))
 
         self.assertEqual(2, len(apis))
 
@@ -300,8 +310,10 @@ class DocumentationGeneratorTest(TestCase):
             '',
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
-            url(r'a-view/<pk>/?$', MockApiView.as_view(), name="detailed view for mock"),
-            url(r'another-view/?$', MockApiView.as_view(), name='another test view'),
+            url(r'a-view/<pk>/?$', MockApiView.as_view(),
+                name="detailed view for mock"),
+            url(r'another-view/?$', MockApiView.as_view(),
+                name='another test view'),
         )
 
     def test_get_operations(self):
@@ -376,7 +388,9 @@ class DocumentationGeneratorTest(TestCase):
         models = docgen.get_models(apis)
 
         self.assertIn('CommentSerializer', models)
-        self.assertEqual(list(models['CommentSerializer']['properties'].keys()), ["email", "content", "created"])
+        self.assertEqual(
+            ["email", "content", "created"],
+            list(models['CommentSerializer']['properties'].keys()))
 
     def test_get_serializer_set(self):
         class SerializedAPI(ListCreateAPIView):
@@ -515,7 +529,8 @@ class IntrospectorHelperTest(TestCase):
             """
             pass
 
-        docstring = IntrospectorHelper.strip_yaml_from_docstring(trim_docstring(AnAPIView.__doc__))
+        docstring = IntrospectorHelper.strip_yaml_from_docstring(
+            trim_docstring(AnAPIView.__doc__))
 
         self.assertEqual("My comments are here", docstring)
 
@@ -537,7 +552,8 @@ class IntrospectorHelperTest(TestCase):
             """
             pass
 
-        docstring = IntrospectorHelper.strip_yaml_from_docstring(TestView.__doc__)
+        docstring = IntrospectorHelper.strip_yaml_from_docstring(
+            TestView.__doc__)
         expected = 'Creates a new user.\nReturns: token - auth token'
 
         self.assertEqual(expected, docstring)
@@ -581,7 +597,8 @@ class ViewSetTestIntrospectorTest(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(2, len(allowed_methods))
-        allowed_methods = [method.get_http_method() for method in allowed_methods]
+        allowed_methods = [method.get_http_method()
+                           for method in allowed_methods]
         self.assertIn('POST', allowed_methods)
         self.assertIn('GET', allowed_methods)
 
@@ -606,7 +623,8 @@ class ViewSetTestIntrospectorTest(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(4, len(allowed_methods))
-        allowed_methods = [method.get_http_method() for method in allowed_methods]
+        allowed_methods = [method.get_http_method()
+                           for method in allowed_methods]
         self.assertIn('PUT', allowed_methods)
         self.assertIn('PATCH', allowed_methods)
         self.assertIn('DELETE', allowed_methods)
@@ -794,7 +812,8 @@ class ViewSetMethodIntrospectorTests(TestCase):
 
 class BaseViewIntrospectorTest(TestCase):
     def test_get_description(self):
-        introspector = APIViewIntrospector(MockApiView, '/', RegexURLResolver(r'^/', ''))
+        introspector = APIViewIntrospector(
+            MockApiView, '/', RegexURLResolver(r'^/', ''))
         self.assertEqual('A Test View', introspector.get_description())
 
 
@@ -981,7 +1000,8 @@ class BaseMethodIntrospectorTest(TestCase):
     def test_build_form_parameters_allowable_values(self):
 
         class MySerializer(serializers.Serializer):
-            content = serializers.CharField(max_length=200, min_length=10, default="Vandalay Industries")
+            content = serializers.CharField(
+                max_length=200, min_length=10, default="Vandalay Industries")
             a_read_only_field = serializers.BooleanField(read_only=True)
 
         class MyAPIView(ListCreateAPIView):
@@ -1036,7 +1056,8 @@ class BaseMethodIntrospectorTest(TestCase):
         default_value = MY_CHOICES[0][0]
 
         class MySerializer(serializers.Serializer):
-            choice_default = serializers.ChoiceField(choices=MY_CHOICES, default=default_value)
+            choice_default = serializers.ChoiceField(
+                choices=MY_CHOICES, default=default_value)
             char_field = serializers.CharField()
 
         class MyAPIView(ListCreateAPIView):
@@ -1144,7 +1165,8 @@ class YAMLDocstringParserTests(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(2, len(allowed_methods))
-        allowed_methods = [method.get_http_method() for method in allowed_methods]
+        allowed_methods = [method.get_http_method()
+                           for method in allowed_methods]
         self.assertIn('POST', allowed_methods)
         self.assertIn('GET', allowed_methods)
         self.assertIn('list', introspector.methods())
@@ -1178,7 +1200,8 @@ class YAMLDocstringParserTests(TestCase):
         )
         allowed_methods = list(introspector)
         self.assertEqual(2, len(allowed_methods))
-        allowed_methods = [method.get_http_method() for method in allowed_methods]
+        allowed_methods = [method.get_http_method()
+                           for method in allowed_methods]
         self.assertIn('POST', allowed_methods)
         self.assertIn('GET', allowed_methods)
         self.assertIn('list', introspector.methods())
@@ -1201,14 +1224,17 @@ class YAMLDocstringParserTests(TestCase):
                       type: string
                       required: true
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         parser = introspector.get_yaml_parser()
         params = parser.discover_parameters(introspector)
 
-        self.assertEqual(len(CommentSerializer().get_fields()) + 1, len(params))
+        self.assertEqual(
+            len(CommentSerializer().get_fields()) + 1,
+            len(params))
 
     def test_replace_parameters(self):
         class SerializedAPI(ListCreateAPIView):
@@ -1225,7 +1251,8 @@ class YAMLDocstringParserTests(TestCase):
                       type: string
                       required: true
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1250,7 +1277,8 @@ class YAMLDocstringParserTests(TestCase):
                       type: string
                       required: true
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1279,7 +1307,8 @@ class YAMLDocstringParserTests(TestCase):
                     - name: foo
                       paramType: form
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'GET')
@@ -1296,7 +1325,8 @@ class YAMLDocstringParserTests(TestCase):
 
     def test_parameters_minimum_is_string(self):
         '''
-        minimum and maximum of Parameter Object required by Swagger 1.2 spec to be string.
+        minimum and maximum of Parameter Object required by
+        Swagger 1.2 spec to be string.
         '''
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
@@ -1316,7 +1346,8 @@ class YAMLDocstringParserTests(TestCase):
                       minimum: 1
                       maximum: 100
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1341,7 +1372,8 @@ class YAMLDocstringParserTests(TestCase):
                     - code: 404
                       message: Not found.
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1361,7 +1393,8 @@ class YAMLDocstringParserTests(TestCase):
                 ---
                 serializer: serializers.Serializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1382,7 +1415,8 @@ class YAMLDocstringParserTests(TestCase):
             return "blarg"
 
         class_introspector = self.make_fbv_introspector(SerializedAPI2)
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
         self.assertEqual(serializer, CommentSerializer)
@@ -1399,7 +1433,8 @@ class YAMLDocstringParserTests(TestCase):
 
         class_introspector = self.make_fbv_introspector(SerializedAPI2)
         wrapper_to_func(SerializedAPI2.cls)
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
         self.assertEqual(serializer, CommentSerializer)
@@ -1416,7 +1451,8 @@ class YAMLDocstringParserTests(TestCase):
 
         class_introspector = self.make_fbv_introspector(SerializedAPI2)
         wrapper_to_func(SerializedAPI2.cls)
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
         generator = DocumentationGenerator()
         serializer = generator._get_method_serializer(introspector)
         self.assertEqual(serializer, CommentSerializer)
@@ -1432,7 +1468,8 @@ class YAMLDocstringParserTests(TestCase):
             return "blarg"
 
         class_introspector = self.make_fbv_introspector(SerializedAPI2)
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
         generator = DocumentationGenerator()
         try:
             generator._get_method_serializer(introspector)
@@ -1450,7 +1487,8 @@ class YAMLDocstringParserTests(TestCase):
                 ---
                 omit_serializer: true
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1468,7 +1506,8 @@ class YAMLDocstringParserTests(TestCase):
                 request_serializer: QuerySerializer
                 response_serializer: CommentSerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1500,7 +1539,8 @@ class YAMLDocstringParserTests(TestCase):
                 serializer: QuerySerializer
                 response_serializer: CommentSerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1523,7 +1563,8 @@ class YAMLDocstringParserTests(TestCase):
                 request_serializer: QuerySerializer
                 serializer: CommentSerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1545,7 +1586,8 @@ class YAMLDocstringParserTests(TestCase):
                 ---
                 request_serializer: QuerySerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1567,7 +1609,8 @@ class YAMLDocstringParserTests(TestCase):
                 ---
                 response_serializer: CommentSerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1591,7 +1634,8 @@ class YAMLDocstringParserTests(TestCase):
             serializer_class = QuerySerializer
 
             def post(self, request, *args, **kwargs):
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1614,7 +1658,8 @@ class YAMLDocstringParserTests(TestCase):
             serializer_class = QuerySerializer
 
             def post(self, request, *args, **kwargs):
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1637,7 +1682,8 @@ class YAMLDocstringParserTests(TestCase):
             serializer_class = QuerySerializer
 
             def post(self, request, *args, **kwargs):
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1659,7 +1705,8 @@ class YAMLDocstringParserTests(TestCase):
             serializer_class = CommentSerializer
 
             def post(self, request, *args, **kwargs):
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1681,7 +1728,8 @@ class YAMLDocstringParserTests(TestCase):
             serializer_class = QuerySerializer
 
             def post(self, request, *args, **kwargs):
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1709,7 +1757,8 @@ class YAMLDocstringParserTests(TestCase):
                     request_serializer: QuerySerializer
                     response_serializer: CommentSerializer
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1735,7 +1784,8 @@ class YAMLDocstringParserTests(TestCase):
                     required: false
                     type: url
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
 
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
@@ -1763,7 +1813,8 @@ class YAMLDocstringParserTests(TestCase):
         class_introspector = self.make_fbv_introspector(a_view)
         notes = class_introspector.get_notes()
         self.assertEqual(notes, "Slimy toads")
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
 
         notes = introspector.get_notes()
 
@@ -1785,7 +1836,8 @@ class YAMLDocstringParserTests(TestCase):
         apis = urlparser.get_apis(url_patterns)
         notes = class_introspector.get_notes()
         self.assertEqual(notes, "<p>Slimy <em>toads</em></p>")
-        introspector = WrappedAPIViewMethodIntrospector(class_introspector, 'POST')
+        introspector = WrappedAPIViewMethodIntrospector(
+            class_introspector, 'POST')
 
         notes = introspector.get_notes()
 
@@ -1795,7 +1847,8 @@ class YAMLDocstringParserTests(TestCase):
         self.assertIn("description", api_docs[0])
         self.assertEqual(api_docs[0]["description"], "Slimy toads")
         self.assertIn('operations', api_docs[0])
-        self.assertEqual(api_docs[0]["operations"][0]['summary'], "Slimy toads")
+        self.assertEqual(
+            api_docs[0]["operations"][0]['summary'], "Slimy toads")
 
     def test_apiview_models(self):
         from rest_framework.views import Response
@@ -1845,7 +1898,8 @@ class YAMLDocstringParserTests(TestCase):
                 ---
                 view_mocker: my_view_mocker2
                 """
-                return super(SerializedAPI, self).post(request, *args, **kwargs)
+                return super(SerializedAPI, self).post(
+                    request, *args, **kwargs)
         class_introspector = self.make_introspector(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         generator = DocumentationGenerator()
@@ -1925,7 +1979,8 @@ class RESTDocstringTests(TestCase):
         from rest_framework_swagger.views import get_restructuredtext
         self.view_func = api_settings.VIEW_DESCRIPTION_FUNCTION
         api_settings.VIEW_DESCRIPTION_FUNCTION = get_restructuredtext
-        self.assertEqual(get_restructuredtext, api_settings.VIEW_DESCRIPTION_FUNCTION)
+        self.assertEqual(get_restructuredtext,
+                         api_settings.VIEW_DESCRIPTION_FUNCTION)
 
     def tearDown(self):
         api_settings.VIEW_DESCRIPTION_FUNCTION = self.view_func
@@ -2077,7 +2132,8 @@ class CustomDocstringTests(TestCase):
     def setUp(self):
         self.view_func = api_settings.VIEW_DESCRIPTION_FUNCTION
         api_settings.VIEW_DESCRIPTION_FUNCTION = get_custom_description
-        self.assertEqual(get_custom_description, api_settings.VIEW_DESCRIPTION_FUNCTION)
+        self.assertEqual(get_custom_description,
+                         api_settings.VIEW_DESCRIPTION_FUNCTION)
 
     def tearDown(self):
         api_settings.VIEW_DESCRIPTION_FUNCTION = self.view_func
