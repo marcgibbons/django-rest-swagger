@@ -17,6 +17,8 @@ from rest_framework import serializers
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view
+from rest_framework.settings import api_settings
+from rest_framework_swagger.compat import strip_tags
 import rest_framework
 
 from .decorators import wrapper_to_func, func_to_wrapper
@@ -1919,6 +1921,15 @@ reST_SETTINGS = {
 
 @override_settings(**reST_SETTINGS)
 class RESTDocstringTests(TestCase):
+    def setUp(self):
+        from rest_framework_swagger.views import get_restructuredtext
+        self.view_func = api_settings.VIEW_DESCRIPTION_FUNCTION
+        api_settings.VIEW_DESCRIPTION_FUNCTION = get_restructuredtext
+        self.assertEqual(get_restructuredtext, api_settings.VIEW_DESCRIPTION_FUNCTION)
+
+    def tearDown(self):
+        api_settings.VIEW_DESCRIPTION_FUNCTION = self.view_func
+
     def test_get_summary_empty(self):
         class MyViewSet(ModelViewSet):
             model = User
@@ -1935,6 +1946,7 @@ class RESTDocstringTests(TestCase):
         class MyViewSet(ModelViewSet):
             """
             Oh yes this is reST
+            Oh good there are waffles
             ============
             """
             model = User
@@ -1945,7 +1957,7 @@ class RESTDocstringTests(TestCase):
         class_introspector = make_viewset_introspector(MyViewSet)
         introspector = get_introspectors(class_introspector)['create']
         summary = introspector.get_summary()
-        self.assertEqual("Oh yes this is reST", summary)
+        self.assertEqual("Oh yes this is reST", summary.strip())
 
     def test_get_summary_raw(self):
         class MyViewSet(ModelViewSet):
@@ -1964,7 +1976,7 @@ class RESTDocstringTests(TestCase):
         tx = IntrospectorHelper.get_summary(
             introspector.callback,
             'My comment\n---\nomit_serializer: true')
-        self.assertEqual("My comment", tx)
+        self.assertEqual("My comment", tx.strip())
 
     def test_get_yaml_viewset(self):
         class MyViewSet(ModelViewSet):
@@ -2043,3 +2055,61 @@ class RESTDocstringTests(TestCase):
         docs = introspector.get_notes()
         self.assertIn('Oh yes this is reST', docs)
         self.assertIn('Oh yes so is this', docs)
+
+
+def get_custom_description(view_cls, html=False):
+    description = view_cls.__doc__ or ''
+    description = description.strip()
+    if html:
+        description = description.replace('\n', '<tacos />')
+    return description
+
+
+custom_SETTINGS = {
+    'REST_FRAMEWORK': {
+        'VIEW_DESCRIPTION_FUNCTION': get_custom_description
+    }
+}
+
+
+@override_settings(**custom_SETTINGS)
+class CustomDocstringTests(TestCase):
+    def setUp(self):
+        self.view_func = api_settings.VIEW_DESCRIPTION_FUNCTION
+        api_settings.VIEW_DESCRIPTION_FUNCTION = get_custom_description
+        self.assertEqual(get_custom_description, api_settings.VIEW_DESCRIPTION_FUNCTION)
+
+    def tearDown(self):
+        api_settings.VIEW_DESCRIPTION_FUNCTION = self.view_func
+
+    def test_custom_function_works(self):
+        from rest_framework_swagger.introspectors import get_view_description
+        s = get_view_description(
+            CommentSerializer, html=True,
+            docstring="hiya bad boy\ntacos")
+        self.assertEqual("hiya bad boy<tacos />tacos", s)
+
+    def test_get_summary_view(self):
+        class MyViewSet(ModelViewSet):
+            """
+            Oh yes this is reST
+            Oh good there are waffles
+            ============
+            """
+            model = User
+            serializer_class = CommentSerializer
+            paginate_by = 20
+            paginate_by_param = 'page_this_by'
+
+        class_introspector = make_viewset_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['create']
+        summary = introspector.get_summary()
+        self.assertEqual("Oh yes this is reST", summary)
+
+
+class TestStripTags(TestCase):
+    def test1(self):
+        self.assertEqual('tacos', strip_tags('tacos'))
+        self.assertEqual('tacos', strip_tags('<p>tacos</p>'))
+        self.assertEqual('tacobeans', strip_tags('<p>taco</p>beans'))
+        self.assertEqual('tacobeans', strip_tags('taco<p>beans</p>'))

@@ -33,7 +33,7 @@ else:
             self.fed.append(d)
 
         def get_data(self):
-            return ''.join(self.fed)
+            return ''.join(self.fed) + self.rawdata
 
 
 def strip_tags(html):
