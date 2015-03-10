@@ -972,7 +972,7 @@ class BaseMethodIntrospectorTest(TestCase):
         self.assertEqual("decimal", properties["decimal"]["type"])
         self.assertEqual("file upload", properties["file"]["type"])
         self.assertEqual("image upload", properties["image"]["type"])
-        self.assertEqual("field", properties["joop"]["type"])
+        self.assertEqual("string", properties["joop"]["type"])
 
     def test_build_form_parameters_allowable_values(self):
 

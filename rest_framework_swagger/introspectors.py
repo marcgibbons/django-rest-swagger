@@ -429,7 +429,10 @@ class BaseMethodIntrospector(object):
 def get_data_type(field):
     from rest_framework import fields
     if hasattr(field, 'type_label'):
-        return field.type_label
+        if field.type_label == u'field':
+            return 'string'
+        else:
+            return field.type_label
     elif isinstance(field, fields.BooleanField):
         return 'boolean'
     elif isinstance(field, fields.NullBooleanField):
