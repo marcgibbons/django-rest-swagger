@@ -394,7 +394,6 @@ class DocumentationGeneratorTest(TestCase):
         fields = docgen._get_serializer_fields(CommentSerializer)
 
         self.assertEqual(3, len(fields['fields']))
-        self.assertEqual(fields['fields']['email']['defaultValue'], None)
 
     def test_get_serializer_fields_api_with_no_serializer(self):
         docgen = DocumentationGenerator()
@@ -948,7 +947,6 @@ class BaseMethodIntrospectorTest(TestCase):
 
         self.assertEqual(len(SomeSerializer().get_fields()), len(params))
         self.assertEqual(params[0]['name'], 'email')
-        self.assertIsNone(params[0]['defaultValue'])
 
         url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
         urlparser = UrlParser()
