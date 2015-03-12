@@ -108,7 +108,7 @@ class UrlParser(object):
         path = simplify_regex(prefix + pattern.regex.pattern)
 
         if filter_path is not None:
-            if re.match('^/?%s(/.*)?$' % filter_path, path) is None:
+            if re.match('^/?%s(/.*)?$' % re.escape(filter_path), path) is None:
                 return None
 
         path = path.replace('<', '{').replace('>', '}')
