@@ -380,7 +380,7 @@ class BaseMethodIntrospector(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = get_data_type(field)
+            data_type = get_data_type(field) or 'string'
 
             # guess format
             data_format = 'string'
@@ -390,12 +390,20 @@ class BaseMethodIntrospector(object):
             f = {
                 'paramType': 'form',
                 'name': name,
-                'description': getattr(field, 'help_text', ''),
+                'description': getattr(field, 'help_text', '') or '',
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
                 'defaultValue': get_default_value(field),
             }
+
+            # Swagger type is a primitive, format is more specific
+            if f['type'] == f['format']:
+                del f['format']
+
+            # defaultValue of null is not allowed, it is specific to type
+            if f['defaultValue'] == None:
+                del f['defaultValue']
 
             # Min/Max values
             max_val = getattr(field, 'max_val', None)
@@ -421,7 +429,10 @@ class BaseMethodIntrospector(object):
 def get_data_type(field):
     from rest_framework import fields
     if hasattr(field, 'type_label'):
-        return field.type_label
+        if field.type_label == 'field':
+            return 'string'
+        else:
+            return field.type_label
     elif isinstance(field, fields.BooleanField):
         return 'boolean'
     elif isinstance(field, fields.NullBooleanField):
@@ -455,7 +466,7 @@ def get_data_type(field):
     elif isinstance(field, fields.CharField):
         return 'string'
     else:
-        return 'field'
+        return 'string'
 
 
 class APIViewIntrospector(BaseViewIntrospector):
