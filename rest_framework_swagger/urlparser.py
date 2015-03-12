@@ -1,3 +1,4 @@
+import re
 import os
 from django.conf import settings
 from django.utils import six
@@ -107,7 +108,7 @@ class UrlParser(object):
         path = simplify_regex(prefix + pattern.regex.pattern)
 
         if filter_path is not None:
-            if filter_path not in path:
+            if re.match('^/?%s(/.*)?$' % filter_path, path) is None:
                 return None
 
         path = path.replace('<', '{').replace('>', '}')
