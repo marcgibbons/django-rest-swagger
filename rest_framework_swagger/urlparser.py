@@ -141,7 +141,7 @@ class UrlParser(object):
 
             elif isinstance(pattern, RegexURLResolver):
 
-                if pattern.namespace in exclude_namespaces:
+                if pattern.namespace is not None and pattern.namespace in exclude_namespaces:
                     continue
 
                 pref = prefix + pattern.regex.pattern
