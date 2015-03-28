@@ -80,10 +80,15 @@ class UrlParserTest(TestCase):
         self.url_patterns = patterns(
             '',
             url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
+            url(r'b-view$', MockApiView.as_view(), name='a test view'),
+            url(r'c-view/$', MockApiView.as_view(), name='a test view'),
             url(r'a-view/child/?$', MockApiView.as_view()),
             url(r'a-view/child2/?$', MockApiView.as_view()),
             url(r'another-view/?$', MockApiView.as_view(),
                 name='another test view'),
+            url(r'view-with-param/(:?<ID>\d+)/?$', MockApiView.as_view(),
+                name='another test view'),
+            url(r'a-view-honky/?$', MockApiView.as_view(), name='a test view'),
         )
 
     def test_get_apis(self):
@@ -92,8 +97,22 @@ class UrlParserTest(TestCase):
         # Overwrite settings with test patterns
         urls.urlpatterns = self.url_patterns
         apis = urlparser.get_apis()
-        for api in apis:
-            self.assertIn(api['pattern'], self.url_patterns)
+        self.assertEqual(self.url_patterns[0], apis[0]['pattern'])
+        self.assertEqual('/a-view/', apis[0]['path'])
+        self.assertEqual(self.url_patterns[1], apis[1]['pattern'])
+        self.assertEqual('/b-view', apis[1]['path'])
+        self.assertEqual(self.url_patterns[2], apis[2]['pattern'])
+        self.assertEqual('/c-view/', apis[2]['path'])
+        self.assertEqual(self.url_patterns[3], apis[3]['pattern'])
+        self.assertEqual('/a-view/child/', apis[3]['path'])
+        self.assertEqual(self.url_patterns[4], apis[4]['pattern'])
+        self.assertEqual('/a-view/child2/', apis[4]['path'])
+        self.assertEqual(self.url_patterns[5], apis[5]['pattern'])
+        self.assertEqual('/another-view/', apis[5]['path'])
+        self.assertEqual(self.url_patterns[6], apis[6]['pattern'])
+        self.assertEqual('/view-with-param/{var}/', apis[6]['path'])
+        self.assertEqual(self.url_patterns[7], apis[7]['pattern'])
+        self.assertEqual('/a-view-honky/', apis[7]['path'])
 
     def test_get_apis_urlconf_import(self):
         urlparser = UrlParser()
@@ -142,6 +161,13 @@ class UrlParserTest(TestCase):
     def test_flatten_url_tree_with_filter(self):
         urlparser = UrlParser()
         apis = urlparser.get_apis(self.url_patterns, filter_path="a-view")
+
+        paths = [api['path'] for api in apis]
+
+        self.assertIn("/a-view/", paths)
+        self.assertIn("/a-view/child/", paths)
+        self.assertIn("/a-view/child2/", paths)
+        self.assertNotIn("/a-view-honky/", paths)
 
         self.assertEqual(3, len(apis))
 
@@ -212,7 +238,13 @@ class UrlParserTest(TestCase):
         apis = urlparser.get_top_level_apis(
             urlparser.get_apis(self.url_patterns))
 
-        self.assertEqual(2, len(apis))
+        self.assertIn("a-view", apis)
+        self.assertIn("b-view", apis)
+        self.assertIn("c-view", apis)
+        self.assertIn("another-view", apis)
+        self.assertIn("view-with-param", apis)
+        self.assertNotIn("a-view/child", apis)
+        self.assertNotIn("a-view/child2", apis)
 
     def test_assemble_endpoint_data(self):
         """
