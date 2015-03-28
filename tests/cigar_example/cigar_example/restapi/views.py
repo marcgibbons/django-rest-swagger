@@ -73,7 +73,7 @@ class ArtisanCigarViewSet(viewsets.ModelViewSet):
         Return a list of objects.
 
         """
-        return super(CigarViewSet, self).list(request, *args, **kwargs)
+        return super(ArtisanCigarViewSet, self).list(request, *args, **kwargs)
 
     @action()
     def set_price(self, request, pk):
