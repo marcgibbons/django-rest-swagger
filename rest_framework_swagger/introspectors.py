@@ -16,7 +16,6 @@ from django.contrib.admindocs.utils import trim_docstring
 from django.utils.encoding import smart_text
 
 import rest_framework
-from rest_framework.views import get_view_name
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
 from rest_framework.utils import formatting
@@ -239,7 +238,8 @@ class BaseMethodIntrospector(object):
 
     def get_nickname(self):
         """ Returns the APIView's nickname """
-        return get_view_name(self.callback).replace(' ', '_')
+        return rest_framework.settings.api_settings \
+            .VIEW_NAME_FUNCTION(self.callback, self.method).replace(' ', '_')
 
     def get_notes(self):
         """
