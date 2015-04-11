@@ -1,8 +1,9 @@
 import re
 import os
+from importlib import import_module
+
 from django.conf import settings
 from django.utils import six
-from django.utils.importlib import import_module
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
 
