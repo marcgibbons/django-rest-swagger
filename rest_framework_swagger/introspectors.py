@@ -265,6 +265,7 @@ class BaseMethodIntrospector(object):
                 method_docs
             )
             docstring += '\n' + method_docs
+        docstring = docstring.strip()
 
         return do_markdown(docstring)
 
