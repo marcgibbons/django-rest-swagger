@@ -319,9 +319,11 @@ class DocumentationGenerator(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if get_data_type(field) == 'multiple choice' \
-                    and isinstance(field.choices, list):
-                f['enum'] = [k for k, v in field.choices]
+            if get_data_type(field) in ['multiple choice', 'choice']:
+                if isinstance(field.choices, list):
+                    f['enum'] = [k for k, v in field.choices]
+                elif isinstance(field.choices, dict):
+                    f['enum'] = [k for k, v in field.choices.items()]
 
             # Support for complex types
             if isinstance(field, BaseSerializer):
