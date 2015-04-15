@@ -273,7 +273,7 @@
   cursor: pointer;
 }
 .swagger-ui-wrap .info_title {
-  padding-bottom: 10px;
+  padding-bottom: 20px;
   font-weight: bold;
   font-size: 25px;
 }
@@ -299,10 +299,12 @@
 }
 .swagger-ui-wrap .info_contact {
   padding-bottom: 5px;
+  font-size: 15px;
 }
 .swagger-ui-wrap .info_description {
   padding-bottom: 10px;
   font-size: 15px;
+  line-height: 1.4;
 }
 .swagger-ui-wrap .markdown ol li,
 .swagger-ui-wrap .markdown ul li {
@@ -557,6 +559,7 @@
 .swagger-ui-wrap ul#resources {
   font-family: "Droid Sans", sans-serif;
   font-size: 0.9em;
+  margin-top: 20px;
 }
 .swagger-ui-wrap ul#resources li.resource {
   border-bottom: 1px solid #dddddd;
