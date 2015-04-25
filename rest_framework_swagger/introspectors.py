@@ -7,7 +7,7 @@ import re
 import yaml
 import importlib
 
-from .compat import OrderedDict, strip_tags
+from .compat import OrderedDict, strip_tags, get_pagination_attribures
 from abc import ABCMeta, abstractmethod
 
 from django.http import HttpRequest
@@ -609,18 +609,16 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         parameters = super(ViewSetMethodIntrospector, self) \
             .build_query_parameters()
         view = self.create_view()
-        if not hasattr(view, 'paginate_by'):
-            return parameters
-
-        if self.method == 'list' and view.paginate_by:
-            parameters.append({'paramType': 'query',
-                               'name': view.page_kwarg,
-                               'description': None,
-                               'dataType': 'integer'})
-
-            if hasattr(view, 'paginate_by_param') and view.paginate_by_param:
+        page_size, page_query_param, page_size_query_param = get_pagination_attribures(view)
+        if self.method == 'list' and page_size:
+            if page_query_param:
                 parameters.append({'paramType': 'query',
-                                   'name': view.paginate_by_param,
+                                   'name': page_query_param,
+                                   'description': None,
+                                   'dataType': 'integer'})
+            if page_size_query_param:
+                parameters.append({'paramType': 'query',
+                                   'name': page_size_query_param,
                                    'description': None,
                                    'dataType': 'integer'})
         return parameters
