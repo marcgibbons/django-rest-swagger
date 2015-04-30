@@ -283,6 +283,8 @@ class DocumentationGenerator(object):
                 data['required'].append(name)
 
             data_type = get_data_type(field) or 'string'
+            if data_type == 'hidden':
+                continue
 
             # guess format
             data_format = 'string'
@@ -306,7 +308,7 @@ class DocumentationGenerator(object):
                 del f['format']
 
             # defaultValue of null is not allowed, it is specific to type
-            if f['defaultValue'] == None:
+            if f['defaultValue'] is None:
                 del f['defaultValue']
 
             # Min/Max values

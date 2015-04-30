@@ -382,6 +382,8 @@ class BaseMethodIntrospector(object):
                 continue
 
             data_type = get_data_type(field) or 'string'
+            if data_type == 'hidden':
+                continue
 
             # guess format
             data_format = 'string'
@@ -403,7 +405,7 @@ class BaseMethodIntrospector(object):
                 del f['format']
 
             # defaultValue of null is not allowed, it is specific to type
-            if f['defaultValue'] == None:
+            if f['defaultValue'] is None:
                 del f['defaultValue']
 
             # Min/Max values
@@ -466,6 +468,8 @@ def get_data_type(field):
         return 'file upload'
     elif isinstance(field, fields.CharField):
         return 'string'
+    elif rest_framework.VERSION >= '3.0.0' and isinstance(field, fields.HiddenField):
+        return 'hidden'
     else:
         return 'string'
 

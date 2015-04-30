@@ -1,5 +1,6 @@
 import datetime
 from mock import patch
+from distutils.version import StrictVersion
 
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.conf import settings
@@ -194,10 +195,12 @@ class UrlParserTest(TestCase):
         class MockApiViewSet(ModelViewSet):
             serializer_class = CommentSerializer
             model = User
+            queryset = User.objects.all()
 
         class AnotherMockApiViewSet(ModelViewSet):
             serializer_class = CommentSerializer
             model = User
+            queryset = User.objects.all()
 
         router = DefaultRouter()
         router.register(r'other_views', MockApiViewSet)
@@ -270,6 +273,7 @@ class UrlParserTest(TestCase):
     def test_exclude_router_api_root(self):
         class MyViewSet(ModelViewSet):
             serializer_class = CommentSerializer
+            queryset = User.objects.all()
             model = User
 
         router = DefaultRouter()
@@ -731,11 +735,21 @@ class ViewSetMethodIntrospectorTests(TestCase):
             introspector.get_serializer_class())
 
     def test_builds_pagination_parameters_list(self):
-        class MyViewSet(ModelViewSet):
-            model = User
-            serializer_class = CommentSerializer
-            paginate_by = 20
-            paginate_by_param = 'page_this_by'
+        if StrictVersion(rest_framework.VERSION) >= StrictVersion('3.1.0'):
+            class MyViewSet(ModelViewSet):
+                model = User
+                serializer_class = CommentSerializer
+
+                class pagination_class:
+                    page_size = 20
+                    page_query_param = 'page'
+                    page_size_query_param = 'page_this_by'
+        else:
+            class MyViewSet(ModelViewSet):
+                model = User
+                serializer_class = CommentSerializer
+                paginate_by = 20
+                paginate_by_param = 'page_this_by'
 
         class_introspector = self.make_view_introspector(MyViewSet)
         introspector = get_introspectors(class_introspector)['list']
@@ -963,6 +977,38 @@ class BaseMethodIntrospectorTest(TestCase):
         params = introspector.build_body_parameters()
 
         self.assertEqual('CommentSerializer', params['name'])
+
+    def test_build_form_parameters_hidden_field(self):
+        if rest_framework.VERSION < '3.0.0':
+            return  # HiddenField was introduced in DRF version 3
+
+        class HiddenSerializer(serializers.Serializer):
+            content = serializers.CharField(max_length=200)
+            hidden = serializers.HiddenField(default=42)
+
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = HiddenSerializer
+
+        class_introspector = self.make_introspector2(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        params = introspector.build_form_parameters()
+
+        self.assertEqual(len(HiddenSerializer().get_fields()) - 1, len(params))
+
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        urlparser = UrlParser()
+        generator = DocumentationGenerator()
+        apis = urlparser.get_apis(url_patterns)
+        models = generator.get_models(apis)
+        self.assertIn("HiddenSerializer", models)
+        properties = models["HiddenSerializer"]['properties']
+
+        self.assertEqual("string", properties["content"]["type"])
+        self.assertNotIn("hidden", properties)
+
+        write_properties = models["WriteHiddenSerializer"]['properties']
+        self.assertEqual("string", write_properties["content"]["type"])
+        self.assertNotIn("hidden", write_properties)
 
     def test_build_form_parameters(self):
         MY_CHOICES = (
