@@ -283,6 +283,8 @@ class DocumentationGenerator(object):
                 data['required'].append(name)
 
             data_type = get_data_type(field) or 'string'
+            if data_type == 'hidden':
+                continue
 
             # guess format
             data_format = 'string'
