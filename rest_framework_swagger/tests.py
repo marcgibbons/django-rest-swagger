@@ -1,5 +1,6 @@
 import datetime
 from mock import patch
+from distutils.version import StrictVersion
 
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.conf import settings
@@ -194,10 +195,12 @@ class UrlParserTest(TestCase):
         class MockApiViewSet(ModelViewSet):
             serializer_class = CommentSerializer
             model = User
+            queryset = User.objects.all()
 
         class AnotherMockApiViewSet(ModelViewSet):
             serializer_class = CommentSerializer
             model = User
+            queryset = User.objects.all()
 
         router = DefaultRouter()
         router.register(r'other_views', MockApiViewSet)
@@ -270,6 +273,7 @@ class UrlParserTest(TestCase):
     def test_exclude_router_api_root(self):
         class MyViewSet(ModelViewSet):
             serializer_class = CommentSerializer
+            queryset = User.objects.all()
             model = User
 
         router = DefaultRouter()
@@ -731,11 +735,21 @@ class ViewSetMethodIntrospectorTests(TestCase):
             introspector.get_serializer_class())
 
     def test_builds_pagination_parameters_list(self):
-        class MyViewSet(ModelViewSet):
-            model = User
-            serializer_class = CommentSerializer
-            paginate_by = 20
-            paginate_by_param = 'page_this_by'
+        if StrictVersion(rest_framework.VERSION) >= StrictVersion('3.1.0'):
+            class MyViewSet(ModelViewSet):
+                model = User
+                serializer_class = CommentSerializer
+
+                class pagination_class:
+                    page_size = 20
+                    page_query_param = 'page'
+                    page_size_query_param = 'page_this_by'
+        else:
+            class MyViewSet(ModelViewSet):
+                model = User
+                serializer_class = CommentSerializer
+                paginate_by = 20
+                paginate_by_param = 'page_this_by'
 
         class_introspector = self.make_view_introspector(MyViewSet)
         introspector = get_introspectors(class_introspector)['list']

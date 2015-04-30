@@ -30,6 +30,7 @@ class CigarViewSet(viewsets.ModelViewSet):
 
     serializer_class = CigarSerializer
     model = Cigar
+    queryset = Cigar.objects.all()
 
     def list(self, request, *args, **kwargs):
         """
@@ -67,6 +68,7 @@ class ArtisanCigarViewSet(viewsets.ModelViewSet):
 
     serializer_class = CigarSerializer
     model = Cigar
+    queryset = Cigar.objects.all()
 
     def list(self, request, *args, **kwargs):
         """
