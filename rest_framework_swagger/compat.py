@@ -1,3 +1,5 @@
+from distutils.version import StrictVersion
+import rest_framework
 import platform
 if platform.python_version_tuple() < ('2', '7'):
     import ordereddict
@@ -59,3 +61,26 @@ except ImportError:
             raise ImproperlyConfigured('Module "%s" does not define a "%s".'
                                        % (module, attr))
         return view
+
+
+def get_pagination_attribures(view):
+    if StrictVersion(rest_framework.VERSION) >= StrictVersion('3.1.0'):
+        if not (hasattr(view, 'pagination_class') and view.pagination_class):
+            return None, None, None
+
+        page_size = hasattr(view.pagination_class, 'page_size') and \
+            view.pagination_class.page_size
+        page_query_param = hasattr(view.pagination_class, 'page_query_param') and \
+            view.pagination_class.page_query_param
+        page_size_query_param = hasattr(view.pagination_class, 'page_size_query_param') and \
+            view.pagination_class.page_size_query_param
+    else:
+        if not hasattr(view, 'paginate_by'):
+            return None, None, None
+
+        page_size = view.paginate_by
+        page_query_param = view.page_kwarg
+        page_size_query_param = hasattr(view, 'paginate_by_param') and \
+            view.paginate_by_param
+
+    return page_size, page_query_param, page_size_query_param

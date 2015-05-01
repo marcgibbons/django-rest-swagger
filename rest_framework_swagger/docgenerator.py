@@ -308,7 +308,7 @@ class DocumentationGenerator(object):
                 del f['format']
 
             # defaultValue of null is not allowed, it is specific to type
-            if f['defaultValue'] == None:
+            if f['defaultValue'] is None:
                 del f['defaultValue']
 
             # Min/Max values
