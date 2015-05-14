@@ -28,6 +28,11 @@ env:
     - TOX_ENV=py27-django1.7-drf3.0.0
     - TOX_ENV=py27-django1.7-drf3.0.1
     - TOX_ENV=py27-django1.7-drf3.1.1
+    - TOX_ENV=py27-django1.8-drf2.3.8
+    - TOX_ENV=py27-django1.8-drf2.4.3
+    - TOX_ENV=py27-django1.8-drf3.0.0
+    - TOX_ENV=py27-django1.8-drf3.0.1
+    - TOX_ENV=py27-django1.8-drf3.1.1
     - TOX_ENV=py32-django1.5-drf2.3.8
     - TOX_ENV=py32-django1.5-drf2.4.3
     - TOX_ENV=py32-django1.5-drf3.0.0
@@ -43,6 +48,11 @@ env:
     - TOX_ENV=py32-django1.7-drf3.0.0
     - TOX_ENV=py32-django1.7-drf3.0.1
     - TOX_ENV=py32-django1.7-drf3.1.1
+    - TOX_ENV=py32-django1.8-drf2.3.8
+    - TOX_ENV=py32-django1.8-drf2.4.3
+    - TOX_ENV=py32-django1.8-drf3.0.0
+    - TOX_ENV=py32-django1.8-drf3.0.1
+    - TOX_ENV=py32-django1.8-drf3.1.1
     - TOX_ENV=py33-django1.5-drf2.3.8
     - TOX_ENV=py33-django1.5-drf2.4.3
     - TOX_ENV=py33-django1.5-drf3.0.0
@@ -58,6 +68,11 @@ env:
     - TOX_ENV=py33-django1.7-drf3.0.0
     - TOX_ENV=py33-django1.7-drf3.0.1
     - TOX_ENV=py33-django1.7-drf3.1.1
+    - TOX_ENV=py33-django1.8-drf2.3.8
+    - TOX_ENV=py33-django1.8-drf2.4.3
+    - TOX_ENV=py33-django1.8-drf3.0.0
+    - TOX_ENV=py33-django1.8-drf3.0.1
+    - TOX_ENV=py33-django1.8-drf3.1.1
     - TOX_ENV=py34-django1.5-drf2.3.8
     - TOX_ENV=py34-django1.5-drf2.4.3
     - TOX_ENV=py34-django1.5-drf3.0.0
@@ -73,6 +88,11 @@ env:
     - TOX_ENV=py34-django1.7-drf3.0.0
     - TOX_ENV=py34-django1.7-drf3.0.1
     - TOX_ENV=py34-django1.7-drf3.1.1
+    - TOX_ENV=py34-django1.8-drf2.3.8
+    - TOX_ENV=py34-django1.8-drf2.4.3
+    - TOX_ENV=py34-django1.8-drf3.0.0
+    - TOX_ENV=py34-django1.8-drf3.0.1
+    - TOX_ENV=py34-django1.8-drf3.1.1
 
 matrix:
   fast_finish: true
