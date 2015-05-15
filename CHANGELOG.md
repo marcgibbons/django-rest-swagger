@@ -1,5 +1,9 @@
 ## Release Notes:
 
+### v0.3.0 (May 14, 2015)
+* fixes for DRF 3.1.1
+* fixes for Django 1.8
+
 ### v0.2.9 (March 6, 2015)
 * fix reStructuredText in docstring
 * fix NullBooleanField data type detection
