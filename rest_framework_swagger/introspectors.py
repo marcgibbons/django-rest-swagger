@@ -71,7 +71,7 @@ class IntrospectorHelper(object):
         Strips the params from the docstring (ie. myparam -- Some param) will
         not be removed from the text body
         """
-        params_pattern = re.compile(r'(?:^|[^-])--(?:$|[^-])')
+        params_pattern = re.compile(r' -- ')
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None

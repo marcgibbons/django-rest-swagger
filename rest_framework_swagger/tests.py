@@ -621,6 +621,41 @@ class DocumentationGeneratorTest(TestCase):
         self.assertEqual(1, len(serializer_set))
         self.assertEqual(SerializerFoo, list(serializer_set)[0])
 
+    def test_old_parameter_description_syntax(self):
+        from rest_framework.views import Response
+
+        class MyCustomView(APIView):
+            """
+            Slimy toads
+            """
+
+            def get(self, *args, **kwargs):
+                """
+                param1 -- my param
+                """
+                return Response({'foo': 'bar'})
+
+            def post(self, request, *args, **kwargs):
+                """
+                the best way to iron your socks is with this command:
+
+                    curl --iron-socks "http://slightlysober.com"
+                """
+                return Response({'horse': request.GET.get('horse')})
+
+        url_patterns = patterns('', url(r'my-api/', MyCustomView.as_view()))
+        urlparser = UrlParser()
+        apis = urlparser.get_apis(url_patterns)
+        generator = DocumentationGenerator()
+        stuff = generator.generate(apis)
+        get = [a for a in stuff[0]['operations'] if a['method'] == 'GET'][0]
+        self.assertEqual('param1', get['parameters'][0]['name'])
+        self.assertEqual('my param', get['parameters'][0]['description'])
+        self.assertNotIn('my param', get['notes'])
+        post = [a for a in stuff[0]['operations'] if a['method'] == 'POST'][0]
+        self.assertNotIn('parameters', post)
+        self.assertIn('--iron-socks', post['notes'])
+
 
 class IntrospectorHelperTest(TestCase):
     def test_strip_yaml_from_docstring(self):
