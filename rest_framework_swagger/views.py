@@ -16,7 +16,7 @@ from rest_framework_swagger.urlparser import UrlParser
 from rest_framework_swagger.apidocview import APIDocView
 from rest_framework_swagger.docgenerator import DocumentationGenerator
 
-from rest_framework_swagger import SWAGGER_SETTINGS
+import rest_framework_swagger as rfs
 
 
 try:
@@ -41,11 +41,13 @@ def get_restructuredtext(view_cls, html=False):
 
 
 def get_full_base_path(request):
-    protocol = SWAGGER_SETTINGS.get('protocol', 'http')
-    if 'base_path' in SWAGGER_SETTINGS:
-        return ("%s://%s" % (protocol, SWAGGER_SETTINGS.get('base_path', '').rstrip('/'))).rstrip('/')
+    protocol = rfs.SWAGGER_SETTINGS.get('protocol', 'http')
+    if 'base_path' in rfs.SWAGGER_SETTINGS:
+        base_path = rfs.SWAGGER_SETTINGS.get('base_path', '')
+        return ("%s://%s" % (protocol, base_path.rstrip('/'))).rstrip('/')
     else:
-        return ('%s://%s%s' % (protocol, request.get_host(), request.path)).rstrip('/')
+        return ('%s://%s%s' % (protocol,
+                               request.get_host(), request.path)).rstrip('/')
 
 
 class SwaggerUIView(View):
@@ -54,34 +56,39 @@ class SwaggerUIView(View):
         if not self.has_permission(request):
             return self.handle_permission_denied(request)
 
-        template_name = SWAGGER_SETTINGS.get('template_path')
+        template_name = rfs.SWAGGER_SETTINGS.get('template_path')
         data = {
             'swagger_settings': {
                 'discovery_url': "%s/api-docs/" % get_full_base_path(request),
-                'api_key': SWAGGER_SETTINGS.get('api_key', ''),
-                'token_type': SWAGGER_SETTINGS.get('token_type'),
+                'api_key': rfs.SWAGGER_SETTINGS.get('api_key', ''),
+                'token_type': rfs.SWAGGER_SETTINGS.get('token_type'),
                 'enabled_methods': mark_safe(
-                    json.dumps(SWAGGER_SETTINGS.get('enabled_methods'))),
-                'doc_expansion': SWAGGER_SETTINGS.get('doc_expansion', ''),
+                    json.dumps(rfs.SWAGGER_SETTINGS.get('enabled_methods'))),
+                'doc_expansion': rfs.SWAGGER_SETTINGS.get('doc_expansion', ''),
             }
         }
-        response = render_to_response(template_name, RequestContext(request, data))
+        response = render_to_response(
+            template_name, RequestContext(request, data))
 
         return response
 
     def has_permission(self, request):
-        if SWAGGER_SETTINGS.get('is_superuser') and not request.user.is_superuser:
+        if rfs.SWAGGER_SETTINGS.get('is_superuser') and \
+                not request.user.is_superuser:
             return False
 
-        if SWAGGER_SETTINGS.get('is_authenticated') and not request.user.is_authenticated():
+        if rfs.SWAGGER_SETTINGS.get('is_authenticated') and \
+                not request.user.is_authenticated():
             return False
 
         return True
 
     def handle_permission_denied(self, request):
-        permission_denied_handler = SWAGGER_SETTINGS.get('permission_denied_handler')
+        permission_denied_handler = rfs.SWAGGER_SETTINGS.get(
+            'permission_denied_handler')
         if isinstance(permission_denied_handler, six.string_types):
-            permission_denied_handler = import_string(permission_denied_handler)
+            permission_denied_handler = import_string(
+                permission_denied_handler)
 
         if permission_denied_handler:
             return permission_denied_handler(request)
@@ -102,11 +109,11 @@ class SwaggerResourcesView(APIDocView):
             })
 
         return Response({
-            'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
+            'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
             'basePath': self.get_base_path(),
             'apis': apis,
-            'info': SWAGGER_SETTINGS.get('info', {
+            'info': rfs.SWAGGER_SETTINGS.get('info', {
                 'contact': '',
                 'description': '',
                 'license': '',
@@ -117,16 +124,20 @@ class SwaggerResourcesView(APIDocView):
         })
 
     def get_base_path(self):
-        protocol = SWAGGER_SETTINGS.get('protocol', 'http')
-        if 'base_path' in SWAGGER_SETTINGS:
-            return ("%s://%s/api-docs" % (protocol, SWAGGER_SETTINGS.get('base_path', '').rstrip('/')))
+        protocol = rfs.SWAGGER_SETTINGS.get('protocol', 'http')
+        if 'base_path' in rfs.SWAGGER_SETTINGS:
+            base_path = rfs.SWAGGER_SETTINGS.get('base_path', '')
+            return ("%s://%s/api-docs" % (protocol, base_path.rstrip('/')))
         else:
-            return ('%s://%s%s' % (protocol, self.request.get_host(), self.request.path)).rstrip('/')
+            return ('%s://%s%s' % (protocol, self.request.get_host(),
+                                   self.request.path)).rstrip('/')
 
     def get_resources(self):
         urlparser = UrlParser()
         urlconf = getattr(self.request, "urlconf", None)
-        apis = urlparser.get_apis(urlconf=urlconf, exclude_namespaces=SWAGGER_SETTINGS.get('exclude_namespaces'))
+        apis = urlparser.get_apis(
+            urlconf=urlconf,
+            exclude_namespaces=rfs.SWAGGER_SETTINGS.get('exclude_namespaces'))
         resources = urlparser.get_top_level_apis(apis)
         return resources
 
@@ -139,7 +150,7 @@ class SwaggerApiView(APIDocView):
         generator = DocumentationGenerator()
 
         return Response({
-            'apiVersion': SWAGGER_SETTINGS.get('api_version', ''),
+            'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
             'basePath': self.api_full_uri.rstrip('/'),
             'resourcePath': '/' + path,
