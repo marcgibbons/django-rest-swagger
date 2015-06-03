@@ -76,6 +76,75 @@ class QuerySerializer(serializers.Serializer):
     query = serializers.CharField(max_length=100)
 
 
+def parse_json(response):
+    from io import BytesIO
+    from rest_framework.parsers import JSONParser
+    stream = BytesIO(response.content)
+    json = JSONParser().parse(stream)
+    return json
+
+
+https_SETTINGS = {
+    'SWAGGER_SETTINGS': {
+        'protocol': 'https'
+    }
+}
+
+
+@override_settings(**https_SETTINGS)
+class OverrideProtocolTest(TestCase):
+    def setUp(self):
+        self.url_patterns = patterns(
+            '',
+            url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
+            url(r'^swagger/', include('rest_framework_swagger.urls')),
+        )
+
+    def test_swagger_view(self):
+        urls = import_module(settings.ROOT_URLCONF)
+        urls.urlpatterns = self.url_patterns
+        response = self.client.get("/swagger/")
+        content = response.content.decode()
+        self.assertIn("url: 'https", content)
+
+    def test_api_docs(self):
+        from django.utils.six.moves.urllib import parse
+        urls = import_module(settings.ROOT_URLCONF)
+        urls.urlpatterns = self.url_patterns
+        response = self.client.get("/swagger/api-docs/")
+        json = parse_json(response)
+        base_url = parse.urlparse(json['basePath'])
+        self.assertEqual('https', base_url.scheme)
+        self.assertEqual('testserver', base_url.netloc)
+
+
+base_path_SETTINGS = {
+    'SWAGGER_SETTINGS': {
+        'base_path': 'tacotown.com'
+    }
+}
+
+
+@override_settings(**base_path_SETTINGS)
+class OverrideBasePathTest(TestCase):
+    def setUp(self):
+        self.url_patterns = patterns(
+            '',
+            url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
+            url(r'^swagger/', include('rest_framework_swagger.urls')),
+        )
+
+    def test_api_docs(self):
+        from django.utils.six.moves.urllib import parse
+        urls = import_module(settings.ROOT_URLCONF)
+        urls.urlpatterns = self.url_patterns
+        response = self.client.get("/swagger/api-docs/")
+        json = parse_json(response)
+        base_url = parse.urlparse(json['basePath'])
+        self.assertEqual('http', base_url.scheme)
+        self.assertEqual('tacotown.com', base_url.netloc)
+
+
 class UrlParserTest(TestCase):
     def setUp(self):
         self.url_patterns = patterns(
