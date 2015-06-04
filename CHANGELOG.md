@@ -1,5 +1,9 @@
 ## Release Notes:
 
+### v0.3.1 (June 6, 2015)
+* add settings overrides for api urls
+* allow bash command "long options" in notes 
+
 ### v0.3.0 (May 14, 2015)
 * fixes for DRF 3.1.1
 * fixes for Django 1.8
