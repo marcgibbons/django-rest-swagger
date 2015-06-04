@@ -20,6 +20,10 @@ from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
 from rest_framework.utils import formatting
 from django.utils import six
+try:
+    import django_filters
+except ImportError:
+    django_filters = None
 
 
 def get_view_description(view_cls, html=False, docstring=None):
@@ -280,6 +284,9 @@ class BaseMethodIntrospector(object):
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
         query_params = self.build_query_parameters()
+        if django_filters is not None:
+            query_params.extend(
+                self.build_query_parameters_from_django_filters())
 
         if path_params:
             params += path_params
@@ -362,6 +369,21 @@ class BaseMethodIntrospector(object):
                                'description': param[1].strip(),
                                'dataType': ''})
 
+        return params
+
+    def build_query_parameters_from_django_filters(self):
+        """
+        introspect ``django_filters.FilterSet`` instances.
+        """
+        params = []
+        filter_class = getattr(self.callback, 'filter_class', None)
+        if (filter_class is not None and
+                issubclass(filter_class, django_filters.FilterSet)):
+            for name, filter_ in filter_class.base_filters.items():
+                params.append({'paramType': 'query',
+                               'name': name,
+                               'description': filter_.label,
+                               'dataType': ''})
         return params
 
     def build_form_parameters(self):

@@ -11,6 +11,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.importlib import import_module
 from django.views.generic import View
+import django_filters
 
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
@@ -877,6 +878,27 @@ class ViewSetMethodIntrospectorTests(TestCase):
         self.assertEqual(0, len(page))
         page_by = [p for p in params if p['name'] == 'page_this_by']
         self.assertEqual(0, len(page_by))
+
+    def test_builds_parameters_from_django_filters(self):
+        class UserFilter(django_filters.FilterSet):
+            username = django_filters.CharFilter(
+                label='Username of User',
+            )
+
+        class MyViewSet(ModelViewSet):
+            model = User
+            serializer_class = CommentSerializer
+            filter_class = UserFilter
+
+        class_introspector = self.make_view_introspector(MyViewSet)
+        introspector = get_introspectors(class_introspector)['list']
+        params = introspector.build_query_parameters_from_django_filters()
+        self.assertEqual(params,
+                         [{'paramType': 'query',
+                           'name': 'username',
+                           'description': 'Username of User',
+                           'dataType': ''
+                           }])
 
     def test_get_summary_empty(self):
         class MyViewSet(ModelViewSet):
