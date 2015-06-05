@@ -3,6 +3,7 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 
 import inspect
+import itertools
 import re
 import yaml
 import importlib
@@ -380,10 +381,17 @@ class BaseMethodIntrospector(object):
         if (filter_class is not None and
                 issubclass(filter_class, django_filters.FilterSet)):
             for name, filter_ in filter_class.base_filters.items():
-                params.append({'paramType': 'query',
-                               'name': name,
-                               'description': filter_.label,
-                               'dataType': ''})
+                parameter = {'paramType': 'query',
+                             'name': name,
+                             'description': filter_.label,
+                             'dataType': ''}
+                multiple_choices = filter_.extra.get('choices', {})
+                if multiple_choices:
+                    parameter['enum'] = [choice[0] for choice
+                                         in itertools.chain(multiple_choices)]
+                    parameter['dataType'] = 'enum'
+                params.append(parameter)
+
         return params
 
     def build_form_parameters(self):

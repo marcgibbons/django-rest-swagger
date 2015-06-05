@@ -884,6 +884,12 @@ class ViewSetMethodIntrospectorTests(TestCase):
             username = django_filters.CharFilter(
                 label='Username of User',
             )
+            choices = django_filters.ChoiceFilter(
+                name='first_name',
+                label='Choices of possible first names',
+                choices=(('foo', 'Foo'),
+                         ('bar', 'Bar')
+                         ))
 
         class MyViewSet(ModelViewSet):
             model = User
@@ -898,7 +904,14 @@ class ViewSetMethodIntrospectorTests(TestCase):
                            'name': 'username',
                            'description': 'Username of User',
                            'dataType': ''
-                           }])
+                           },
+                          {'paramType': 'query',
+                           'name': 'choices',
+                           'description': 'Choices of possible first names',
+                           'enum': ['foo', 'bar'],
+                           'dataType': 'enum'
+                           }
+                          ])
 
     def test_get_summary_empty(self):
         class MyViewSet(ModelViewSet):
