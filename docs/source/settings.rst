@@ -22,7 +22,6 @@ Example:
         'is_authenticated': False,  
         'is_superuser': False, 
         'permission_denied_handler': None,
-	'protocol': http',
 	'base_path':'helloreverb.com/docs' 
         'info': {
             'contact': 'apiteam@wordnik.com',
@@ -142,10 +141,3 @@ token_type
 Overrides authorization token type.
 
 Default: :code:`'Token'`
-
-protocol
---------
-
-The protocol of the application, e.g 'http' or 'https'. Optional
-
-Defaults to 'https' if the :code:`request.is_secure()` returns true, otherwise defaults to 'http'

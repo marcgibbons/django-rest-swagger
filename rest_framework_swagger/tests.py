@@ -84,15 +84,7 @@ def parse_json(response):
     return json
 
 
-https_SETTINGS = {
-    'SWAGGER_SETTINGS': {
-        'protocol': 'https'
-    }
-}
-
-
-@override_settings(**https_SETTINGS)
-class OverrideProtocolTest(TestCase):
+class HTTPSTest(TestCase):
     def setUp(self):
         self.url_patterns = patterns(
             '',
@@ -103,7 +95,8 @@ class OverrideProtocolTest(TestCase):
     def test_swagger_view(self):
         urls = import_module(settings.ROOT_URLCONF)
         urls.urlpatterns = self.url_patterns
-        response = self.client.get("/swagger/")
+        response = self.client.get("/swagger/",
+                                   **{'wsgi.url_scheme': 'https'})
         content = response.content.decode()
         self.assertIn("url: 'https", content)
 
@@ -111,7 +104,9 @@ class OverrideProtocolTest(TestCase):
         from django.utils.six.moves.urllib import parse
         urls = import_module(settings.ROOT_URLCONF)
         urls.urlpatterns = self.url_patterns
-        response = self.client.get("/swagger/api-docs/")
+        response = self.client.get("/swagger/api-docs/",
+                                   **{'wsgi.url_scheme': 'https',
+                                      'SERVER_PORT': 443})
         json = parse_json(response)
         base_url = parse.urlparse(json['basePath'])
         self.assertEqual('https', base_url.scheme)
