@@ -1,6 +1,10 @@
 ## Release Notes:
 
-### v0.3.1 (June 6, 2015)
+### v0.3.2 (June 5, 2015)
+* un-add settings overrides for api protocols
+* support for django_filters
+
+### v0.3.1 (June 4, 2015)
 * add settings overrides for api urls
 * allow bash command "long options" in notes 
 
