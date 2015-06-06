@@ -41,13 +41,13 @@ def get_restructuredtext(view_cls, html=False):
 
 
 def get_full_base_path(request):
-    protocol = rfs.SWAGGER_SETTINGS.get('protocol', 'http')
-    if 'base_path' in rfs.SWAGGER_SETTINGS:
-        base_path = rfs.SWAGGER_SETTINGS.get('base_path', '')
-        return ("%s://%s" % (protocol, base_path.rstrip('/'))).rstrip('/')
+    try:
+        base_path = rfs.SWAGGER_SETTINGS['base_path']
+    except KeyError:
+        return request.build_absolute_uri(request.path).rstrip('/')
     else:
-        return ('%s://%s%s' % (protocol,
-                               request.get_host(), request.path)).rstrip('/')
+        protocol = 'https' if request.is_secure() else 'http'
+        return '{0}://{1}'.format(protocol, base_path.rstrip('/'))
 
 
 class SwaggerUIView(View):
@@ -124,13 +124,14 @@ class SwaggerResourcesView(APIDocView):
         })
 
     def get_base_path(self):
-        protocol = rfs.SWAGGER_SETTINGS.get('protocol', 'http')
-        if 'base_path' in rfs.SWAGGER_SETTINGS:
-            base_path = rfs.SWAGGER_SETTINGS.get('base_path', '')
-            return ("%s://%s/api-docs" % (protocol, base_path.rstrip('/')))
+        try:
+            base_path = rfs.SWAGGER_SETTINGS['base_path']
+        except KeyError:
+            return self.request.build_absolute_uri(
+                self.request.path).rstrip('/')
         else:
-            return ('%s://%s%s' % (protocol, self.request.get_host(),
-                                   self.request.path)).rstrip('/')
+            protocol = 'https' if self.request.is_secure() else 'http'
+            return '{0}://{1}/{2}'.format(protocol, base_path, 'api-docs')
 
     def get_resources(self):
         urlparser = UrlParser()
