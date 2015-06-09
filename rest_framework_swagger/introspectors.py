@@ -285,7 +285,7 @@ class BaseMethodIntrospector(object):
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
         query_params = self.build_query_parameters()
-        if django_filters is not None:
+        if self.method == 'list' and django_filters is not None:
             query_params.extend(
                 self.build_query_parameters_from_django_filters())
 
