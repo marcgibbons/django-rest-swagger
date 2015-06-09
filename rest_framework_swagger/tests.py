@@ -771,19 +771,28 @@ def get_introspectors(introspector):
 
 
 def make_viewset_introspector(view_class):
-    return ViewSetIntrospector(
-        view_class,
-        '/api/endpoint/{pk}',
+    patterns = (
         url(
-            r'^/api/endpoint/(?P<{pk}>[^/]+)$',
+            r'^/api/endpoint/?$',
             view_class.as_view({
                 'get': 'list',
                 'post': 'create',
+            })
+        ),
+        url(
+            r'^/api/endpoint/(?P<{pk}>[^/]+)$',
+            view_class.as_view({
+                'get': 'retrieve',
                 'put': 'update',
                 'patch': 'partial_update',
                 'delete': 'destroy'
             })
-        )
+        ))
+    return ViewSetIntrospector(
+        view_class,
+        '/api/endpoint/{pk}',
+        pattern=patterns[0],
+        patterns=patterns,
     )
 
 
@@ -892,10 +901,14 @@ class ViewSetMethodIntrospectorTests(TestCase):
             filter_class = UserFilter
 
         class_introspector = self.make_view_introspector(MyViewSet)
-        introspector = get_introspectors(class_introspector)['list']
-        params = introspector.build_query_parameters_from_django_filters()
+        list_introspector = get_introspectors(class_introspector)['list']
+        params = list_introspector.get_parameters()
         self.assertEqual(params,
-                         [{'paramType': 'query',
+                         [{'name': 'pk',
+                           'paramType': 'path',
+                           'required': True,
+                           'type': 'string'},
+                          {'paramType': 'query',
                            'name': 'username',
                            'description': 'Username of User',
                            'dataType': ''
@@ -907,6 +920,13 @@ class ViewSetMethodIntrospectorTests(TestCase):
                            'dataType': 'enum'
                            }
                           ])
+        detail_introspector = get_introspectors(class_introspector)['retrieve']
+        self.assertEqual(detail_introspector.get_parameters(),
+                         [{'name': 'pk',
+                           'required': True,
+                           'paramType': 'path',
+                           'type': 'string'}]
+                         )
 
     def test_get_summary_empty(self):
         class MyViewSet(ModelViewSet):
