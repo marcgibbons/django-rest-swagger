@@ -600,10 +600,10 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
         try:
             x = closure_n_code(callback)
+            callback = get_closure_var(callback)
 
             while getattr(x.code, 'co_name') != 'view':
                 # lets unwrap!
-                callback = get_closure_var(callback)
                 x = closure_n_code(callback)
 
             freevars = x.code.co_freevars
