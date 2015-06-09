@@ -581,9 +581,10 @@ class ViewSetIntrospector(BaseViewIntrospector):
         self.patterns = patterns or [pattern]
 
     def __iter__(self):
-        methods = self._resolve_methods()
-        for method in methods:
-            yield ViewSetMethodIntrospector(self, methods[method], method)
+        for pattern in self.patterns:
+            methods = self._resolve_methods(pattern=pattern)
+            for method in methods:
+                yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def methods(self):
         stuff = []

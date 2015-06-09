@@ -29,34 +29,30 @@ class DocumentationGenerator(object):
             api_docs.append({
                 'description': IntrospectorHelper.get_summary(api['callback']),
                 'path': api['path'],
-                'operations': self.get_operations(api, apis),
+                'operations': self.get_operations(api),
             })
 
         return api_docs
 
-    def get_introspector(self, api, apis):
+    def get_introspector(self, api):
         path = api['path']
         pattern = api['pattern']
         callback = api['callback']
         if callback.__module__ == 'rest_framework.decorators':
             return WrappedAPIViewIntrospector(callback, path, pattern)
         elif issubclass(callback, viewsets.ViewSetMixin):
-            patterns = [a['pattern'] for a in apis
-                        if a['callback'] == callback]
-            return ViewSetIntrospector(callback, path, pattern,
-                                       patterns=patterns)
+            return ViewSetIntrospector(callback, path, pattern)
         else:
             return APIViewIntrospector(callback, path, pattern)
 
-    def get_operations(self, api, apis=None):
+    def get_operations(self, api):
         """
         Returns docs for the allowed methods of an API endpoint
         """
-        if apis is None:
-            apis = [api]
+
         operations = []
 
-        introspector = self.get_introspector(api, apis)
+        introspector = self.get_introspector(api)
 
         for method_introspector in introspector:
             if not isinstance(method_introspector, BaseMethodIntrospector) or \
@@ -217,7 +213,7 @@ class DocumentationGenerator(object):
         serializers = set()
 
         for api in apis:
-            introspector = self.get_introspector(api, apis)
+            introspector = self.get_introspector(api)
             for method_introspector in introspector:
                 serializer = self._get_method_serializer(method_introspector)
                 if serializer is not None:
