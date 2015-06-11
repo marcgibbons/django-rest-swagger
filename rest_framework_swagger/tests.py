@@ -1,4 +1,5 @@
 import datetime
+import functools
 from mock import patch
 from distutils.version import StrictVersion
 
@@ -32,6 +33,8 @@ from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
 
 
 def no_markdown(func):
+
+    @functools.wraps(func)
     def func_sans_markdown(*args, **kwargs):
         import rest_framework.compat
         apply_markdown = rest_framework.compat.apply_markdown
