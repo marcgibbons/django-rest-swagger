@@ -693,6 +693,49 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual(post['parameters'], [])
         self.assertIn('--iron-socks', post['notes'])
 
+    def get_introspector_test(self):
+        """
+        yaml method specifications are dependent on all patterns
+        """
+        class MyViewSet(ModelViewSet):
+            """
+            ---
+            list:
+                param: my param
+            retrieve:
+                param: my param
+            """
+            serializer_class = CommentSerializer
+            model = User
+
+        # Test an object endpoint
+        url_patterns = patterns(
+            '',
+            url(
+                r'^/api/endpoint/(?P<pk>[^/]+)$',
+                MyViewSet.as_view({
+                    'get': 'retrieve',
+                    'put': 'update',
+                    'patch': 'partial_update',
+                    'delete': 'destroy'
+                })
+            ),
+            url(
+                r'^/api/endpoint/$',
+                MyViewSet.as_view({
+                    'get': 'list',
+                    'post': 'create',
+                }))
+        )
+        urlparser = UrlParser()
+        apis = urlparser.get_apis(url_patterns)
+        api = apis[0]
+        self.assertIn('pk', api['pattern'].regex.pattern)
+        generator = DocumentationGenerator()
+        introspector = generator.get_introspector(api, apis)
+        method_introspectors = get_introspectors(introspector)
+        method_introspectors['retrieve'].get_yaml_parser()
+
 
 class IntrospectorHelperTest(TestCase):
     def test_strip_yaml_from_docstring(self):
