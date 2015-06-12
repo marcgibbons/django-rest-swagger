@@ -22,7 +22,7 @@ Example:
         'is_authenticated': False,  
         'is_superuser': False, 
         'permission_denied_handler': None,
-	'base_path':'helloreverb.com/docs' 
+	'base_path':'helloreverb.com/docs',
         'info': {
             'contact': 'apiteam@wordnik.com',
             'description': 'This is a sample server Petstore server. '
