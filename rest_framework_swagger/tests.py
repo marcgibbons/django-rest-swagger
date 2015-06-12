@@ -1,4 +1,5 @@
 import datetime
+import functools
 from mock import patch
 from distutils.version import StrictVersion
 
@@ -32,14 +33,12 @@ from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
 
 
 def no_markdown(func):
+
+    @functools.wraps(func)
     def func_sans_markdown(*args, **kwargs):
-        import rest_framework.compat
-        apply_markdown = rest_framework.compat.apply_markdown
-        try:
-            rest_framework.compat.apply_markdown = None
+        with patch.object(rest_framework.utils.formatting,
+                          'apply_markdown', None):
             func(*args, **kwargs)
-        finally:
-            rest_framework.compat.apply_markdown = apply_markdown
     return func_sans_markdown
 
 
@@ -2036,19 +2035,24 @@ class YAMLDocstringParserTests(TestCase):
         @api_view(["POST"])
         def a_view(request):
             """
-            Slimy toads
+            Slimy *toads*
             """
             return "blarg"
 
+        expected_value = ('Slimy *toads*'
+                          if tuple(map(int,
+                                       rest_framework.VERSION.split('.'))
+                                   ) < (3, 1)
+                          else '<p>Slimy *toads*</p>')
         class_introspector = self.make_fbv_introspector(a_view)
         notes = class_introspector.get_notes()
-        self.assertEqual(notes, "Slimy toads")
+        self.assertEqual(notes, expected_value)
         introspector = WrappedAPIViewMethodIntrospector(
             class_introspector, 'POST')
 
         notes = introspector.get_notes()
 
-        self.assertEqual(notes, "Slimy toads")
+        self.assertEqual(notes, expected_value)
 
     def test_fbv_markdown(self):
 
