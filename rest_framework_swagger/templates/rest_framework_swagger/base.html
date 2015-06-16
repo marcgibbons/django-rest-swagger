@@ -13,8 +13,8 @@
             <link href="{% static 'rest_framework_swagger/css/screen.css' %}" media="screen" rel="stylesheet" type="text/css"/>
         {% endblock %}
     </head>
-
     <body>
+        {% block body %}
         {% block header %}
             <div id="header">
                 <div class="swagger-ui-wrap">
@@ -95,6 +95,7 @@
                 window.swaggerUi.load();
             });
         </script>
+        {% endblock %}
     </body>
 </html>
 {% endspaceless %}
