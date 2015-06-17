@@ -101,12 +101,12 @@ class SwaggerResourcesView(APIDocView):
 
     def get(self, request):
         apis = []
-        resources = self.get_resources()
+
+        resources = [resource for resource in self.get_resources()
+                     if self.handle_resource_access(request, resource)]
 
         for path in resources:
-            apis.append({
-                'path': "/%s" % path,
-            })
+            apis.append({'path': '/%s' % path, })
 
         return Response({
             'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
@@ -138,16 +138,21 @@ class SwaggerResourcesView(APIDocView):
         urlconf = getattr(self.request, "urlconf", None)
         apis = urlparser.get_apis(
             urlconf=urlconf,
-            exclude_namespaces=rfs.SWAGGER_SETTINGS.get('exclude_namespaces'))
+            exclude_namespaces=rfs.SWAGGER_SETTINGS.get('exclude_namespaces')
+        )
         resources = urlparser.get_top_level_apis(apis)
         return resources
 
 
 class SwaggerApiView(APIDocView):
-    renderer_classes = (JSONRenderer,)
+    renderer_classes = (JSONRenderer, )
 
     def get(self, request, path):
         apis = self.get_api_for_resource(path)
+
+        apis = [api for api in apis
+                if self.handle_resource_access(request, api['pattern'])]
+
         generator = DocumentationGenerator()
 
         return Response({
