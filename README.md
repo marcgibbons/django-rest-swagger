@@ -44,6 +44,7 @@ for more information, see the [documentation][docs].
 * Python (2.6.5+, 2.7, 3.2, 3.3, 3.4)
 * Django (1.5.5+, 1.6, 1.7, 1.8)
 * Django REST framework (2.3.8+)
+* PyYAML (3.10+)
 
 ## Bugs & Contributions
 Please report bugs by opening an issue
