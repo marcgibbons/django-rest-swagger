@@ -285,7 +285,7 @@ class BaseMethodIntrospector(object):
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
         query_params = self.build_query_parameters()
-        if self.method == 'list' and django_filters is not None:
+        if django_filters is not None:
             query_params.extend(
                 self.build_query_parameters_from_django_filters())
 
@@ -581,10 +581,9 @@ class ViewSetIntrospector(BaseViewIntrospector):
         self.patterns = patterns or [pattern]
 
     def __iter__(self):
-        for pattern in self.patterns:
-            methods = self._resolve_methods(pattern=pattern)
-            for method in methods:
-                yield ViewSetMethodIntrospector(self, methods[method], method)
+        methods = self._resolve_methods()
+        for method in methods:
+            yield ViewSetMethodIntrospector(self, methods[method], method)
 
     def methods(self):
         stuff = []
@@ -601,10 +600,10 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
         try:
             x = closure_n_code(callback)
-            callback = get_closure_var(callback)
 
             while getattr(x.code, 'co_name') != 'view':
                 # lets unwrap!
+                callback = get_closure_var(callback)
                 x = closure_n_code(callback)
 
             freevars = x.code.co_freevars
