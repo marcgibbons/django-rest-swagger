@@ -35,10 +35,16 @@ def closure_n_code(func):
 
 def get_closure_var(func, name=None):
     unwrap = closure_n_code(func)
-    i = 0
     if name:
-        i = unwrap.code.co_freevars.index(name)
-    return unwrap.closure[i].cell_contents
+        index = unwrap.code.co_freevars.index(name)
+        return unwrap.closure[index].cell_contents
+    else:
+        for closure_var in unwrap.closure:
+            if isinstance(closure_var.cell_contents, types.FunctionType):
+                return closure_var.cell_contents
+        else:
+            return None
+
 
 def wrapper_to_func(wrapper):
     noms = wrapper.http_method_names
