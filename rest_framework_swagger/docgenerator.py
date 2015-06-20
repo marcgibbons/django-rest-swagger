@@ -342,10 +342,10 @@ class DocumentationGenerator(object):
                     has_many = isinstance(field, ListSerializer)
                 if has_many:
                     f['type'] = 'array'
-                    if data_type in BaseMethodIntrospector.PRIMITIVES:
-                        f['items'] = {'type': data_type}
-                    else:
+                    if field_serializer:
                         f['items'] = {'$ref': field_serializer}
+                    elif data_type in BaseMethodIntrospector.PRIMITIVES:
+                        f['items'] = {'type': data_type}
 
             # memorize discovered field
             data['fields'][name] = f
