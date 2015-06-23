@@ -8,22 +8,22 @@ Example:
 .. code-block:: python
 
     SWAGGER_SETTINGS = {
-        'exclude_namespaces': [], 
-        'api_version': '0.1',  
-        'api_path': '/',  
-        'enabled_methods': [  
+        'exclude_namespaces': [],
+        'api_version': '0.1',
+        'api_path': '/',
+        'enabled_methods': [
             'get',
             'post',
             'put',
             'patch',
             'delete'
         ],
-        'api_key': '', 
-        'is_authenticated': False,  
-        'is_superuser': False, 
+        'api_key': '',
+        'is_authenticated': False,
+        'is_superuser': False,
         'permission_denied_handler': None,
         'resource_access_handler': None,
-	'base_path':'helloreverb.com/docs',
+        'base_path':'helloreverb.com/docs',
         'info': {
             'contact': 'apiteam@wordnik.com',
             'description': 'This is a sample server Petstore server. '
@@ -45,7 +45,7 @@ Example:
 api_version
 ------------------------
 
-version of your api. 
+version of your api.
 
 Defaults to :code:`''`
 
