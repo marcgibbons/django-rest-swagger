@@ -40,7 +40,6 @@ def get_closure_var(func, name=None):
         i = unwrap.code.co_freevars.index(name)
     return unwrap.closure[i].cell_contents
 
-
 def wrapper_to_func(wrapper):
     noms = wrapper.http_method_names
     handlers = [getattr(wrapper, m) for m in noms if m != 'options']
