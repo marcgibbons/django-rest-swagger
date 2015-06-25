@@ -8,21 +8,22 @@ Example:
 .. code-block:: python
 
     SWAGGER_SETTINGS = {
-        'exclude_namespaces': [], 
-        'api_version': '0.1',  
-        'api_path': '/',  
-        'enabled_methods': [  
+        'exclude_namespaces': [],
+        'api_version': '0.1',
+        'api_path': '/',
+        'enabled_methods': [
             'get',
             'post',
             'put',
             'patch',
             'delete'
         ],
-        'api_key': '', 
-        'is_authenticated': False,  
-        'is_superuser': False, 
+        'api_key': '',
+        'is_authenticated': False,
+        'is_superuser': False,
         'permission_denied_handler': None,
-	'base_path':'helloreverb.com/docs',
+        'resource_access_handler': None,
+        'base_path':'helloreverb.com/docs',
         'info': {
             'contact': 'apiteam@wordnik.com',
             'description': 'This is a sample server Petstore server. '
@@ -44,7 +45,7 @@ Example:
 api_version
 ------------------------
 
-version of your api. 
+version of your api.
 
 Defaults to :code:`''`
 
@@ -134,6 +135,68 @@ Then in app/views.py:
     def permission_denied_handler(request):
         from django.http import HttpResponse
         return HttpResponse('you have no permissions!')
+
+resource_access_handler
+-------------------------
+
+custom handler for delegating access rules to the project.
+
+Takes a callable or a string that names a callable with the following signature:
+
+.. code-block:: python
+
+    def resource_access_handler(request, resource)
+
+The handler must accept the following arguments:
+    `request` (django.http.HttpRequest): The request for documentation, providing the user and any
+        other relevant details about the user who is making the HTTP request.
+    `resource` (str): The path to the API endpoint for which to approve or reject authorization. Does not have
+        leading/trailing slashes.
+
+The handler should return a truthy value when the resource is accessible in the context of the current request.
+
+Default: :code:`None`
+
+Example:
+
+.. code-block:: python
+
+    SWAGGER_SETTINGS = {
+        'resource_access_handler': 'app.views.resource_access_handler'
+    }
+
+Then in app/views.py:
+
+.. code-block:: python
+
+    from django.core.urlresolvers import resolve
+
+    from .flags import flag_is_active
+
+
+    def resource_access_handler(request, resource):
+        """ Callback for resource access. Determines who can see the documentation for which API. """
+        # Superusers and staff can see whatever they want
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+        else:
+            if isinstance(resource, basestring):
+                try:
+                    resolver_match = resolve('/{}/'.format(resource))
+                    view = resolver_match.func
+                except Exception:
+                    return False
+            else:
+                view = resource.callback
+
+            view_attributes = view.func_dict
+            feature_flag = view_attributes.get('feature_flag')
+
+            # Hide documentation for disabled features
+            if feature_flag and not flag_is_active(request, feature_flag):
+                return False
+            else:
+                return True
 
 token_type
 ----------
