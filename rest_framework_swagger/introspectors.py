@@ -412,14 +412,14 @@ class BaseMethodIntrospector(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = get_data_type(field) or 'string'
+            data_type, data_format = get_data_type(field) or ('string', 'string')
             if data_type == 'hidden':
                 continue
 
             # guess format
-            data_format = 'string'
-            if data_type in self.PRIMITIVES:
-                data_format = self.PRIMITIVES.get(data_type)[0]
+            # data_format = 'string'
+            # if data_type in self.PRIMITIVES:
+                # data_format = self.PRIMITIVES.get(data_type)[0]
 
             f = {
                 'paramType': 'form',
@@ -449,7 +449,7 @@ class BaseMethodIntrospector(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if get_data_type(field) in ['multiple choice', 'choice']:
+            if get_data_type(field)[0] in ['multiple choice', 'choice']:
                 if isinstance(field.choices, list):
                     f['enum'] = [k for k, v in field.choices]
                 elif isinstance(field.choices, dict):
@@ -461,48 +461,44 @@ class BaseMethodIntrospector(object):
 
 
 def get_data_type(field):
+    # (in swagger 2.0 we might get to use the descriptive types..
     from rest_framework import fields
-    if hasattr(field, 'type_label'):
-        if field.type_label == 'field':
-            return 'string'
-        else:
-            return field.type_label
-    elif isinstance(field, fields.BooleanField):
-        return 'boolean'
-    elif isinstance(field, fields.NullBooleanField):
-        return 'boolean'
-    elif isinstance(field, fields.URLField):
-        return 'url'
-    elif isinstance(field, fields.SlugField):
-        return 'slug'
+    if isinstance(field, fields.BooleanField):
+        return 'boolean', 'boolean'
+    elif hasattr(fields, 'NullBooleanField') and isinstance(field, fields.NullBooleanField):
+        return 'boolean', 'boolean'
+    # elif isinstance(field, fields.URLField):
+        # return 'string', 'string' #  'url'
+    # elif isinstance(field, fields.SlugField):
+        # return 'string', 'string', # 'slug'
     elif isinstance(field, fields.ChoiceField):
-        return 'choice'
-    elif isinstance(field, fields.EmailField):
-        return 'email'
-    elif isinstance(field, fields.RegexField):
-        return 'regex'
+        return 'choice', 'choice'
+    # elif isinstance(field, fields.EmailField):
+        # return 'string', 'string' #  'email'
+    # elif isinstance(field, fields.RegexField):
+        # return 'string', 'string' # 'regex'
     elif isinstance(field, fields.DateField):
-        return 'date'
+        return 'string', 'date'
     elif isinstance(field, fields.DateTimeField):
-        return 'datetime'
-    elif isinstance(field, fields.TimeField):
-        return 'time'
+        return 'string', 'date-time'  # 'datetime'
+    # elif isinstance(field, fields.TimeField):
+        # return 'string', 'string' # 'time'
     elif isinstance(field, fields.IntegerField):
-        return 'integer'
+        return 'integer', 'int64'  # 'integer'
     elif isinstance(field, fields.FloatField):
-        return 'float'
-    elif isinstance(field, fields.DecimalField):
-        return 'decimal'
-    elif isinstance(field, fields.ImageField):
-        return 'image upload'
-    elif isinstance(field, fields.FileField):
-        return 'file upload'
-    elif isinstance(field, fields.CharField):
-        return 'string'
+        return 'number', 'float'  # 'float'
+    # elif isinstance(field, fields.DecimalField):
+        # return 'string', 'string' #'decimal'
+    # elif isinstance(field, fields.ImageField):
+        # return 'string', 'string' # 'image upload'
+    # elif isinstance(field, fields.FileField):
+        # return 'string', 'string' # 'file upload'
+    # elif isinstance(field, fields.CharField):
+        # return 'string', 'string'
     elif rest_framework.VERSION >= '3.0.0' and isinstance(field, fields.HiddenField):
-        return 'hidden'
+        return 'hidden', 'hidden'
     else:
-        return 'string'
+        return 'string', 'string'
 
 
 class APIViewIntrospector(BaseViewIntrospector):
