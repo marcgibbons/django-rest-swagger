@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.admindocs.utils import trim_docstring
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.decorators import classonlymethod
 from django.utils.importlib import import_module
 from django.views.generic import View
 import django_filters
@@ -2383,3 +2384,82 @@ class TestStripTags(TestCase):
         self.assertEqual('tacos', strip_tags('<p>tacos</p>'))
         self.assertEqual('tacobeans', strip_tags('<p>taco</p>beans'))
         self.assertEqual('tacobeans', strip_tags('taco<p>beans</p>'))
+
+
+class TestAdvancedDecoratorIntrospection(TestCase):
+    """ Exercises introspectors in advanced decorator use cases. """
+    def setUp(self):
+        self.generator = DocumentationGenerator()
+
+    def get_apis_for_viewset(self, stem, viewset):
+        router = DefaultRouter()
+        router.register(stem, viewset)
+        urlconf = MockUrlconfModule(router.urls)
+        urlparser = UrlParser()
+        return urlparser.get_apis(urlconf=urlconf)
+
+    def test_get_broken_args_viewset(self):
+        """ Should find decorated view. """
+        @TestAdvancedDecoratorIntrospection.squashed_class_view_decorator('positional')
+        class ArgsDecoratedViewSet(ModelViewSet):
+            queryset = User.objects.all()
+            serializer_class = CommentSerializer
+
+        apis = self.get_apis_for_viewset('viewset_under_test', ArgsDecoratedViewSet)
+        docs = self.generator.generate(apis)
+        self.assertTrue(docs is not None, docs)
+
+    def test_get_broken_kwargs_viewset(self):
+        """ Should find decorated view. """
+        @TestAdvancedDecoratorIntrospection.squashed_class_view_decorator(keyword=True)
+        class KwargsDecoratedViewSet(ModelViewSet):
+            queryset = User.objects.all()
+            serializer_class = CommentSerializer
+
+        apis = self.get_apis_for_viewset('viewset_under_test', KwargsDecoratedViewSet)
+        docs = self.generator.generate(apis)
+        self.assertTrue(docs is not None, docs)
+
+    def test_get_broken_args_kwargs_viewset(self):
+        """ Should find decorated view. """
+        @TestAdvancedDecoratorIntrospection.squashed_class_view_decorator('positional', keyword=True)
+        class ArgsKwargsDecoratedViewSet(ModelViewSet):
+            queryset = User.objects.all()
+            serializer_class = CommentSerializer
+
+        apis = self.get_apis_for_viewset('viewset_under_test', ArgsKwargsDecoratedViewSet)
+        docs = self.generator.generate(apis)
+        self.assertTrue(docs is not None, docs)
+
+    @staticmethod
+    def squashed_class_view_decorator(*args, **kwargs):
+        """
+        Squashed version of a decorator that transforms a decorator designed for function-based views to be
+        Django CBV or DRF ViewSet compatible.
+
+        For more info, see: https://code.djangoproject.com/attachment/ticket/14512/ticket14512.diff
+        """
+        def wrapper(cls):
+            # Get the result of the as_view transformation function
+            old_as_view = cls.as_view.__func__
+
+            # Create the internal as_view method that would normally be decorated
+            @functools.wraps(old_as_view)
+            def new_as_view(self, *args, **initkwargs):
+                # Define an inner decorator that acts as the decorator normally given to class_view_decorator
+                def inner_decorator(view):
+                    @functools.wraps(view)
+                    def wrapped(*view_args, **view_kwargs):
+                        # IMPORTANT:
+                        # Anything that even mentions the outermost closure value will cause
+                        # decorators.get_closure_var to fail if it relies on a naive algorithm to select the view
+                        # function
+                        args, kwargs
+                        view(*view_args, **view_kwargs)
+                    return wrapped
+
+                return inner_decorator(old_as_view(self, *args, **initkwargs))
+
+            cls.as_view = classonlymethod(new_as_view)
+            return cls
+        return wrapper
