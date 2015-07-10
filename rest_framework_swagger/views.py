@@ -140,13 +140,8 @@ class SwaggerApiView(APIDocView):
     renderer_classes = (JSONRenderer, )
 
     def get(self, request, path):
-        apis = self.get_api_for_resource(path)
-
-        apis = [api for api in apis
-                if self.handle_resource_access(request, api['pattern'])]
-
+        apis = self.get_apis_for_resource(path)
         generator = DocumentationGenerator(for_user=request.user)
-
         return Response({
             'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
             'swaggerVersion': '1.2',
@@ -156,7 +151,9 @@ class SwaggerApiView(APIDocView):
             'models': generator.get_models(apis),
         })
 
-    def get_api_for_resource(self, filter_path):
+    def get_apis_for_resource(self, filter_path):
         urlparser = UrlParser()
         urlconf = getattr(self.request, "urlconf", None)
-        return urlparser.get_apis(urlconf=urlconf, filter_path=filter_path)
+        apis = urlparser.get_apis(urlconf=urlconf, filter_path=filter_path)
+        authorized_apis = filter(lambda a: self.handle_resource_access(self.request, a['pattern']), apis)
+        return authorized_apis
