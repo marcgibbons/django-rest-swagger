@@ -12,7 +12,6 @@ from .compat import OrderedDict, strip_tags, get_pagination_attribures
 from abc import ABCMeta, abstractmethod
 
 from django.http import HttpRequest
-from django.contrib.auth.models import AnonymousUser
 from django.contrib.admindocs.utils import trim_docstring
 from django.utils.encoding import smart_text
 
@@ -125,10 +124,11 @@ class IntrospectorHelper(object):
 class BaseViewIntrospector(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, callback, path, pattern):
+    def __init__(self, callback, path, pattern, user):
         self.callback = callback
         self.path = path
         self.pattern = pattern
+        self.user = user
 
     def get_yaml_parser(self):
         parser = YAMLDocstringParser(self)
@@ -166,6 +166,7 @@ class BaseMethodIntrospector(object):
         self.parent = view_introspector
         self.callback = view_introspector.callback
         self.path = view_introspector.path
+        self.user = view_introspector.user
 
     def get_module(self):
         return self.callback.__module__
@@ -210,7 +211,7 @@ class BaseMethodIntrospector(object):
         if hasattr(self.parent.pattern, 'default_args'):
             view.kwargs.update(self.parent.pattern.default_args)
         view.request = HttpRequest()
-        view.request.user = AnonymousUser()
+        view.request.user = self.user
         view.request.method = self.method
         return view
 
@@ -574,8 +575,8 @@ class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
 class ViewSetIntrospector(BaseViewIntrospector):
     """Handle ViewSet introspection."""
 
-    def __init__(self, callback, path, pattern, patterns=None):
-        super(ViewSetIntrospector, self).__init__(callback, path, pattern)
+    def __init__(self, callback, path, pattern, user, patterns=None):
+        super(ViewSetIntrospector, self).__init__(callback, path, pattern, user)
         if not issubclass(callback, viewsets.ViewSetMixin):
             raise Exception("wrong callback passed to ViewSetIntrospector")
         self.patterns = patterns or [pattern]

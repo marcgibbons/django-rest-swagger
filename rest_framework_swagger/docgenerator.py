@@ -20,6 +20,9 @@ class DocumentationGenerator(object):
     # Response classes defined in docstrings
     explicit_response_types = dict()
 
+    def __init__(self, for_user):
+        self.user = for_user
+
     def generate(self, apis):
         """
         Returns documentation for a list of APIs
@@ -39,14 +42,13 @@ class DocumentationGenerator(object):
         pattern = api['pattern']
         callback = api['callback']
         if callback.__module__ == 'rest_framework.decorators':
-            return WrappedAPIViewIntrospector(callback, path, pattern)
+            return WrappedAPIViewIntrospector(callback, path, pattern, self.user)
         elif issubclass(callback, viewsets.ViewSetMixin):
             patterns = [a['pattern'] for a in apis
                         if a['callback'] == callback]
-            return ViewSetIntrospector(callback, path, pattern,
-                                       patterns=patterns)
+            return ViewSetIntrospector(callback, path, pattern, self.user, patterns=patterns)
         else:
-            return APIViewIntrospector(callback, path, pattern)
+            return APIViewIntrospector(callback, path, pattern, self.user)
 
     def get_operations(self, api, apis=None):
         """

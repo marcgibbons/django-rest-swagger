@@ -153,7 +153,7 @@ class SwaggerApiView(APIDocView):
         apis = [api for api in apis
                 if self.handle_resource_access(request, api['pattern'])]
 
-        generator = DocumentationGenerator()
+        generator = DocumentationGenerator(for_user=request.user)
 
         return Response({
             'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
