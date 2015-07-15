@@ -1,4 +1,5 @@
 """Generates API documentation by introspection."""
+from django.contrib.auth.models import AnonymousUser
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
@@ -25,8 +26,8 @@ class DocumentationGenerator(object):
     # Response classes defined in docstrings
     explicit_response_types = dict()
 
-    def __init__(self, for_user):
-        self.user = for_user
+    def __init__(self, for_user=None):
+        self.user = for_user or AnonymousUser()
 
     def generate(self, apis):
         """
