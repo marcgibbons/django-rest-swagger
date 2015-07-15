@@ -1,6 +1,6 @@
 import datetime
 import functools
-from mock import patch
+from mock import Mock, patch
 from distutils.version import StrictVersion
 
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
@@ -617,6 +617,39 @@ class DocumentationGeneratorTest(TestCase):
         serializer_set = docgen._get_serializer_set(apis)
         self.assertEqual(1, len(serializer_set))
         self.assertEqual(SerializerFoo, list(serializer_set)[0])
+
+    def test_get_serializer_class_for_user(self):
+        class SerializerForAnonymous(serializers.Serializer):
+            pass
+
+        class SerializerForAuthenticated(serializers.Serializer):
+            pass
+
+        class TestView(APIView):
+            def get_serializer_class(self):
+                if self.request.user.is_authenticated():
+                    return SerializerForAuthenticated
+                else:
+                    return SerializerForAnonymous
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'^a/$', TestView.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        anonymous_user = AnonymousUser()
+        docs_for_anonymous = DocumentationGenerator(for_user=anonymous_user)
+        serializers_for_anonymous = docs_for_anonymous._get_serializer_set(apis)
+
+        self.assertEqual(1, len(serializers_for_anonymous))
+        self.assertEqual([SerializerForAnonymous], list(serializers_for_anonymous))
+
+        authenticated_user = Mock(spec=User)
+        authenticated_user.is_authenticated.return_value = True
+        docs_for_authenticated = DocumentationGenerator(for_user=authenticated_user)
+        serializers_for_authenticated = docs_for_authenticated._get_serializer_set(apis)
+
+        self.assertEqual(1, len(serializers_for_authenticated))
+        self.assertEqual([SerializerForAuthenticated], list(serializers_for_authenticated))
 
     def test_old_parameter_description_syntax(self):
         from rest_framework.views import Response
