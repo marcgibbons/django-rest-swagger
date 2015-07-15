@@ -3,10 +3,15 @@ import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
-from .introspectors import APIViewIntrospector, \
-    WrappedAPIViewIntrospector, \
-    ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_default_value, get_data_type
+from .introspectors import (
+    APIViewIntrospector,
+    BaseMethodIntrospector,
+    IntrospectorHelper,
+    ViewSetIntrospector,
+    WrappedAPIViewIntrospector,
+    get_data_type,
+    get_default_value,
+)
 from .compat import OrderedDict
 
 
