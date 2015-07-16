@@ -1,4 +1,5 @@
 import datetime
+import platform
 import functools
 import os
 import os.path
@@ -2527,53 +2528,54 @@ class TestAdvancedDecoratorIntrospection(TestCase, DocumentationGeneratorMixin):
         return wrapper
 
 
-class Swagger1_2Tests(TestCase):
-    """
-    build some swagger endpoints, and run swagger's JSON schema on the results.
-    """
-    def setUp(self):
-        from json import loads
-        self.schemas = {}
-        schema_dir = 'schemas/v1.2'
-        for schema_file in [x for x in os.listdir(schema_dir)
-                            if x.endswith('.json')]:
-            with open(os.path.join(schema_dir, schema_file)) as f:
-                schema = loads(f.read())
-                self.schemas[schema_file] = schema
+if platform.python_version_tuple()[:2] != ('3', '2'):
+    class Swagger1_2Tests(TestCase):
+        """
+        build some swagger endpoints, and run swagger's JSON schema on the results.
+        """
+        def setUp(self):
+            from json import loads
+            self.schemas = {}
+            schema_dir = 'schemas/v1.2'
+            for schema_file in [x for x in os.listdir(schema_dir)
+                                if x.endswith('.json')]:
+                with open(os.path.join(schema_dir, schema_file)) as f:
+                    schema = loads(f.read())
+                    self.schemas[schema_file] = schema
 
-    def get_validator(self, schema_name):
-        from jsonschema import Draft4Validator
-        validator = Draft4Validator(self.schemas[schema_name + '.json'])
+        def get_validator(self, schema_name):
+            from jsonschema import Draft4Validator
+            validator = Draft4Validator(self.schemas[schema_name + '.json'])
 
-        def http_handler(uri):
-            from django.utils.six.moves.urllib import parse
-            urp = parse.urlparse(uri)
-            paff = os.path.basename(urp.path)
-            return self.schemas[paff]
-        validator.resolver.handlers['http'] = http_handler
-        return validator
+            def http_handler(uri):
+                from django.utils.six.moves.urllib import parse
+                urp = parse.urlparse(uri)
+                paff = os.path.basename(urp.path)
+                return self.schemas[paff]
+            validator.resolver.handlers['http'] = http_handler
+            return validator
 
-    def test1(self):
-        class MockApiView(APIView):
-            def get_serializer_class(self):
-                return KitchenSinkSerializer
+        def test1(self):
+            class MockApiView(APIView):
+                def get_serializer_class(self):
+                    return KitchenSinkSerializer
 
-            def get(self, request):
-                pass
-        self.url_patterns = patterns(
-            '',
-            url(r'^a-view/?$', MockApiView.as_view(), name='a test view'),
-            url(r'^swagger/', include('rest_framework_swagger.urls')),
-        )
-        urls = import_module(settings.ROOT_URLCONF)
-        urls.urlpatterns = self.url_patterns
+                def get(self, request):
+                    pass
+            self.url_patterns = patterns(
+                '',
+                url(r'^a-view/?$', MockApiView.as_view(), name='a test view'),
+                url(r'^swagger/', include('rest_framework_swagger.urls')),
+            )
+            urls = import_module(settings.ROOT_URLCONF)
+            urls.urlpatterns = self.url_patterns
 
-        validator = self.get_validator("resourceListing")
-        response = self.client.get("/swagger/api-docs/")
-        json = parse_json(response)
-        validator.validate(json)
-        validator = self.get_validator("apiDeclaration")
-        response = self.client.get("/swagger/api-docs/a-view")
-        json = parse_json(response)
-        self.assertIn("KitchenSinkSerializer", json['models'])
-        validator.validate(json)
+            validator = self.get_validator("resourceListing")
+            response = self.client.get("/swagger/api-docs/")
+            json = parse_json(response)
+            validator.validate(json)
+            validator = self.get_validator("apiDeclaration")
+            response = self.client.get("/swagger/api-docs/a-view")
+            json = parse_json(response)
+            self.assertIn("KitchenSinkSerializer", json['models'])
+            validator.validate(json)
