@@ -1,12 +1,18 @@
 """Generates API documentation by introspection."""
+from django.contrib.auth.models import AnonymousUser
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
-from .introspectors import APIViewIntrospector, \
-    WrappedAPIViewIntrospector, \
-    ViewSetIntrospector, BaseMethodIntrospector, IntrospectorHelper, \
-    get_default_value, get_data_type
+from .introspectors import (
+    APIViewIntrospector,
+    BaseMethodIntrospector,
+    IntrospectorHelper,
+    ViewSetIntrospector,
+    WrappedAPIViewIntrospector,
+    get_data_type,
+    get_default_value,
+)
 from .compat import OrderedDict
 
 
@@ -19,6 +25,9 @@ class DocumentationGenerator(object):
 
     # Response classes defined in docstrings
     explicit_response_types = dict()
+
+    def __init__(self, for_user=None):
+        self.user = for_user or AnonymousUser()
 
     def generate(self, apis):
         """
@@ -39,14 +48,13 @@ class DocumentationGenerator(object):
         pattern = api['pattern']
         callback = api['callback']
         if callback.__module__ == 'rest_framework.decorators':
-            return WrappedAPIViewIntrospector(callback, path, pattern)
+            return WrappedAPIViewIntrospector(callback, path, pattern, self.user)
         elif issubclass(callback, viewsets.ViewSetMixin):
             patterns = [a['pattern'] for a in apis
                         if a['callback'] == callback]
-            return ViewSetIntrospector(callback, path, pattern,
-                                       patterns=patterns)
+            return ViewSetIntrospector(callback, path, pattern, self.user, patterns=patterns)
         else:
-            return APIViewIntrospector(callback, path, pattern)
+            return APIViewIntrospector(callback, path, pattern, self.user)
 
     def get_operations(self, api, apis=None):
         """
