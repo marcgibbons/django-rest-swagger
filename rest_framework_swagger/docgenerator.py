@@ -94,8 +94,7 @@ class DocumentationGenerator(object):
             parameters = doc_parser.discover_parameters(
                 inspector=method_introspector)
 
-            if parameters:
-                operation['parameters'] = parameters
+            operation['parameters'] = parameters or []
 
             if response_messages:
                 operation['responseMessages'] = response_messages
@@ -290,14 +289,14 @@ class DocumentationGenerator(object):
             if getattr(field, 'required', False):
                 data['required'].append(name)
 
-            data_type = get_data_type(field) or 'string'
+            data_type, data_format = get_data_type(field) or ('string', 'string')
             if data_type == 'hidden':
                 continue
 
             # guess format
-            data_format = 'string'
-            if data_type in BaseMethodIntrospector.PRIMITIVES:
-                data_format = BaseMethodIntrospector.PRIMITIVES.get(data_type)[0]
+            # data_format = 'string'
+            # if data_type in BaseMethodIntrospector.PRIMITIVES:
+                # data_format = BaseMethodIntrospector.PRIMITIVES.get(data_type)[0]
 
             description = getattr(field, 'help_text', '')
             if not description or description.strip() == '':

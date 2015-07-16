@@ -1,5 +1,8 @@
 import datetime
+import platform
 import functools
+import os
+import os.path
 from mock import Mock, patch
 from distutils.version import StrictVersion
 
@@ -53,8 +56,8 @@ class MockApiView(APIView):
         """
         Get method specific comments
         """
-        pass
-    pass
+        from rest_framework.views import Response
+        return Response("mock me maybe")
 
 
 class NonApiView(View):
@@ -686,7 +689,8 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual('my param', get['parameters'][0]['description'])
         self.assertNotIn('my param', get['notes'])
         post = [a for a in stuff[0]['operations'] if a['method'] == 'POST'][0]
-        self.assertNotIn('parameters', post)
+        self.assertIn('parameters', post)
+        self.assertEqual(post['parameters'], [])
         self.assertIn('--iron-socks', post['notes'])
 
 
@@ -1038,6 +1042,34 @@ class BaseViewIntrospectorTest(TestCase):
         self.assertEqual('A Test View', introspector.get_description())
 
 
+MY_CHOICES = (
+    ('val1', "Value1"),
+    ('val2', "Value2"),
+    ('val3', "Value3"),
+    ('val4', "Value4")
+)
+
+
+class KitchenSinkSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    content = serializers.CharField(max_length=200)
+    created = serializers.DateTimeField(default=datetime.datetime.now)
+    expires = serializers.DateField()
+    expires_by = serializers.TimeField()
+    age = serializers.IntegerField()
+    flagged = serializers.BooleanField()
+    url = serializers.URLField()
+    slug = serializers.SlugField()
+    choice = serializers.ChoiceField(
+        choices=MY_CHOICES, default=MY_CHOICES[0][0])
+    regex = serializers.RegexField("[a-f]+")
+    float = serializers.FloatField()
+    decimal = serializers.DecimalField(max_digits=5, decimal_places=1)
+    file = serializers.FileField()
+    image = serializers.ImageField()
+    joop = serializers.PrimaryKeyRelatedField(queryset=1)
+
+
 class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
     def make_introspector(self, view_class):
         return make_apiview_introspector(view_class)
@@ -1191,40 +1223,17 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertNotIn("hidden", write_properties)
 
     def test_build_form_parameters(self):
-        MY_CHOICES = (
-            ('val1', "Value1"),
-            ('val2', "Value2"),
-            ('val3', "Value3"),
-            ('val4', "Value4")
-        )
-
-        class SomeSerializer(serializers.Serializer):
-            email = serializers.EmailField()
-            content = serializers.CharField(max_length=200)
-            created = serializers.DateTimeField(default=datetime.datetime.now)
-            expires = serializers.DateField()
-            expires_by = serializers.TimeField()
-            age = serializers.IntegerField()
-            flagged = serializers.BooleanField()
-            url = serializers.URLField()
-            slug = serializers.SlugField()
-            choice = serializers.ChoiceField(
-                choices=MY_CHOICES, default=MY_CHOICES[0][0])
-            regex = serializers.RegexField("[a-f]+")
-            float = serializers.FloatField()
-            decimal = serializers.DecimalField(max_digits=5, decimal_places=1)
-            file = serializers.FileField()
-            image = serializers.ImageField()
-            joop = serializers.PrimaryKeyRelatedField(queryset=1)
 
         class SerializedAPI(ListCreateAPIView):
-            serializer_class = SomeSerializer
+            serializer_class = KitchenSinkSerializer
 
         class_introspector = self.make_introspector2(SerializedAPI)
         introspector = APIViewMethodIntrospector(class_introspector, 'POST')
         params = introspector.build_form_parameters()
 
-        self.assertEqual(len(SomeSerializer().get_fields()), len(params))
+        self.assertEqual(
+            len(KitchenSinkSerializer().get_fields()),
+            len(params))
         self.assertEqual(params[0]['name'], 'email')
 
         url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
@@ -1232,25 +1241,30 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         generator = self.get_documentation_generator()
         apis = urlparser.get_apis(url_patterns)
         models = generator.get_models(apis)
-        self.assertIn("SomeSerializer", models)
-        properties = models["SomeSerializer"]['properties']
-        self.assertEqual("email", properties["email"]["type"])
+        self.assertIn("KitchenSinkSerializer", models)
+        properties = models["KitchenSinkSerializer"]['properties']
+        self.assertEqual("string", properties["email"]["type"])
+        self.assertNotIn("format", properties["email"])
         self.assertEqual("string", properties["content"]["type"])
-        self.assertEqual("datetime", properties["created"]["type"])
-        self.assertEqual("date", properties["expires"]["type"])
-        self.assertEqual("time", properties["expires_by"]["type"])
+        self.assertEqual("string", properties["created"]["type"])
+        self.assertEqual("date-time", properties["created"]["format"])
+        self.assertEqual("string", properties["expires"]["type"])
+        self.assertEqual("date", properties["expires"]["format"])
+        self.assertEqual("string", properties["expires_by"]["type"])
         self.assertEqual("integer", properties["age"]["type"])
         self.assertEqual("boolean", properties["flagged"]["type"])
-        self.assertEqual("url", properties["url"]["type"])
-        self.assertEqual("slug", properties["slug"]["type"])
+        self.assertEqual("string", properties["url"]["type"])
+        self.assertNotIn("format", properties["url"])
+        self.assertEqual("string", properties["slug"]["type"])
         self.assertIn(
             properties["choice"]["type"],
             ["choice", "multiple choice"])
-        self.assertEqual("regex", properties["regex"]["type"])
-        self.assertEqual("float", properties["float"]["type"])
-        self.assertEqual("decimal", properties["decimal"]["type"])
-        self.assertEqual("file upload", properties["file"]["type"])
-        self.assertEqual("image upload", properties["image"]["type"])
+        self.assertEqual("string", properties["regex"]["type"])
+        self.assertEqual("number", properties["float"]["type"])
+        self.assertEqual("float", properties["float"]["format"])
+        self.assertEqual("string", properties["decimal"]["type"])
+        self.assertEqual("string", properties["file"]["type"])
+        self.assertEqual("string", properties["image"]["type"])
         self.assertEqual("string", properties["joop"]["type"])
 
     def test_build_form_parameters_allowable_values(self):
@@ -2512,3 +2526,56 @@ class TestAdvancedDecoratorIntrospection(TestCase, DocumentationGeneratorMixin):
             cls.as_view = classonlymethod(new_as_view)
             return cls
         return wrapper
+
+
+if platform.python_version_tuple()[:2] != ('3', '2'):
+    class Swagger1_2Tests(TestCase):
+        """
+        build some swagger endpoints, and run swagger's JSON schema on the results.
+        """
+        def setUp(self):
+            from json import loads
+            self.schemas = {}
+            schema_dir = 'schemas/v1.2'
+            for schema_file in [x for x in os.listdir(schema_dir)
+                                if x.endswith('.json')]:
+                with open(os.path.join(schema_dir, schema_file)) as f:
+                    schema = loads(f.read())
+                    self.schemas[schema_file] = schema
+
+        def get_validator(self, schema_name):
+            from jsonschema import Draft4Validator
+            validator = Draft4Validator(self.schemas[schema_name + '.json'])
+
+            def http_handler(uri):
+                from django.utils.six.moves.urllib import parse
+                urp = parse.urlparse(uri)
+                paff = os.path.basename(urp.path)
+                return self.schemas[paff]
+            validator.resolver.handlers['http'] = http_handler
+            return validator
+
+        def test1(self):
+            class MockApiView(APIView):
+                def get_serializer_class(self):
+                    return KitchenSinkSerializer
+
+                def get(self, request):
+                    pass
+            self.url_patterns = patterns(
+                '',
+                url(r'^a-view/?$', MockApiView.as_view(), name='a test view'),
+                url(r'^swagger/', include('rest_framework_swagger.urls')),
+            )
+            urls = import_module(settings.ROOT_URLCONF)
+            urls.urlpatterns = self.url_patterns
+
+            validator = self.get_validator("resourceListing")
+            response = self.client.get("/swagger/api-docs/")
+            json = parse_json(response)
+            validator.validate(json)
+            validator = self.get_validator("apiDeclaration")
+            response = self.client.get("/swagger/api-docs/a-view")
+            json = parse_json(response)
+            self.assertIn("KitchenSinkSerializer", json['models'])
+            validator.validate(json)
