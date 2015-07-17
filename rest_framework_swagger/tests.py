@@ -1302,6 +1302,7 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertIn(
             properties["choice"]["type"],
             ["choice", "multiple choice"])
+        self.assertIn("enum", properties["choice"].keys())
         self.assertEqual("string", properties["regex"]["type"])
         self.assertEqual("number", properties["float"]["type"])
         self.assertEqual("float", properties["float"]["format"])
