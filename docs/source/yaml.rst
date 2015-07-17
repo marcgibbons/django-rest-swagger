@@ -75,14 +75,19 @@ For the fields allowed in each parameter, see the
 fields and the 
 `Data Type Fields <https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md#433-data-type-fields>`_.
 
-Exceptions: `$ref`, `items`, and `uniqueItems` are not currently supported.
+Exceptions: `$ref` is not currently supported.
 
 parameters meta-fields
 ----------------------
 pytype
 ~~~~~~
 
-Specify a serializer you want to use to populate :code:`type`.
+If you have a Django Rest Framework serializer that you would like to use 
+to populate :code:`type` you can specify it with :code:`pytype`:
+
+.. code-block:: yaml
+
+    pytype: .serializers.FooSerializer
 
 Overriding parameters
 --------------------
