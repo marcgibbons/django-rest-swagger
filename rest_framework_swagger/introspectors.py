@@ -971,6 +971,25 @@ class YAMLDocstringParser(object):
             view_mocker = self._load_class(view_mocker, callback)
         return view_mocker
 
+    def normalize_data_format(self, data_type, data_format):
+        if data_type == 'array':
+            return None
+
+        flatten_primitives = [
+            val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
+            for val in sublist
+        ]
+
+        if data_format not in flatten_primitives:
+            formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
+            if formats:
+                data_format = formats[0]
+            else:
+                data_format = None
+        if data_format == data_type:
+            data_format = None
+        return data_format
+
     def get_parameters(self, callback):
         """
         Retrieves parameters from YAML object
@@ -1001,32 +1020,42 @@ class YAMLDocstringParser(object):
 
             # Data Format
             data_format = field.get('format', None)
-            flatten_primitives = [
-                val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
-                for val in sublist
-            ]
-
-            if data_format not in flatten_primitives:
-                formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
-                if formats:
-                    data_format = formats[0]
-                else:
-                    data_format = 'string'
+            data_format = self.normalize_data_format(data_type, data_format)
 
             f = {
                 'paramType': param_type,
                 'name': field.get('name', None),
-                'description': field.get('description', None),
+                'description': field.get('description', ''),
                 'type': data_type,
-                'format': data_format,
                 'required': field.get('required', False),
-                'defaultValue': field.get('defaultValue', None),
 
             }
+
+            if field.get('defaultValue', None) is not None:
+                f['defaultValue'] = field.get('defaultValue', None)
+
+            if data_format is not None:
+                f['format'] = data_format
 
             # Allow Multiple Values &f=1,2,3,4
             if field.get('allowMultiple'):
                 f['allowMultiple'] = True
+
+            if data_type == 'array':
+                items = field.get('items', {})
+                elt_data_type = items.get('type', 'string')
+                elt_data_format = items.get('type', 'format')
+                elt_data_format = self.normalize_data_format(elt_data_type, elt_data_format)
+                f['items'] = {
+                    'type': elt_data_type,
+                }
+
+                if elt_data_format is not None:
+                    f['items']['format'] = elt_data_format
+
+                uniqueItems = field.get('uniqueItems', None)
+                if uniqueItems is not None:
+                    f['uniqueItems'] = uniqueItems
 
             # Min/Max are optional
             if 'minimum' in field and data_type == 'integer':
