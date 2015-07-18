@@ -374,7 +374,7 @@ class BaseMethodIntrospector(object):
                 params.append({'paramType': 'query',
                                'name': param[0].strip(),
                                'description': param[1].strip(),
-                               'dataType': ''})
+                               'type': 'string'})
 
         return params
 
@@ -387,15 +387,18 @@ class BaseMethodIntrospector(object):
         if (filter_class is not None and
                 issubclass(filter_class, django_filters.FilterSet)):
             for name, filter_ in filter_class.base_filters.items():
-                parameter = {'paramType': 'query',
-                             'name': name,
-                             'description': filter_.label,
-                             'dataType': ''}
+                data_type = 'string'
+                parameter = {
+                    'paramType': 'query',
+                    'name': name,
+                    'description': filter_.label,
+                }
+                normalize_data_format(data_type, None, parameter)
                 multiple_choices = filter_.extra.get('choices', {})
                 if multiple_choices:
                     parameter['enum'] = [choice[0] for choice
                                          in itertools.chain(multiple_choices)]
-                    parameter['dataType'] = 'enum'
+                    parameter['type'] = 'enum'
                 params.append(parameter)
 
         return params
@@ -647,16 +650,21 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         view = self.create_view()
         page_size, page_query_param, page_size_query_param = get_pagination_attribures(view)
         if self.method == 'list' and page_size:
+            data_type = 'integer'
             if page_query_param:
-                parameters.append({'paramType': 'query',
-                                   'name': page_query_param,
-                                   'description': None,
-                                   'dataType': 'integer'})
+                parameters.append({
+                    'paramType': 'query',
+                    'name': page_query_param,
+                    'description': None,
+                })
+                normalize_data_format(data_type, None, parameters[-1])
             if page_size_query_param:
-                parameters.append({'paramType': 'query',
-                                   'name': page_size_query_param,
-                                   'description': None,
-                                   'dataType': 'integer'})
+                parameters.append({
+                    'paramType': 'query',
+                    'name': page_size_query_param,
+                    'description': None,
+                })
+                normalize_data_format(data_type, None, parameters[-1])
         return parameters
 
 
@@ -678,6 +686,36 @@ def multi_getattr(obj, attr, default=None):
             else:
                 raise
     return obj
+
+
+def normalize_data_format(data_type, data_format, obj):
+    """
+    sets 'type' on obj
+    sets a valid 'format' on obj if appropriate
+    uses data_format only if valid
+    """
+    if data_type == 'array':
+        data_format = None
+
+    flatten_primitives = [
+        val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
+        for val in sublist
+    ]
+
+    if data_format not in flatten_primitives:
+        formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
+        if formats:
+            data_format = formats[0]
+        else:
+            data_format = None
+    if data_format == data_type:
+        data_format = None
+
+    obj['type'] = data_type
+    if data_format is None and 'format' in obj:
+        del obj['format']
+    elif data_format is not None:
+        obj['format'] = data_format
 
 
 class YAMLDocstringParser(object):
@@ -976,25 +1014,6 @@ class YAMLDocstringParser(object):
             view_mocker = self._load_class(view_mocker, callback)
         return view_mocker
 
-    def normalize_data_format(self, data_type, data_format):
-        if data_type == 'array':
-            return None
-
-        flatten_primitives = [
-            val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
-            for val in sublist
-        ]
-
-        if data_format not in flatten_primitives:
-            formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
-            if formats:
-                data_format = formats[0]
-            else:
-                data_format = None
-        if data_format == data_type:
-            data_format = None
-        return data_format
-
     def get_parameters(self, callback):
         """
         Retrieves parameters from YAML object
@@ -1025,38 +1044,30 @@ class YAMLDocstringParser(object):
 
             # Data Format
             data_format = field.get('format', None)
-            data_format = self.normalize_data_format(data_type, data_format)
 
             f = {
                 'paramType': param_type,
                 'name': field.get('name', None),
                 'description': field.get('description', ''),
-                'type': data_type,
                 'required': field.get('required', False),
-
             }
+
+            normalize_data_format(data_type, data_format, f)
 
             if field.get('defaultValue', None) is not None:
                 f['defaultValue'] = field.get('defaultValue', None)
-
-            if data_format is not None:
-                f['format'] = data_format
 
             # Allow Multiple Values &f=1,2,3,4
             if field.get('allowMultiple'):
                 f['allowMultiple'] = True
 
-            if data_type == 'array':
+            if f['type'] == 'array':
                 items = field.get('items', {})
                 elt_data_type = items.get('type', 'string')
                 elt_data_format = items.get('type', 'format')
-                elt_data_format = self.normalize_data_format(elt_data_type, elt_data_format)
                 f['items'] = {
-                    'type': elt_data_type,
                 }
-
-                if elt_data_format is not None:
-                    f['items']['format'] = elt_data_format
+                normalize_data_format(elt_data_type, elt_data_format, f['items'])
 
                 uniqueItems = field.get('uniqueItems', None)
                 if uniqueItems is not None:
