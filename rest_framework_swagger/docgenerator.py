@@ -328,7 +328,7 @@ class DocumentationGenerator(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if get_data_type(field) in ['multiple choice', 'choice']:
+            if data_type in BaseMethodIntrospector.ENUMS:
                 if isinstance(field.choices, list):
                     f['enum'] = [k for k, v in field.choices]
                 elif isinstance(field.choices, dict):

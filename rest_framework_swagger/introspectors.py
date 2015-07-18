@@ -154,6 +154,11 @@ class BaseViewIntrospector(object):
 class BaseMethodIntrospector(object):
     __metaclass__ = ABCMeta
 
+    ENUMS = [
+        'choice',
+        'multiple choice',
+    ]
+
     PRIMITIVES = {
         'integer': ['int32', 'int64'],
         'number': ['float', 'double'],
@@ -449,7 +454,7 @@ class BaseMethodIntrospector(object):
                 f['maximum'] = max_val
 
             # ENUM options
-            if get_data_type(field)[0] in ['multiple choice', 'choice']:
+            if data_type in BaseMethodIntrospector.ENUMS:
                 if isinstance(field.choices, list):
                     f['enum'] = [k for k, v in field.choices]
                 elif isinstance(field.choices, dict):
