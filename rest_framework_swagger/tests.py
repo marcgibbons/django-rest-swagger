@@ -987,13 +987,13 @@ class ViewSetMethodIntrospectorTests(TestCase):
                          [{'paramType': 'query',
                            'name': 'username',
                            'description': 'Username of User',
-                           'dataType': ''
+                           'type': 'string'
                            },
                           {'paramType': 'query',
                            'name': 'choices',
                            'description': 'Choices of possible first names',
                            'enum': ['foo', 'bar'],
-                           'dataType': 'enum'
+                           'type': 'enum'
                            }
                           ])
 
@@ -2724,6 +2724,31 @@ if platform.python_version_tuple()[:2] != ('3', '2'):
                             type: string
                 """
                 def get(self, request):
+                    pass
+            self.url_patterns = patterns(
+                '',
+                url(r'^a-view/?$', MockApiView.as_view(), name='a test view'),
+                url(r'^swagger/', include('rest_framework_swagger.urls')),
+            )
+            urls = import_module(settings.ROOT_URLCONF)
+            urls.urlpatterns = self.url_patterns
+
+            validator = self.get_validator("resourceListing")
+            response = self.client.get("/swagger/api-docs/")
+            json = parse_json(response)
+            validator.validate(json)
+            validator = self.get_validator("apiDeclaration")
+            response = self.client.get("/swagger/api-docs/a-view")
+            json = parse_json(response)
+            validator.validate(json)
+
+        def test_old_parameters(self):
+
+            class MockApiView(APIView):
+                def get(self, request):
+                    """
+                    taco -- a place to my food
+                    """
                     pass
             self.url_patterns = patterns(
                 '',
