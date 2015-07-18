@@ -1093,6 +1093,13 @@ MY_CHOICES = (
 )
 
 
+class KitchenSinkRelatedField(serializers.RelatedField):
+    read_only = False
+
+    def to_representation(self, obj):
+        return unicode(obj)
+
+
 class KitchenSinkSerializer(serializers.Serializer):
     email = serializers.EmailField()
     content = serializers.CharField(max_length=200)
@@ -1111,6 +1118,8 @@ class KitchenSinkSerializer(serializers.Serializer):
     file = serializers.FileField()
     image = serializers.ImageField()
     joop = serializers.PrimaryKeyRelatedField(queryset=1)
+    many_related = KitchenSinkRelatedField(many=True, queryset=1)
+    single_related = KitchenSinkRelatedField(queryset=1)
 
 
 class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
@@ -1310,6 +1319,9 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual("string", properties["file"]["type"])
         self.assertEqual("string", properties["image"]["type"])
         self.assertEqual("string", properties["joop"]["type"])
+        self.assertEqual("array", properties["many_related"]["type"])
+        self.assertEqual("string", properties["many_related"]["items"]["type"])
+        self.assertEqual("string", properties["single_related"]["type"])
 
     def test_build_form_parameters_allowable_values(self):
 

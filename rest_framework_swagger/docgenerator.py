@@ -335,18 +335,24 @@ class DocumentationGenerator(object):
                     f['enum'] = [k for k, v in field.choices.items()]
 
             # Support for complex types
-            if isinstance(field, BaseSerializer):
-                field_serializer = IntrospectorHelper.get_serializer_name(field)
+            if rest_framework.VERSION < '3.0.0':
+                has_many = hasattr(field, 'many') and field.many
+            else:
+                from rest_framework.serializers import ListSerializer, ManyRelatedField
+                has_many = isinstance(field, (ListSerializer, ManyRelatedField))
 
-                if getattr(field, 'write_only', False):
-                    field_serializer = "Write{}".format(field_serializer)
+            if isinstance(field, BaseSerializer) or has_many:
+                if isinstance(field, BaseSerializer):
+                    field_serializer = IntrospectorHelper.get_serializer_name(field)
 
-                f['type'] = field_serializer
-                if rest_framework.VERSION < '3.0.0':
-                    has_many = field.many
+                    if getattr(field, 'write_only', False):
+                        field_serializer = "Write{}".format(field_serializer)
+
+                    f['type'] = field_serializer
                 else:
-                    from rest_framework.serializers import ListSerializer
-                    has_many = isinstance(field, ListSerializer)
+                    field_serializer = None
+                    data_type = 'string'
+
                 if has_many:
                     f['type'] = 'array'
                     if field_serializer:
