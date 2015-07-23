@@ -448,13 +448,13 @@ class BaseMethodIntrospector(object):
                 del f['defaultValue']
 
             # Min/Max values
-            max_val = getattr(field, 'max_val', None)
-            min_val = getattr(field, 'min_val', None)
-            if max_val is not None and data_type == 'integer':
-                f['minimum'] = min_val
+            max_value = getattr(field, 'max_value', None)
+            min_value = getattr(field, 'min_value', None)
+            if max_value is not None and data_type == 'integer':
+                f['minimum'] = min_value
 
-            if max_val is not None and data_type == 'integer':
-                f['maximum'] = max_val
+            if max_value is not None and data_type == 'integer':
+                f['maximum'] = max_value
 
             # ENUM options
             if data_type in BaseMethodIntrospector.ENUMS:
