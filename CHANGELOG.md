@@ -1,5 +1,9 @@
 ## Release Notes:
 
+### v0.3.3 (July 23, 2015)
+* improved validity of swagger output
+* added resource_access_handler
+
 ### v0.3.2 (June 5, 2015)
 * un-add settings overrides for api protocols
 * support for django_filters
