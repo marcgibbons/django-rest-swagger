@@ -5,6 +5,10 @@ import os
 import os.path
 from mock import Mock, patch
 from distutils.version import StrictVersion
+try:
+    from unittest.case import SkipTest
+except ImportError:
+    from unittest2.case import SkipTest
 
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.conf import settings
@@ -485,7 +489,8 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         delta = datetime.timedelta(seconds=1)
         self.assertAlmostEqual(value, datetime.datetime.now(), delta=delta)
 
-    def test_get_models_ordering(self):
+    def test_get_models_ordering_drf2(self):
+
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer
 
@@ -499,6 +504,35 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         self.assertIn('CommentSerializer', models)
         self.assertEqual(
             ["email", "content", "created"],
+            list(models['CommentSerializer']['properties'].keys()))
+
+    def test_get_models_ordering_drf3(self):
+        if StrictVersion(rest_framework.VERSION) < StrictVersion('3.0'):
+            raise SkipTest('Only for DRF>=3.0')
+
+        from rest_framework.fields import CurrentUserDefault
+
+        class CommentSerializer(serializers.Serializer):
+            email = serializers.EmailField()
+            content = serializers.CharField(max_length=200)
+            created = serializers.DateTimeField(default=datetime.datetime.now)
+            owner = serializers.PrimaryKeyRelatedField(
+                default=CurrentUserDefault(),
+                queryset=User.objects.all())
+
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+        urlparser = UrlParser()
+        url_patterns = patterns('', url(r'my-api/', SerializedAPI.as_view()))
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = DocumentationGenerator()
+        models = docgen.get_models(apis)
+
+        self.assertIn('CommentSerializer', models)
+        self.assertEqual(
+            ["email", "content", "created", "owner"],
             list(models['CommentSerializer']['properties'].keys()))
 
     def test_get_serializer_set(self):
