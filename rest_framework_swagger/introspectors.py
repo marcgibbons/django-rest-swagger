@@ -18,6 +18,11 @@ from django.utils.encoding import smart_text
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
+try:
+    from rest_framework.fields import CurrentUserDefault
+except ImportError:
+    # FIXME once we drop support of DRF 2.x .
+    CurrentUserDefault = None
 from rest_framework.utils import formatting
 from django.utils import six
 try:
@@ -43,6 +48,9 @@ def get_default_value(field):
         if default_value == empty:
             default_value = None
     if callable(default_value):
+        if CurrentUserDefault is not None and isinstance(default_value,
+                                                         CurrentUserDefault):
+            default_value.user = None
         default_value = default_value()
     return default_value
 
