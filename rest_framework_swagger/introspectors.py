@@ -1002,6 +1002,18 @@ class YAMLDocstringParser(object):
         """
         return self.object.get('type', None)
 
+    def get_consumes(self):
+        """
+        Retrieves media type supported as input
+        """
+        return self.object.get('consumes', [])
+
+    def get_produces(self):
+        """
+        Retrieves media type supported as output
+        """
+        return self.object.get('produces', [])
+
     def get_response_messages(self):
         """
         Retrieves response error codes from YAML object

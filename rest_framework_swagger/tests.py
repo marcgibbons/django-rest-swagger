@@ -1750,6 +1750,92 @@ class YAMLDocstringParserTests(TestCase, DocumentationGeneratorMixin):
         self.assertEqual(messages[0]['message'], 'Not authorized.')
         self.assertEqual(messages[1]['message'], 'Not found.')
 
+    def test_defined_consumes(self):
+        """
+        Verifies support of operation.consumes
+        """
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                consumes:
+                  - application/json
+                  - application/xml
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = self.make_introspector(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = introspector.get_yaml_parser()
+        consumes = parser.get_consumes()
+
+        self.assertEqual(2, len(consumes))
+        self.assertEqual(consumes[0], 'application/json')
+        self.assertEqual(consumes[1], 'application/xml')
+
+    def test_undefined_consumes(self):
+        """
+        Verifies that an undefined operation.consumes doesn't pollute the operation definition
+        """
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = self.make_introspector(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = introspector.get_yaml_parser()
+        self.assertFalse(bool(parser.get_consumes()))
+
+    def test_defined_produces(self):
+        """
+        Verifies support o operation.produces
+        """
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                produces:
+                  - application/json
+                  - application/xml
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = self.make_introspector(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = introspector.get_yaml_parser()
+        produces = parser.get_produces()
+
+        self.assertEqual(2, len(produces))
+        self.assertEqual(produces[0], 'application/json')
+        self.assertEqual(produces[1], 'application/xml')
+
+    def test_undefined_produces(self):
+        """
+        Verifies that an undefined operation.produces doesn't pollute the operation definition
+        """
+        class SerializedAPI(ListCreateAPIView):
+            serializer_class = CommentSerializer
+
+            def post(self, request, *args, **kwargs):
+                """
+                ---
+                """
+                return super(SerializedAPI, self).post(request, *args, **kwargs)
+
+        class_introspector = self.make_introspector(SerializedAPI)
+        introspector = APIViewMethodIntrospector(class_introspector, 'POST')
+        parser = introspector.get_yaml_parser()
+        self.assertFalse(bool(parser.get_produces()))
+
     def test_custom_serializer(self):
         class SerializedAPI(ListCreateAPIView):
             serializer_class = CommentSerializer

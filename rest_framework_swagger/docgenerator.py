@@ -98,6 +98,14 @@ class DocumentationGenerator(object):
 
             if response_messages:
                 operation['responseMessages'] = response_messages
+            # operation.consumes
+            consumes = doc_parser.get_consumes()
+            if consumes:
+                operation['consumes'] = consumes
+            # operation.produces
+            produces = doc_parser.get_produces()
+            if produces:
+                operation['produces'] = produces
 
             operations.append(operation)
 
