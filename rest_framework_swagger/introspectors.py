@@ -18,6 +18,11 @@ from django.utils.encoding import smart_text
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
+try:
+    from rest_framework.fields import CurrentUserDefault
+except ImportError:
+    # FIXME once we drop support of DRF 2.x .
+    CurrentUserDefault = None
 from rest_framework.utils import formatting
 from django.utils import six
 try:
@@ -43,6 +48,9 @@ def get_default_value(field):
         if default_value == empty:
             default_value = None
     if callable(default_value):
+        if CurrentUserDefault is not None and isinstance(default_value,
+                                                         CurrentUserDefault):
+            default_value.user = None
         default_value = default_value()
     return default_value
 
@@ -448,13 +456,13 @@ class BaseMethodIntrospector(object):
                 del f['defaultValue']
 
             # Min/Max values
-            max_val = getattr(field, 'max_val', None)
-            min_val = getattr(field, 'min_val', None)
-            if max_val is not None and data_type == 'integer':
-                f['minimum'] = min_val
+            max_value = getattr(field, 'max_value', None)
+            min_value = getattr(field, 'min_value', None)
+            if max_value is not None and data_type == 'integer':
+                f['minimum'] = min_value
 
-            if max_val is not None and data_type == 'integer':
-                f['maximum'] = max_val
+            if max_value is not None and data_type == 'integer':
+                f['maximum'] = max_value
 
             # ENUM options
             if data_type in BaseMethodIntrospector.ENUMS:
@@ -993,6 +1001,18 @@ class YAMLDocstringParser(object):
         Docstring may define custom response class
         """
         return self.object.get('type', None)
+
+    def get_consumes(self):
+        """
+        Retrieves media type supported as input
+        """
+        return self.object.get('consumes', [])
+
+    def get_produces(self):
+        """
+        Retrieves media type supported as output
+        """
+        return self.object.get('produces', [])
 
     def get_response_messages(self):
         """
