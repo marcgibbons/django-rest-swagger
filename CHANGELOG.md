@@ -1,5 +1,9 @@
 ## Release Notes:
 
+### v0.3.4 (August 19, 2015)
+* prepare CurrentUserDefault better
+* fix throbber url
+
 ### v0.3.3 (July 23, 2015)
 * improved validity of swagger output
 * added resource_access_handler
