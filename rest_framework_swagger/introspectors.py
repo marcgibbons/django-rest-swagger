@@ -215,6 +215,8 @@ class BaseMethodIntrospector(object):
             mock_view = parser.get_view_mocker(self.callback)
             view = mock_view(view)
             if view is not None:
+                if parser.should_omit_serializer():
+                    return None
                 return view.get_serializer_class()
 
     def create_view(self):
