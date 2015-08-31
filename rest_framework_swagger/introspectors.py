@@ -215,7 +215,16 @@ class BaseMethodIntrospector(object):
             mock_view = parser.get_view_mocker(self.callback)
             view = mock_view(view)
             if view is not None:
-                return view.get_serializer_class()
+                if parser.should_omit_serializer():
+                    return None
+                try:
+                    serializer_class = view.get_serializer_class()
+                except AssertionError as e:
+                    if "should either include a `serializer_class` attribute, or override the `get_serializer_class()` method." in str(e):  # noqa
+                        serializer_class = None
+                    else:
+                        raise
+                return serializer_class
 
     def create_view(self):
         view = self.callback()
