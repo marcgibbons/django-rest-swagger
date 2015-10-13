@@ -2,6 +2,7 @@ import datetime
 import platform
 import functools
 import os
+import copy
 import os.path
 from mock import Mock, patch
 from distutils.version import StrictVersion
@@ -38,6 +39,7 @@ from .docgenerator import DocumentationGenerator
 from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
     WrappedAPIViewMethodIntrospector, IntrospectorHelper, \
     APIViewMethodIntrospector
+from . import DEFAULT_SWAGGER_SETTINGS
 
 
 def no_markdown(func):
@@ -443,6 +445,41 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         }
         docgen = self.get_documentation_generator()
         operations = docgen.get_operations(api)
+
+        self.assertEqual('POST', operations[0]['method'])
+
+    def test_get_operations_default_anon_user(self):
+        class AnAPIView(APIView):
+            def post(self, *args, **kwargs):
+                pass
+
+        api = {
+            'path': 'a-path/',
+            'callback': AnAPIView,
+            'pattern': patterns('')
+        }
+
+        docgen = self.get_documentation_generator(for_user=None)
+        operations = docgen.get_operations(api)
+
+        self.assertEqual('POST', operations[0]['method'])
+
+    def test_get_operations_none_anon_user(self):
+        class AnAPIView(APIView):
+            def post(self, *args, **kwargs):
+                pass
+
+        api = {
+            'path': 'a-path/',
+            'callback': AnAPIView,
+            'pattern': patterns('')
+        }
+
+        swagger_settings = copy.deepcopy(DEFAULT_SWAGGER_SETTINGS)
+        swagger_settings['unauthenticated_user'] = None
+        with self.settings(SWAGGER_SETTINGS=swagger_settings):
+            docgen = self.get_documentation_generator(for_user=None)
+            operations = docgen.get_operations(api)
 
         self.assertEqual('POST', operations[0]['method'])
 
