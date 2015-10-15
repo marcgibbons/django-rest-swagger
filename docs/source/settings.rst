@@ -21,6 +21,7 @@ Example:
         'api_key': '',
         'is_authenticated': False,
         'is_superuser': False,
+        'unauthenticated_user': 'django.contrib.auth.models.AnonymousUser',
         'permission_denied_handler': None,
         'resource_access_handler': None,
         'base_path':'helloreverb.com/docs',
@@ -110,6 +111,15 @@ is_superuser
 set to True to enforce admin only access
 
 Default: :code:`False`
+
+unauthenticated_user
+-------------------------
+
+Sets the class that is used for the user in unauthenticated requests.
+
+set to None to specify no user class
+
+Default: :code:`django.contrib.auth.models.AnonymousUser`
 
 permission_denied_handler
 -------------------------

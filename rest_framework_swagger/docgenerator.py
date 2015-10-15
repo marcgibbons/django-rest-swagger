@@ -1,8 +1,9 @@
 """Generates API documentation by introspection."""
-from django.contrib.auth.models import AnonymousUser
+import importlib
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
+from rest_framework_swagger import SWAGGER_SETTINGS
 
 from .introspectors import (
     APIViewIntrospector,
@@ -27,7 +28,17 @@ class DocumentationGenerator(object):
     explicit_response_types = dict()
 
     def __init__(self, for_user=None):
-        self.user = for_user or AnonymousUser()
+
+        # unauthenticated user is expected to be in the form 'module.submodule.Class' if a value is present
+        unauthenticated_user = SWAGGER_SETTINGS.get('unauthenticated_user')
+
+        # attempt to load unathenticated_user class from settings if a user is not supplied
+        if not for_user and unauthenticated_user:
+            module_name, class_name = unauthenticated_user.rsplit(".", 1)
+            unauthenticated_user_class = getattr(importlib.import_module(module_name), class_name)
+            for_user = unauthenticated_user_class()
+
+        self.user = for_user
 
     def generate(self, apis):
         """
