@@ -1179,6 +1179,7 @@ class KitchenSinkSerializer(serializers.Serializer):
     expires_by = serializers.TimeField()
     age = serializers.IntegerField()
     flagged = serializers.BooleanField()
+    array = serializers.ListField()
     url = serializers.URLField()
     slug = serializers.SlugField()
     choice = serializers.ChoiceField(
@@ -1376,6 +1377,7 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual("string", properties["expires_by"]["type"])
         self.assertEqual("integer", properties["age"]["type"])
         self.assertEqual("boolean", properties["flagged"]["type"])
+        self.assertEqual("array", properties["array"]["type"])
         self.assertEqual("string", properties["url"]["type"])
         self.assertNotIn("format", properties["url"])
         self.assertEqual("string", properties["slug"]["type"])
