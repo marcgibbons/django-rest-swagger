@@ -38,7 +38,7 @@ from .urlparser import UrlParser
 from .docgenerator import DocumentationGenerator
 from .introspectors import ViewSetIntrospector, APIViewIntrospector, \
     WrappedAPIViewMethodIntrospector, IntrospectorHelper, \
-    APIViewMethodIntrospector
+    APIViewMethodIntrospector, get_data_type
 from . import DEFAULT_SWAGGER_SETTINGS
 
 
@@ -542,6 +542,16 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual(
             ["email", "content", "created"],
             list(models['CommentSerializer']['properties'].keys()))
+
+    def test_listfield_drf3(self):
+        if StrictVersion(rest_framework.VERSION) < StrictVersion('3.0'):
+            raise SkipTest('Only for DRF>=3.0')
+
+        from rest_framework.fields import ListField
+
+        list_field_data_type = get_data_type(ListField())
+
+        self.assertEqual(("array", "array"), list_field_data_type)
 
     def test_get_models_ordering_drf3(self):
         if StrictVersion(rest_framework.VERSION) < StrictVersion('3.0'):
@@ -1179,7 +1189,6 @@ class KitchenSinkSerializer(serializers.Serializer):
     expires_by = serializers.TimeField()
     age = serializers.IntegerField()
     flagged = serializers.BooleanField()
-    array = serializers.ListField()
     url = serializers.URLField()
     slug = serializers.SlugField()
     choice = serializers.ChoiceField(
@@ -1377,7 +1386,6 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual("string", properties["expires_by"]["type"])
         self.assertEqual("integer", properties["age"]["type"])
         self.assertEqual("boolean", properties["flagged"]["type"])
-        self.assertEqual("array", properties["array"]["type"])
         self.assertEqual("string", properties["url"]["type"])
         self.assertNotIn("format", properties["url"])
         self.assertEqual("string", properties["slug"]["type"])
