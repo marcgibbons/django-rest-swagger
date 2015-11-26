@@ -520,8 +520,13 @@ def get_data_type(field):
         # return 'string', 'string' # 'file upload'
     # elif isinstance(field, fields.CharField):
         # return 'string', 'string'
-    elif rest_framework.VERSION >= '3.0.0' and isinstance(field, fields.HiddenField):
-        return 'hidden', 'hidden'
+    elif rest_framework.VERSION >= '3.0.0':
+        if isinstance(field, fields.HiddenField):
+            return 'hidden', 'hidden'
+        elif isinstance(field, fields.ListField):
+            return 'array', 'array'
+        else:
+            return 'string', 'string'
     else:
         return 'string', 'string'
 
