@@ -99,7 +99,7 @@ class SwaggerUIView(View):
 class SwaggerResourcesView(APIDocView):
     renderer_classes = (JSONRenderer, )
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         apis = [{'path': '/' + path} for path in self.get_resources()]
         return Response({
             'apiVersion': rfs.SWAGGER_SETTINGS.get('api_version', ''),
@@ -140,7 +140,7 @@ class SwaggerResourcesView(APIDocView):
 class SwaggerApiView(APIDocView):
     renderer_classes = (JSONRenderer, )
 
-    def get(self, request, path):
+    def get(self, request, path, *args, **kwargs):
         apis = self.get_apis_for_resource(path)
         generator = DocumentationGenerator(for_user=request.user)
         return Response({
