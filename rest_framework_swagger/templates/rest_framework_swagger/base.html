@@ -92,6 +92,23 @@
                     window.authorizations.add('key', new ApiKeyAuthorization('Authorization', '{{ swagger_settings.token_type }} ' + '{{ swagger_settings.api_key }}', 'header'));
                 {% endif %}
 
+                {# Add version to Accept header, if AcceptHeaderVersioning is used. #}
+                {% if swagger_settings.api_version and rest_framework_settings.DEFAULT_VERSIONING_CLASS == 'rest_framework.versioning.AcceptHeaderVersioning' %}
+                    window.authorizations.add('version', {
+                        apply: function(obj, authorizations) {
+                            $.each(obj.headers, function(k, v) {
+                                if (k.toLowerCase() === "accept") {
+                                    if (v.indexOf('; version=') === -1) {
+                                        obj.headers[k] += "; version={{ swagger_settings.api_version }}";
+                                    }
+                                    return false;  // break.
+                                }
+                            });
+                            return true;
+                        }
+                    });
+                {% endif %}
+
                 window.swaggerUi.load();
             });
         </script>

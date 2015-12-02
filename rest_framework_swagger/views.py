@@ -1,6 +1,7 @@
 import json
 from django.utils import six
 
+from django.conf import settings
 from django.views.generic import View
 from django.utils.safestring import mark_safe
 from django.utils.encoding import smart_text
@@ -61,10 +62,17 @@ class SwaggerUIView(View):
             'swagger_settings': {
                 'discovery_url': "%s/api-docs/" % get_full_base_path(request),
                 'api_key': rfs.SWAGGER_SETTINGS.get('api_key', ''),
+                'api_version': rfs.SWAGGER_SETTINGS.get('api_version', ''),
                 'token_type': rfs.SWAGGER_SETTINGS.get('token_type'),
                 'enabled_methods': mark_safe(
                     json.dumps(rfs.SWAGGER_SETTINGS.get('enabled_methods'))),
                 'doc_expansion': rfs.SWAGGER_SETTINGS.get('doc_expansion', ''),
+            },
+            'rest_framework_settings': {
+                'DEFAULT_VERSIONING_CLASS':
+                    settings.REST_FRAMEWORK.get('DEFAULT_VERSIONING_CLASS', '')
+                    if hasattr(settings, 'REST_FRAMEWORK') else None,
+
             }
         }
         response = render_to_response(
