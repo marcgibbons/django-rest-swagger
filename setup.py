@@ -1,7 +1,25 @@
 import os
+import sys
+import shutil
 from setuptools import setup
 from rest_framework_swagger import VERSION
 
+if sys.argv[-1] == 'publish':
+    if os.system("pip freeze | grep wheel"):
+        print("wheel not installed.\nUse `pip install wheel`.\nExiting.")
+        sys.exit()
+    if os.system("pip freeze | grep twine"):
+        print("twine not installed.\nUse `pip install twine`.\nExiting.")
+        sys.exit()
+    os.system("python setup.py sdist bdist_wheel")
+    os.system("twine upload -r pypitest dist/*")
+    print("You probably want to also tag the version now:")
+    print("  git tag -a %s -m 'version %s'" % (VERSION, VERSION))
+    print("  git push --tags")
+    shutil.rmtree('dist')
+    shutil.rmtree('build')
+    shutil.rmtree('django_rest_swagger.egg-info')
+    sys.exit()
 
 README = """
 Django REST Swagger
