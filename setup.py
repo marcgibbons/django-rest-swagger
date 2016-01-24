@@ -12,7 +12,7 @@ if sys.argv[-1] == 'publish':
         print("twine not installed.\nUse `pip install twine`.\nExiting.")
         sys.exit()
     os.system("python setup.py sdist bdist_wheel")
-    os.system("twine upload -r pypitest dist/*")
+    os.system("twine upload -r pypi dist/*")
     print("You probably want to also tag the version now:")
     print("  git tag -a %s -m 'version %s'" % (VERSION, VERSION))
     print("  git push --tags")
