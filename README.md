@@ -87,7 +87,7 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 [build-status]: https://travis-ci.org/marcgibbons/django-rest-swagger
 [pypi-version]: https://pypip.in/version/django-rest-swagger/badge.svg
 [pypi]: https://pypi.python.org/pypi/django-rest-swagger
-[license-badge]: https://pypip.in/license/django-rest-swagger/badge.svg
+[license-badge]: https://img.shields.io/pypi/l/django-rest-swagger.svg
 [license]: https://pypi.python.org/pypi/django-rest-swagger/
 [docs-badge]: https://readthedocs.org/projects/django-rest-swagger/badge/
 [docs]: http://django-rest-swagger.readthedocs.org/
