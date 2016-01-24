@@ -2605,7 +2605,7 @@ Request.prototype.write = function (s) {
 
 Request.prototype.end = function (s) {
     if (s !== undefined) this.write(s);
-    this.xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+    this.xhr.setRequestHeader("X-CSRFToken", $.cookie(swaggerUi.options.csrfCookieName));
     this.xhr.send(this.body);
 };
 
