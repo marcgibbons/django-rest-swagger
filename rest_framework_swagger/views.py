@@ -73,6 +73,10 @@ class SwaggerUIView(View):
                     settings.REST_FRAMEWORK.get('DEFAULT_VERSIONING_CLASS', '')
                     if hasattr(settings, 'REST_FRAMEWORK') else None,
 
+            },
+            'django_settings': {
+                'CSRF_COOKIE_NAME': mark_safe(
+                    json.dumps(getattr(settings, 'CSRF_COOKIE_NAME', 'csrftoken'))),
             }
         }
         response = render_to_response(

@@ -76,6 +76,7 @@
                         log('Unable to Load SwaggerUI');
                     },
                     docExpansion: '{{ swagger_settings.doc_expansion }}',
+                    csrfCookieName: {{ django_settings.CSRF_COOKIE_NAME }}
                 });
 
                 $('#input_apiKey').change(function () {
