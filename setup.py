@@ -38,7 +38,7 @@ Docs @ http://django-rest-swagger.readthedocs.org/
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 install_requires = [
-    'django>=1.5',
+    'Django>=1.5',
     'djangorestframework>=2.3.8',
     'PyYAML>=3.10',
 ]
