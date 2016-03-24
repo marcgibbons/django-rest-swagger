@@ -168,6 +168,7 @@ LOGGING = {
 }
 
 SWAGGER_SETTINGS = {
+    "exclude_url_names": [],  # List URL names to ignore
     "exclude_namespaces": [],    # List URL namespaces to ignore
     "api_version": '0.1.10',  # Specify your API's version (optional)
     "enabled_methods": [  # Methods to enable in UI

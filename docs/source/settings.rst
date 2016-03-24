@@ -8,6 +8,7 @@ Example:
 .. code-block:: python
 
     SWAGGER_SETTINGS = {
+        'exclude_url_names': [],
         'exclude_namespaces': [],
         'api_version': '0.1',
         'api_path': '/',
@@ -84,6 +85,13 @@ enabled_methods
 The methods that can be interacted with in the UI
 
 Default: :code:`['get', 'post', 'put', 'patch', 'delete']`
+
+exclude_url_names
+------------------------
+
+list URL names to ignore
+
+Default: :code:`[]`
 
 exclude_namespaces
 ------------------------
