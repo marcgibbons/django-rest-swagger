@@ -13,6 +13,7 @@ from .introspectors import (
     WrappedAPIViewIntrospector,
     get_data_type,
     get_default_value,
+    get_primitive_type
 )
 from .compat import OrderedDict
 
@@ -317,6 +318,17 @@ class DocumentationGenerator(object):
             # if data_type in BaseMethodIntrospector.PRIMITIVES:
                 # data_format = BaseMethodIntrospector.PRIMITIVES.get(data_type)[0]
 
+            choices = []
+            if data_type in BaseMethodIntrospector.ENUMS:
+                if isinstance(field.choices, list):
+                    choices = [k for k, v in field.choices]
+                elif isinstance(field.choices, dict):
+                    choices = [k for k, v in field.choices.items()]
+
+            if choices:
+                # guest data type and format
+                data_type, data_format = get_primitive_type(choices[0]) or ('string', 'string')
+
             description = getattr(field, 'help_text', '')
             if not description or description.strip() == '':
                 description = None
@@ -347,11 +359,8 @@ class DocumentationGenerator(object):
                 f['maximum'] = max_value
 
             # ENUM options
-            if data_type in BaseMethodIntrospector.ENUMS:
-                if isinstance(field.choices, list):
-                    f['enum'] = [k for k, v in field.choices]
-                elif isinstance(field.choices, dict):
-                    f['enum'] = [k for k, v in field.choices.items()]
+            if choices:
+                f['enum'] = choices
 
             # Support for complex types
             if rest_framework.VERSION < '3.0.0':
