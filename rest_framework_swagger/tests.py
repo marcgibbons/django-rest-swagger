@@ -259,6 +259,20 @@ class UrlParserTest(TestCase):
         apis2 = urlparser.get_filtered_apis(apis, 'api/custom')
         self.assertEqual(apis, apis2)
 
+    def test_flatten_url_tree_excluded_url_name(self):
+        urls = patterns(
+            '',
+            url(r'a-view/?$', MockApiView.as_view(), name='a test view'),
+            url(r'b-view$', MockApiView.as_view(), name='b test view'),
+            url(r'excluded-view/$', MockApiView.as_view(), name='excluded_name'),
+        )
+        urlparser = UrlParser()
+        apis = urlparser.__flatten_patterns_tree__(
+            patterns=urls, exclude_url_names=['excluded_name'])
+
+        self.assertNotIn('excluded-view/', [api['path'] for api in apis])
+        self.assertEqual(['/a-view/', '/b-view'], [api['path'] for api in apis])
+
     def test_flatten_url_tree_excluded_namesapce(self):
         urls = patterns(
             '',
@@ -267,7 +281,7 @@ class UrlParserTest(TestCase):
         )
         urlparser = UrlParser()
         apis = urlparser.__flatten_patterns_tree__(
-            patterns=urls, exclude_namespaces='exclude')
+            patterns=urls, exclude_namespaces=['exclude'])
 
         self.assertEqual([], apis)
 
@@ -417,6 +431,16 @@ class NestedUrlParserTest(TestCase):
         urlpatterns = self.project_urls
         apis = url_parser.get_apis(urlpatterns,
                                    exclude_namespaces=['api_shiny_app'])
+        self.assertEqual(len(apis), 1)
+        self.assertEqual(apis[0]['pattern'].name, 'find_me')
+
+    def test_exclude_nested_url_names(self):
+
+        url_parser = UrlParser()
+        # Overwrite settings with test patterns
+        urlpatterns = self.project_urls
+        apis = url_parser.get_apis(urlpatterns,
+                                   exclude_url_names=['hide_me'])
         self.assertEqual(len(apis), 1)
         self.assertEqual(apis[0]['pattern'].name, 'find_me')
 
