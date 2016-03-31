@@ -10,7 +10,10 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DJANGO_ROOT = dirname(dirname(abspath(__file__)))
-root = lambda *x: abspath(join(abspath(DJANGO_ROOT), *x))
+
+
+def root(*x):
+    return abspath(join(abspath(DJANGO_ROOT), *x))
 
 DATABASES = {
     'default': {
@@ -62,7 +65,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = '/var/www/swagger/static/'
+STATIC_ROOT = join(dirname(__file__), "..", "static_root")
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -170,6 +173,7 @@ LOGGING = {
 SWAGGER_SETTINGS = {
     "exclude_namespaces": [],    # List URL namespaces to ignore
     "api_version": '0.1.10',  # Specify your API's version (optional)
+    "token_type": 'Bearer',
     "enabled_methods": [  # Methods to enable in UI
         'get',
         'post',

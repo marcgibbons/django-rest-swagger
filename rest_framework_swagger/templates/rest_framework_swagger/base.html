@@ -1,0 +1,119 @@
+{% load staticfiles %}
+{% spaceless %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <title>{% block title %}Swagger UI{% endblock %}</title>
+        {% block style %}
+            <link href="//fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css"/>
+            <link href="{% static 'rest_framework_swagger/css/highlight.default.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+            <link href="{% static 'rest_framework_swagger/css/atelier-dune.light.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+            <link href="{% static 'rest_framework_swagger/css/rest_framework_swagger.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+            <link href="{% static 'rest_framework_swagger/css/screen.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+        {% endblock %}
+    </head>
+    <body>
+        {% block body %}
+        {% block header %}
+            <div id="header">
+                <div class="swagger-ui-wrap">
+                    {% block branding %}
+                        <a id="logo" href="http://swagger.wordnik.com">swagger</a>
+                    {% endblock %}
+                    {% block api_selector %}
+                        <form id="api_selector">
+                            <div class="input icon-btn">
+                                <img id="show-wordnik-dev-icon" src="{% static 'rest_framework_swagger/images/wordnik_api.png' %}" title="Show Wordnik Developer Apis">
+                            </div>
+                            <div class="input"><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+                            <div class="input"><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+                            <div class="input"><a id="explore" href="#">Explore</a></div>
+                        </form>
+                    {% endblock %}
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block django_rest_swagger %}
+            <div id="django-rest-swagger">
+                <div class="swagger-ui-wrap">
+                    <a href="https://github.com/marcgibbons/django-rest-swagger/">Django REST Swagger</a>
+                </div>
+            </div>
+        {% endblock %}
+
+        <div id="message-bar" class="swagger-ui-wrap"></div>
+        <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+
+        <script>
+            window.static_url = "{% static '' %}";
+        </script>
+        <script src="{% static 'rest_framework_swagger/lib/shred.bundle.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/jquery-1.8.0.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/jquery.slideto.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/jquery.wiggle.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/jquery.ba-bbq.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/jquery.cookie.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/handlebars-1.0.0.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/underscore-min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/backbone-min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/swagger.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/swagger-ui.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'rest_framework_swagger/lib/highlight.8.0.pack.js' %}" type="text/javascript"></script>
+        <script type="text/javascript">
+            $(function () {
+                window.swaggerUi = new SwaggerUi({
+                    url: '{{ swagger_settings.discovery_url }}',
+                    apiKey: '{{ swagger_settings.api_key }}',
+                    dom_id: 'swagger-ui-container',
+                    supportedSubmitMethods: {{ swagger_settings.enabled_methods }},
+                    onComplete: function (swaggerApi, swaggerUi){
+                        log('Loaded SwaggerUI')
+                        $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
+                    },
+                    onFailure: function (data) {
+                        log('Unable to Load SwaggerUI');
+                    },
+                    docExpansion: '{{ swagger_settings.doc_expansion }}',
+                    csrfCookieName: {{ django_settings.CSRF_COOKIE_NAME }}
+                });
+
+                $('#input_apiKey').change(function () {
+                    var key = $('#input_apiKey')[0].value;
+                    log('key: ' + key);
+
+                    if (key && key.trim() != '') {
+                        console.log('added key ' + key);
+                        window.authorizations.add('key', new ApiKeyAuthorization('Authorization', '{{ swagger_settings.token_type }} ' + key, 'header'));
+                    }
+                });
+
+                {% if swagger_settings.api_key %}
+                    window.authorizations.add('key', new ApiKeyAuthorization('Authorization', '{{ swagger_settings.token_type }} ' + '{{ swagger_settings.api_key }}', 'header'));
+                {% endif %}
+
+                {# Add version to Accept header, if AcceptHeaderVersioning is used. #}
+                {% if swagger_settings.api_version and rest_framework_settings.DEFAULT_VERSIONING_CLASS == 'rest_framework.versioning.AcceptHeaderVersioning' %}
+                    window.authorizations.add('version', {
+                        apply: function(obj, authorizations) {
+                            $.each(obj.headers, function(k, v) {
+                                if (k.toLowerCase() === "accept") {
+                                    if (v.indexOf('; version=') === -1) {
+                                        obj.headers[k] += "; version={{ swagger_settings.api_version }}";
+                                    }
+                                    return false;  // break.
+                                }
+                            });
+                            return true;
+                        }
+                    });
+                {% endif %}
+
+                window.swaggerUi.load();
+            });
+        </script>
+        {% endblock %}
+    </body>
+</html>
+{% endspaceless %}

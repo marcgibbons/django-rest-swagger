@@ -1,7 +1,9 @@
+import re
 import os
+from importlib import import_module
 
 from django.conf import settings
-from django.utils.importlib import import_module
+from django.utils import six
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
 
@@ -12,14 +14,20 @@ from .apidocview import APIDocView
 
 class UrlParser(object):
 
-    def get_apis(self, patterns=None, filter_path=None, exclude_namespaces=[]):
+    def get_apis(self, patterns=None, urlconf=None, filter_path=None, exclude_namespaces=[]):
         """
         Returns all the DRF APIViews found in the project URLs
 
         patterns -- supply list of patterns (optional)
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
-        if patterns is None:
+        if patterns is None and urlconf is not None:
+            if isinstance(urlconf, six.string_types):
+                urls = import_module(urlconf)
+            else:
+                urls = urlconf
+            patterns = urls.urlpatterns
+        elif patterns is None and urlconf is None:
             urls = import_module(settings.ROOT_URLCONF)
             patterns = urls.urlpatterns
 
@@ -101,7 +109,7 @@ class UrlParser(object):
         path = simplify_regex(prefix + pattern.regex.pattern)
 
         if filter_path is not None:
-            if filter_path not in path:
+            if re.match('^/?%s(/.*)?$' % re.escape(filter_path), path) is None:
                 return None
 
         path = path.replace('<', '{').replace('>', '}')
@@ -135,7 +143,7 @@ class UrlParser(object):
 
             elif isinstance(pattern, RegexURLResolver):
 
-                if pattern.namespace in exclude_namespaces:
+                if pattern.namespace is not None and pattern.namespace in exclude_namespaces:
                     continue
 
                 pref = prefix + pattern.regex.pattern

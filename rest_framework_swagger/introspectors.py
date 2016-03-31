@@ -3,26 +3,56 @@
 """Handles the instrospection of REST Framework Views and ViewSets."""
 
 import inspect
+import itertools
 import re
 import yaml
 import importlib
 
-from .compat import OrderedDict
+from .compat import OrderedDict, strip_tags, get_pagination_attribures
 from abc import ABCMeta, abstractmethod
 
+from django.http import HttpRequest
 from django.contrib.admindocs.utils import trim_docstring
+from django.utils.encoding import smart_text
 
-from rest_framework.views import get_view_name, get_view_description
+import rest_framework
 from rest_framework import viewsets
-from rest_framework.compat import apply_markdown, smart_text
+from rest_framework.compat import apply_markdown
+try:
+    from rest_framework.fields import CurrentUserDefault
+except ImportError:
+    # FIXME once we drop support of DRF 2.x .
+    CurrentUserDefault = None
 from rest_framework.utils import formatting
+from django.utils import six
+try:
+    import django_filters
+except ImportError:
+    django_filters = None
 
 
-def get_resolved_value(obj, attr, default=None):
-    value = getattr(obj, attr, default)
-    if callable(value):
-        value = value()
-    return value
+def get_view_description(view_cls, html=False, docstring=None):
+    if docstring is not None:
+        view_cls = type(
+            view_cls.__name__ + '_fake',
+            (view_cls,),
+            {'__doc__': docstring})
+    return rest_framework.settings.api_settings \
+        .VIEW_DESCRIPTION_FUNCTION(view_cls, html)
+
+
+def get_default_value(field):
+    default_value = getattr(field, 'default', None)
+    if rest_framework.VERSION >= '3.0.0':
+        from rest_framework.fields import empty
+        if default_value == empty:
+            default_value = None
+    if callable(default_value):
+        if CurrentUserDefault is not None and isinstance(default_value,
+                                                         CurrentUserDefault):
+            default_value.user = None
+        default_value = default_value()
+    return default_value
 
 
 class IntrospectorHelper(object):
@@ -36,9 +66,10 @@ class IntrospectorHelper(object):
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
-        for index, line in enumerate(split_lines):
+        for index in range(len(split_lines) - 1, -1, -1):
+            line = split_lines[index]
             line = line.strip()
-            if line.startswith('---'):
+            if line == '---':
                 cut_off = index
                 break
         if cut_off is not None:
@@ -52,12 +83,13 @@ class IntrospectorHelper(object):
         Strips the params from the docstring (ie. myparam -- Some param) will
         not be removed from the text body
         """
+        params_pattern = re.compile(r' -- ')
         split_lines = trim_docstring(docstring).split('\n')
 
         cut_off = None
         for index, line in enumerate(split_lines):
             line = line.strip()
-            if line.find('--') != -1:
+            if params_pattern.search(line):
                 cut_off = index
                 break
         if cut_off is not None:
@@ -69,6 +101,11 @@ class IntrospectorHelper(object):
     def get_serializer_name(serializer):
         if serializer is None:
             return None
+        if rest_framework.VERSION >= '3.0.0':
+            from rest_framework.serializers import ListSerializer
+            assert serializer != ListSerializer, "uh oh, what now?"
+            if isinstance(serializer, ListSerializer):
+                serializer = serializer.child
 
         if inspect.isclass(serializer):
             return serializer.__name__
@@ -76,20 +113,30 @@ class IntrospectorHelper(object):
         return serializer.__class__.__name__
 
     @staticmethod
-    def get_view_description(callback):
+    def get_summary(callback, docstring=None):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        return get_view_description(callback).split("\n")[0].split(".")[0]
+        description = get_view_description(
+            callback, html=False, docstring=docstring) \
+            .split("\n")[0].split(".")[0]
+        description = IntrospectorHelper.strip_yaml_from_docstring(
+            description)
+        description = IntrospectorHelper.strip_params_from_docstring(
+            description)
+        description = strip_tags(get_view_description(
+            callback, html=True, docstring=description))
+        return description
 
 
 class BaseViewIntrospector(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, callback, path, pattern):
+    def __init__(self, callback, path, pattern, user):
         self.callback = callback
         self.path = path
         self.pattern = pattern
+        self.user = user
 
     def get_yaml_parser(self):
         parser = YAMLDocstringParser(self)
@@ -102,27 +149,23 @@ class BaseViewIntrospector(object):
     def get_iterator(self):
         return self.__iter__()
 
-    def get_serializer_class(self):
-        if hasattr(self.callback, 'get_serializer_class'):
-            view = self.callback()
-            if not hasattr(view, 'kwargs'):
-                view.kwargs = dict()
-            if hasattr(self.pattern, 'default_args'):
-                view.kwargs.update(self.pattern.default_args)
-            return view.get_serializer_class()
-
     def get_description(self):
         """
         Returns the first sentence of the first line of the class docstring
         """
-        return IntrospectorHelper.get_view_description(self.callback)
+        return IntrospectorHelper.get_summary(self.callback)
 
     def get_docs(self):
-        return self.callback.__doc__
+        return get_view_description(self.callback)
 
 
 class BaseMethodIntrospector(object):
     __metaclass__ = ABCMeta
+
+    ENUMS = [
+        'choice',
+        'multiple choice',
+    ]
 
     PRIMITIVES = {
         'integer': ['int32', 'int64'],
@@ -136,6 +179,7 @@ class BaseMethodIntrospector(object):
         self.parent = view_introspector
         self.callback = view_introspector.callback
         self.path = view_introspector.path
+        self.user = view_introspector.user
 
     def get_module(self):
         return self.callback.__module__
@@ -160,11 +204,44 @@ class BaseMethodIntrospector(object):
         parser.object = new_object
         return parser
 
+    def get_extra_serializer_classes(self):
+        return self.get_yaml_parser().get_extra_serializer_classes(
+            self.callback)
+
+    def ask_for_serializer_class(self):
+        if hasattr(self.callback, 'get_serializer_class'):
+            view = self.create_view()
+            parser = self.get_yaml_parser()
+            mock_view = parser.get_view_mocker(self.callback)
+            view = mock_view(view)
+            if view is not None:
+                if parser.should_omit_serializer():
+                    return None
+                try:
+                    serializer_class = view.get_serializer_class()
+                except AssertionError as e:
+                    if "should either include a `serializer_class` attribute, or override the `get_serializer_class()` method." in str(e):  # noqa
+                        serializer_class = None
+                    else:
+                        raise
+                return serializer_class
+
+    def create_view(self):
+        view = self.callback()
+        if not hasattr(view, 'kwargs'):
+            view.kwargs = dict()
+        if hasattr(self.parent.pattern, 'default_args'):
+            view.kwargs.update(self.parent.pattern.default_args)
+        view.request = HttpRequest()
+        view.request.user = self.user
+        view.request.method = self.method
+        return view
+
     def get_serializer_class(self):
         parser = self.get_yaml_parser()
         serializer = parser.get_serializer_class(self.callback)
         if serializer is None:
-            serializer = self.parent.get_serializer_class()
+            serializer = self.ask_for_serializer_class()
         return serializer
 
     def get_response_serializer_class(self):
@@ -182,18 +259,15 @@ class BaseMethodIntrospector(object):
         return serializer
 
     def get_summary(self):
-        docs = self.get_docs()
-
         # If there is no docstring on the method, get class docs
-        if docs is None:
-            docs = self.parent.get_description()
-        docs = trim_docstring(docs).split("\n")[0].split(".")[0]
-
-        return docs
+        return IntrospectorHelper.get_summary(
+            self.callback,
+            self.get_docs() or self.parent.get_description())
 
     def get_nickname(self):
         """ Returns the APIView's nickname """
-        return get_view_name(self.callback).replace(' ', '_')
+        return rest_framework.settings.api_settings \
+            .VIEW_NAME_FUNCTION(self.callback, self.method).replace(' ', '_')
 
     def get_notes(self):
         """
@@ -203,8 +277,7 @@ class BaseMethodIntrospector(object):
         """
         docstring = ""
 
-        class_docs = self.callback.__doc__ or ''
-        class_docs = smart_text(class_docs)
+        class_docs = get_view_description(self.callback)
         class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
         class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
         method_docs = self.get_docs()
@@ -220,14 +293,9 @@ class BaseMethodIntrospector(object):
                 method_docs
             )
             docstring += '\n' + method_docs
+        docstring = docstring.strip()
 
-        # Markdown is optional
-        if apply_markdown:
-            docstring = apply_markdown(docstring)
-        else:
-            docstring = docstring.replace("\n\n", "<br/>")
-
-        return docstring
+        return do_markdown(docstring)
 
     def get_parameters(self):
         """
@@ -239,12 +307,15 @@ class BaseMethodIntrospector(object):
         path_params = self.build_path_parameters()
         body_params = self.build_body_parameters()
         form_params = self.build_form_parameters()
-        query_params = self.build_query_params_from_docstring()
+        query_params = self.build_query_parameters()
+        if django_filters is not None:
+            query_params.extend(
+                self.build_query_parameters_from_django_filters())
 
         if path_params:
             params += path_params
 
-        if self.get_http_method() not in ["GET", "DELETE"]:
+        if self.get_http_method() not in ["GET", "DELETE", "HEAD"]:
             params += form_params
 
             if not form_params and body_params is not None:
@@ -270,7 +341,8 @@ class BaseMethodIntrospector(object):
         method = str(self.method).lower()
         if not hasattr(self.callback, method):
             return None
-        return getattr(self.callback, method).__doc__
+
+        return get_view_description(getattr(self.callback, method))
 
     def build_body_parameters(self):
         serializer = self.get_request_serializer_class()
@@ -302,7 +374,7 @@ class BaseMethodIntrospector(object):
 
         return params
 
-    def build_query_params_from_docstring(self):
+    def build_query_parameters(self):
         params = []
 
         docstring = self.retrieve_docstring() or ''
@@ -319,7 +391,32 @@ class BaseMethodIntrospector(object):
                 params.append({'paramType': 'query',
                                'name': param[0].strip(),
                                'description': param[1].strip(),
-                               'dataType': ''})
+                               'type': 'string'})
+
+        return params
+
+    def build_query_parameters_from_django_filters(self):
+        """
+        introspect ``django_filters.FilterSet`` instances.
+        """
+        params = []
+        filter_class = getattr(self.callback, 'filter_class', None)
+        if (filter_class is not None and
+                issubclass(filter_class, django_filters.FilterSet)):
+            for name, filter_ in filter_class.base_filters.items():
+                data_type = 'string'
+                parameter = {
+                    'paramType': 'query',
+                    'name': name,
+                    'description': filter_.label,
+                }
+                normalize_data_format(data_type, None, parameter)
+                multiple_choices = filter_.extra.get('choices', {})
+                if multiple_choices:
+                    parameter['enum'] = [choice[0] for choice
+                                         in itertools.chain(multiple_choices)]
+                    parameter['type'] = 'enum'
+                params.append(parameter)
 
         return params
 
@@ -340,40 +437,98 @@ class BaseMethodIntrospector(object):
             if getattr(field, 'read_only', False):
                 continue
 
-            data_type = field.type_label
+            data_type, data_format = get_data_type(field) or ('string', 'string')
+            if data_type == 'hidden':
+                continue
 
             # guess format
-            data_format = 'string'
-            if data_type in self.PRIMITIVES:
-                data_format = self.PRIMITIVES.get(data_type)[0]
+            # data_format = 'string'
+            # if data_type in self.PRIMITIVES:
+                # data_format = self.PRIMITIVES.get(data_type)[0]
 
             f = {
                 'paramType': 'form',
                 'name': name,
-                'description': getattr(field, 'help_text', ''),
+                'description': getattr(field, 'help_text', '') or '',
                 'type': data_type,
                 'format': data_format,
                 'required': getattr(field, 'required', False),
-                'defaultValue': get_resolved_value(field, 'default'),
+                'defaultValue': get_default_value(field),
             }
 
-            # Min/Max values
-            max_val = getattr(field, 'max_val', None)
-            min_val = getattr(field, 'min_val', None)
-            if max_val is not None and data_type == 'integer':
-                f['minimum'] = min_val
+            # Swagger type is a primitive, format is more specific
+            if f['type'] == f['format']:
+                del f['format']
 
-            if max_val is not None and data_type == 'integer':
-                f['maximum'] = max_val
+            # defaultValue of null is not allowed, it is specific to type
+            if f['defaultValue'] is None:
+                del f['defaultValue']
+
+            # Min/Max values
+            max_value = getattr(field, 'max_value', None)
+            min_value = getattr(field, 'min_value', None)
+            if max_value is not None and data_type == 'integer':
+                f['minimum'] = min_value
+
+            if max_value is not None and data_type == 'integer':
+                f['maximum'] = max_value
 
             # ENUM options
-            if field.type_label in ['multiple choice', 'choice'] \
-                    and isinstance(field.choices, list):
-                f['enum'] = [k for k, v in field.choices]
+            if data_type in BaseMethodIntrospector.ENUMS:
+                if isinstance(field.choices, list):
+                    f['enum'] = [k for k, v in field.choices]
+                elif isinstance(field.choices, dict):
+                    f['enum'] = [k for k, v in field.choices.items()]
 
             data.append(f)
 
         return data
+
+
+def get_data_type(field):
+    # (in swagger 2.0 we might get to use the descriptive types..
+    from rest_framework import fields
+    if isinstance(field, fields.BooleanField):
+        return 'boolean', 'boolean'
+    elif hasattr(fields, 'NullBooleanField') and isinstance(field, fields.NullBooleanField):
+        return 'boolean', 'boolean'
+    # elif isinstance(field, fields.URLField):
+        # return 'string', 'string' #  'url'
+    # elif isinstance(field, fields.SlugField):
+        # return 'string', 'string', # 'slug'
+    elif isinstance(field, fields.ChoiceField):
+        return 'choice', 'choice'
+    # elif isinstance(field, fields.EmailField):
+        # return 'string', 'string' #  'email'
+    # elif isinstance(field, fields.RegexField):
+        # return 'string', 'string' # 'regex'
+    elif isinstance(field, fields.DateField):
+        return 'string', 'date'
+    elif isinstance(field, fields.DateTimeField):
+        return 'string', 'date-time'  # 'datetime'
+    # elif isinstance(field, fields.TimeField):
+        # return 'string', 'string' # 'time'
+    elif isinstance(field, fields.IntegerField):
+        return 'integer', 'int64'  # 'integer'
+    elif isinstance(field, fields.FloatField):
+        return 'number', 'float'  # 'float'
+    # elif isinstance(field, fields.DecimalField):
+        # return 'string', 'string' #'decimal'
+    # elif isinstance(field, fields.ImageField):
+        # return 'string', 'string' # 'image upload'
+    # elif isinstance(field, fields.FileField):
+        # return 'string', 'string' # 'file upload'
+    # elif isinstance(field, fields.CharField):
+        # return 'string', 'string'
+    elif rest_framework.VERSION >= '3.0.0':
+        if isinstance(field, fields.HiddenField):
+            return 'hidden', 'hidden'
+        elif isinstance(field, fields.ListField):
+            return 'array', 'array'
+        else:
+            return 'string', 'string'
+    else:
+        return 'string', 'string'
 
 
 class APIViewIntrospector(BaseViewIntrospector):
@@ -394,11 +549,21 @@ class WrappedAPIViewIntrospector(BaseViewIntrospector):
         return self.callback().allowed_methods
 
     def get_notes(self):
-        class_docs = self.callback.__doc__ or ''
-        class_docs = smart_text(class_docs)
-        class_docs = IntrospectorHelper.strip_yaml_from_docstring(class_docs)
-        class_docs = IntrospectorHelper.strip_params_from_docstring(class_docs)
-        return class_docs
+        class_docs = get_view_description(self.callback)
+        class_docs = IntrospectorHelper.strip_yaml_from_docstring(
+            class_docs)
+        class_docs = IntrospectorHelper.strip_params_from_docstring(
+            class_docs)
+        return get_view_description(
+            self.callback, html=True, docstring=class_docs)
+
+
+def do_markdown(docstring):
+    # Markdown is optional
+    if apply_markdown:
+        return apply_markdown(docstring)
+    else:
+        return docstring.replace("\n\n", "<br/>")
 
 
 class APIViewMethodIntrospector(BaseMethodIntrospector):
@@ -418,7 +583,7 @@ class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
         endpoint. If none are available, the class docstring
         will be used
         """
-        return self.callback.__doc__
+        return get_view_description(self.callback)
 
     def get_module(self):
         from rest_framework_swagger.decorators import wrapper_to_func
@@ -436,8 +601,8 @@ class WrappedAPIViewMethodIntrospector(BaseMethodIntrospector):
 class ViewSetIntrospector(BaseViewIntrospector):
     """Handle ViewSet introspection."""
 
-    def __init__(self, callback, path, pattern, patterns=None):
-        super(ViewSetIntrospector, self).__init__(callback, path, pattern)
+    def __init__(self, callback, path, pattern, user, patterns=None):
+        super(ViewSetIntrospector, self).__init__(callback, path, pattern, user)
         if not issubclass(callback, viewsets.ViewSetMixin):
             raise Exception("wrong callback passed to ViewSetIntrospector")
         self.patterns = patterns or [pattern]
@@ -470,14 +635,17 @@ class ViewSetIntrospector(BaseViewIntrospector):
 
             freevars = x.code.co_freevars
         except (AttributeError, IndexError):
-            raise RuntimeError('Unable to use callback invalid closure/function specified.')
+            raise RuntimeError(
+                'Unable to use callback invalid closure/function ' +
+                'specified.')
         else:
             return x.closure[freevars.index('actions')].cell_contents
 
 
 class ViewSetMethodIntrospector(BaseMethodIntrospector):
     def __init__(self, view_introspector, method, http_method):
-        super(ViewSetMethodIntrospector, self).__init__(view_introspector, method)
+        super(ViewSetMethodIntrospector, self) \
+            .__init__(view_introspector, method)
         self.http_method = http_method.upper()
 
     def get_http_method(self):
@@ -490,6 +658,36 @@ class ViewSetMethodIntrospector(BaseMethodIntrospector):
         will be used
         """
         return self.retrieve_docstring()
+
+    def create_view(self):
+        view = super(ViewSetMethodIntrospector, self).create_view()
+        if not hasattr(view, 'action'):
+            setattr(view, 'action', self.method)
+        view.request.method = self.http_method
+        return view
+
+    def build_query_parameters(self):
+        parameters = super(ViewSetMethodIntrospector, self) \
+            .build_query_parameters()
+        view = self.create_view()
+        page_size, page_query_param, page_size_query_param = get_pagination_attribures(view)
+        if self.method == 'list' and page_size:
+            data_type = 'integer'
+            if page_query_param:
+                parameters.append({
+                    'paramType': 'query',
+                    'name': page_query_param,
+                    'description': None,
+                })
+                normalize_data_format(data_type, None, parameters[-1])
+            if page_size_query_param:
+                parameters.append({
+                    'paramType': 'query',
+                    'name': page_size_query_param,
+                    'description': None,
+                })
+                normalize_data_format(data_type, None, parameters[-1])
+        return parameters
 
 
 def multi_getattr(obj, attr, default=None):
@@ -510,6 +708,36 @@ def multi_getattr(obj, attr, default=None):
             else:
                 raise
     return obj
+
+
+def normalize_data_format(data_type, data_format, obj):
+    """
+    sets 'type' on obj
+    sets a valid 'format' on obj if appropriate
+    uses data_format only if valid
+    """
+    if data_type == 'array':
+        data_format = None
+
+    flatten_primitives = [
+        val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
+        for val in sublist
+    ]
+
+    if data_format not in flatten_primitives:
+        formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
+        if formats:
+            data_format = formats[0]
+        else:
+            data_format = None
+    if data_format == data_type:
+        data_format = None
+
+    obj['type'] = data_type
+    if data_format is None and 'format' in obj:
+        del obj['format']
+    elif data_format is not None:
+        obj['format'] = data_format
 
 
 class YAMLDocstringParser(object):
@@ -742,6 +970,22 @@ class YAMLDocstringParser(object):
             pass
         return None
 
+    def get_extra_serializer_classes(self, callback):
+        """
+        Retrieves serializer classes from pytype YAML objects
+        """
+        parameters = self.object.get('parameters', [])
+        serializers = []
+        for parameter in parameters:
+            serializer = parameter.get('pytype', None)
+            if serializer is not None:
+                try:
+                    serializer = self._load_class(serializer, callback)
+                    serializers.append(serializer)
+                except (ImportError, ValueError):
+                    pass
+        return serializers
+
     def get_request_serializer_class(self, callback):
         """
         Retrieves request serializer class from YAML object
@@ -758,6 +1002,8 @@ class YAMLDocstringParser(object):
         Retrieves response serializer class from YAML object
         """
         serializer = self.object.get('response_serializer', None)
+        if isinstance(serializer, list):
+            serializer = serializer[0]
         try:
             return self._load_class(serializer, callback)
         except (ImportError, ValueError):
@@ -769,6 +1015,18 @@ class YAMLDocstringParser(object):
         Docstring may define custom response class
         """
         return self.object.get('type', None)
+
+    def get_consumes(self):
+        """
+        Retrieves media type supported as input
+        """
+        return self.object.get('consumes', [])
+
+    def get_produces(self):
+        """
+        Retrieves media type supported as output
+        """
+        return self.object.get('produces', [])
 
     def get_response_messages(self):
         """
@@ -784,7 +1042,13 @@ class YAMLDocstringParser(object):
             })
         return messages
 
-    def get_parameters(self):
+    def get_view_mocker(self, callback):
+        view_mocker = self.object.get('view_mocker', lambda a: a)
+        if isinstance(view_mocker, six.string_types):
+            view_mocker = self._load_class(view_mocker, callback)
+        return view_mocker
+
+    def get_parameters(self, callback):
         """
         Retrieves parameters from YAML object
         """
@@ -800,45 +1064,55 @@ class YAMLDocstringParser(object):
             # https://github.com/wordnik/swagger-core/wiki/1.2-transition#wiki-additions-2
             # https://github.com/wordnik/swagger-core/wiki/Parameters
             data_type = field.get('type', 'string')
+            pytype = field.get('pytype', None)
+            if pytype is not None:
+                try:
+                    serializer = self._load_class(pytype, callback)
+                    data_type = IntrospectorHelper.get_serializer_name(
+                        serializer)
+                except (ImportError, ValueError):
+                    pass
             if param_type in ['path', 'query', 'header']:
                 if data_type not in BaseMethodIntrospector.PRIMITIVES:
                     data_type = 'string'
 
             # Data Format
             data_format = field.get('format', None)
-            flatten_primitives = [
-                val for sublist in BaseMethodIntrospector.PRIMITIVES.values()
-                for val in sublist
-            ]
-
-            if data_format not in flatten_primitives:
-                formats = BaseMethodIntrospector.PRIMITIVES.get(data_type, None)
-                if formats:
-                    data_format = formats[0]
-                else:
-                    data_format = 'string'
 
             f = {
                 'paramType': param_type,
                 'name': field.get('name', None),
-                'description': field.get('description', None),
-                'type': data_type,
-                'format': data_format,
+                'description': field.get('description', ''),
                 'required': field.get('required', False),
-                'defaultValue': field.get('defaultValue', None),
-
             }
+
+            normalize_data_format(data_type, data_format, f)
+
+            if field.get('defaultValue', None) is not None:
+                f['defaultValue'] = field.get('defaultValue', None)
 
             # Allow Multiple Values &f=1,2,3,4
             if field.get('allowMultiple'):
                 f['allowMultiple'] = True
 
+            if f['type'] == 'array':
+                items = field.get('items', {})
+                elt_data_type = items.get('type', 'string')
+                elt_data_format = items.get('type', 'format')
+                f['items'] = {
+                }
+                normalize_data_format(elt_data_type, elt_data_format, f['items'])
+
+                uniqueItems = field.get('uniqueItems', None)
+                if uniqueItems is not None:
+                    f['uniqueItems'] = uniqueItems
+
             # Min/Max are optional
             if 'minimum' in field and data_type == 'integer':
-                f['minimum'] = field.get('minimum', 0)
+                f['minimum'] = str(field.get('minimum', 0))
 
             if 'maximum' in field and data_type == 'integer':
-                f['maximum'] = field.get('maximum', 0)
+                f['maximum'] = str(field.get('maximum', 0))
 
             # enum options
             enum = field.get('enum', [])
@@ -859,7 +1133,7 @@ class YAMLDocstringParser(object):
         from method and docstring
         """
         parameters = []
-        docstring_params = self.get_parameters()
+        docstring_params = self.get_parameters(inspector.callback)
         method_params = inspector.get_parameters()
 
         # paramType may differ, overwrite first
@@ -929,8 +1203,9 @@ class YAMLDocstringParser(object):
         """
         Returns filter function for parameters structure
         """
-        fn = lambda o: o.get(key, None) == val
-        return filter(fn, params)
+        def filter_by(o):
+            return o.get(key, None) == val
+        return filter(filter_by, params)
 
     @staticmethod
     def _merge_params(params1, params2, key):

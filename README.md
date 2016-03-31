@@ -1,32 +1,26 @@
 # Django REST Swagger
 
-[![Build Status](https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master)](https://travis-ci.org/marcgibbons/django-rest-swagger)
+[![build-status-badge]][build-status]
+[![pypi-version]][pypi]
+[![license-badge]][license]
+[![docs-badge]][docs]
 
-####An API documentation generator for Swagger UI and Django REST Framework version > 2.3.5
+####An API documentation generator for Swagger UI and Django REST Framework
 
-For older versions of Django REST Framework, see [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs)
+This project is built on the [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) and uses the lovely [Swagger from Wordnik](http://swagger.io) as an interface. This application introspectively generates documentation based on your Django REST Framework API code. Comments are generated in combination from code analysis and comment extraction. Here are some of the features that are documented:
 
-## Installation
-From PyPI: `pip install django-rest-swagger`
-
-From source:
-- Download the source
-- Extract files
-- Run `python setup.py install`
-
-## Requirements
-This application was developed and tested on:
-
-* Django 1.5.1 - 1.6
-* Django REST Framework 2.3.8+
-* Python 2/3
-
-Backwards compatibility for earlier Django & Django REST Framework versions will be added in a future release. Meanwhile, please use [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) to document your projects.
+* API title - taken from the class name
+* Methods allowed
+* Serializers & fields in use by a certain method
+* Field default values, minimum, maximum, read-only and required attributes
+* URL parameters (ie. /product/{id})
+* Field `help_text` property is used to create the description from the serializer or model.
 
 ## Quick start
-**Note: This application will not work with Django REST Framework < 2.3**
 
-1. Add `rest_framework_swagger` to your `INSTALLED_APPS` setting like this:
+1. ```pip install django-rest-swagger```
+
+2. Add `rest_framework_swagger` to your `INSTALLED_APPS` setting:
 
     ```python
         INSTALLED_APPS = (
@@ -35,7 +29,7 @@ Backwards compatibility for earlier Django & Django REST Framework versions will
         )
     ```
 
-2. Include the rest_framework_swagger URLs to a path of your choice
+3. Include the rest_framework_swagger URLs to a path of your choice
 
     ```python
     patterns = ('',
@@ -44,83 +38,18 @@ Backwards compatibility for earlier Django & Django REST Framework versions will
     )
     ```
 
-## Configuration
-Further configuration can optionally be made from your project's `settings.py`.
+for more information, see the [documentation][docs].
 
-* **Exclude namespaces:** you may wish to exclude a set of URLs from documentation. By default, all views that are subclassed from Django REST Framework APIView will be included for documentation
-* **API Version:** your API's version. Default is blank.
-* **Enabled methods:** You may specify the methods that can be interacted with in the UI
-* **API key:** you can specify a key for your API. Default is blank
-
-```python
-SWAGGER_SETTINGS = {
-    "exclude_namespaces": [], # List URL namespaces to ignore
-    "api_version": '0.1',  # Specify your API's version
-    "api_path": "/",  # Specify the path to your API not a root level
-    "enabled_methods": [  # Specify which methods to enable in Swagger UI
-        'get',
-        'post',
-        'put',
-        'patch',
-        'delete'
-    ],
-    "api_key": '', # An API key
-    "is_authenticated": False,  # Set to True to enforce user authentication,
-    "is_superuser": False,  # Set to True to enforce admin only access
-    "permission_denied_handler": None, # If user has no permisssion, raise 403 error
-    "info": {
-        # Configure some Swagger UI variables, for details see:
-        # https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md#513-info-object
-        'contact': 'apiteam@wordnik.com',
-        'description': 'This is a sample server Petstore server. '
-                       'You can find out more about Swagger at '
-                       '<a href="http://swagger.wordnik.com">'
-                       'http://swagger.wordnik.com</a> '
-                       'or on irc.freenode.net, #swagger. '
-                       'For this sample, you can use the api key '
-                       '"special-key" to test '
-                       'the authorization filters',
-        'license': 'Apache 2.0',
-        'licenseUrl': 'http://www.apache.org/licenses/LICENSE-2.0.html',
-        'termsOfServiceUrl': 'http://helloreverb.com/terms/',
-        'title': 'Swagger Sample App',
-    },
-}
-```
-
-## How It Works
-This project is built on the [Django REST Framework Docs](https://github.com/marcgibbons/django-rest-framework-docs) and uses the lovely [Swagger from Wordnik](https://developers.helloreverb.com/swagger/) as an interface. This application introspectively generates documentation based on your Django REST Framework API code. Comments are generated in combination from code analysis and comment extraction. Here are some of the features that are documented:
-
-* API title - taken from the class name
-* Methods allowed
-* Serializers & fields in use by a certain method
-* Field default values, minimum, maximum, read-only and required attributes
-* URL parameters (ie. /product/{id})
-* Field `help_text` property is used to create the description from the serializer or model.
-* Query parameters (user-defined) - Custom parameters. It is possible to customize a parameter list for your
-    API. To do so, include a key-value pair in the docstring of your API class
-    delimited by two hyphens ('--'). Example: 'start_time -- The first reading':
-
-```python
-    class Countries(APIView):
-        """
-        This text is the description for this API
-        param1 -- A first parameter
-        param2 -- A second parameter
-        """
-```
-
-## Example
-Included in this repository is a functioning example. Please clone the repo, copy or reference the `rest_framework_swagger` directory into the cigar_example folder. Install the required packages using `pip install -r requirements.txt`
-
-## Screenshots
-![](screenshots/api-list.png)
-![](screenshots/fields.png)
+## Requirements
+* Python (2.6.5+, 2.7, 3.2, 3.3, 3.4)
+* Django (1.5.5+, 1.6, 1.7, 1.8)
+* Django REST framework (2.3.8+)
+* PyYAML (3.10+)
 
 ## Bugs & Contributions
 Please report bugs by opening an issue
 
-Contributions are welcome and are encouraged !
+Contributions are welcome and are encouraged!
 
 ## Special Thanks
 Thanks to [BNOTIONS](http://www.bnotions.com) for sponsoring initial development time.
@@ -153,79 +82,12 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 * Peter Baumgartner (@ipmb)
 * Marlon Bailey (@avinash240)
 
-## Release Notes:
 
-### v0.2.0 (October 31, 2014)
-* Added YAML Parser to docstring handling
-* Fixed Python 3 bugs
-
-### v0.1.14 (March 7, 2014)
-* Fixed resource name truncation bug
-
-### v0.1.13 (Feb 25, 2014)
-* Fixed grouping bug
-
-### v0.1.12 (Feb 24, 2014)
-* Improved resource grouping
-* Alphabetical sorting of resources
-* Fixed CSRF headers
-* Misc bug fixes & improvements
-
-### v0.1.11 (Dec 1, 2013)
-* Added proper unicode support for Python 2
-* Compatibility fixes for Python 3
-* Changed settings template var to avoid naming conflicts
-* Fixed mapping dict constructor in introspectors for Python 2.6 support
-
-### v0.1.10 (Nov 23, 2013)
-* Upgraded Swagger UI version
-* Now supports Django ViewSet method-level documentation
-* Now supports ViewSet @action & @link method implementation
-* Added blank HttpRequest to the callback for those who like to hack the get_serializer classes
-* HTML Markdown supported in docstrings (use responsibly)
-
-### v0.1.9 (Oct 1, 2013)
-* Revisited doc algorithm
-* Added support for APPEND_SLASH = False
-
-### v0.1.8 (Sept 16, 2013)
-* Fixed broken imports - Now supports DRF 2.3.8
-* Added description on the model field
-
-### v0.1.7 (Sept 4, 2013)
-* URL flattening fixes
-* API root prefix fix
-
-### v0.1.6 (August 3, 2013)
-* Improvments and bug fixes with relative imports in Python 3
-* throbber.gif image is being pointed to local copy
-
-### v0.1.5 (July 30, 2013)
-* Added permission settings for Swagger docs. Default is now allow any, which will override REST Framework settings
-* Fixed throbber.gif URL in the swagger-ui.min.js to point to Wordnik's resource
-
-
-License
---------
-Copyright (c) 2013, Marc Gibbons
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+[build-status-badge]: https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master
+[build-status]: https://travis-ci.org/marcgibbons/django-rest-swagger
+[pypi-version]: https://pypip.in/version/django-rest-swagger/badge.svg
+[pypi]: https://pypi.python.org/pypi/django-rest-swagger
+[license-badge]: https://img.shields.io/pypi/l/django-rest-swagger.svg
+[license]: https://pypi.python.org/pypi/django-rest-swagger/
+[docs-badge]: https://readthedocs.org/projects/django-rest-swagger/badge/
+[docs]: http://django-rest-swagger.readthedocs.org/

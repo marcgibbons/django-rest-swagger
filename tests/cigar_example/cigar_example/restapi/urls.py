@@ -6,6 +6,7 @@ from cigar_example.restapi import views as views
 
 router = DefaultRouter()
 router.register(r'cigars', views.CigarViewSet)
+router.register(r'artisan_cigars', views.ArtisanCigarViewSet)
 
 urlpatterns = patterns(
     '',
@@ -16,9 +17,12 @@ urlpatterns = patterns(
 
     url(r'^countries/?$', views.CountryList.as_view(), name='list_of_countries'),
     url(r'^countries/(?P<pk>\d+)/?$', views.CountryDetails.as_view(), name='countries_details'),
-    url(r'^jambalaya/$', views.jambalaya, name='jambalaya'),
-    url(r'^jambalaya2/$', views.jambalaya2, name='jambalaya2'),
-    url(r'^jambalaya3/$', views.jambalaya3, name='jambalaya3'),
+    url(r'^jambalaya_create/$', views.create_jambalaya, name='create-jambalaya'),
+    url(r'^jambalaya_find/$', views.find_jambalaya, name='find-jambalaya'),
+    url(r'^jambalaya_retrieve/$', views.retrieve_jambalaya, name='retrieve-jambalaya'),
+    url(r'^drop_cigar_in_jambalaya/$', views.drop_cigar_in_jambalaya, name='cigar-jambalaya'),
+    url(r'^mix_cigars_in_jambalaya/$', views.mix_cigars_in_jambalaya, name='mix-cigars-jambalaya'),
+    url(r'^custom_create/$', views.create_cigar2, name='custom-create-cigar'),
 )
 
 urlpatterns += router.urls

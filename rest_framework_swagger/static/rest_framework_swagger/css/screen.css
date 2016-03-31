@@ -1,85 +1,85 @@
 /* http://meyerweb.com/eric/tools/css/reset/ v2.0 | 20110126 */
-html,
-body,
-div,
-span,
-applet,
-object,
-iframe,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-blockquote,
-pre,
-a,
-abbr,
-acronym,
-address,
-big,
-cite,
-code,
-del,
-dfn,
-em,
-img,
-ins,
-kbd,
-q,
-s,
-samp,
-small,
-strike,
-strong,
-sub,
-sup,
-tt,
-var,
-b,
-u,
-i,
-center,
-dl,
-dt,
-dd,
-ol,
-ul,
-li,
-fieldset,
-form,
-label,
-legend,
-table,
-caption,
-tbody,
-tfoot,
-thead,
-tr,
-th,
-td,
-article,
-aside,
-canvas,
-details,
-embed,
-figure,
-figcaption,
-footer,
-header,
-hgroup,
-menu,
-nav,
-output,
-ruby,
-section,
-summary,
-time,
-mark,
-audio,
-video {
+.swagger-ui-wrap html,
+.swagger-ui-wrap body,
+.swagger-ui-wrap div,
+.swagger-ui-wrap span,
+.swagger-ui-wrap applet,
+.swagger-ui-wrap object,
+.swagger-ui-wrap iframe,
+.swagger-ui-wrap h1,
+.swagger-ui-wrap h2,
+.swagger-ui-wrap h3,
+.swagger-ui-wrap h4,
+.swagger-ui-wrap h5,
+.swagger-ui-wrap h6,
+.swagger-ui-wrap p,
+.swagger-ui-wrap blockquote,
+.swagger-ui-wrap pre,
+.swagger-ui-wrap a,
+.swagger-ui-wrap abbr,
+.swagger-ui-wrap acronym,
+.swagger-ui-wrap address,
+.swagger-ui-wrap big,
+.swagger-ui-wrap cite,
+.swagger-ui-wrap code,
+.swagger-ui-wrap del,
+.swagger-ui-wrap dfn,
+.swagger-ui-wrap em,
+.swagger-ui-wrap img,
+.swagger-ui-wrap ins,
+.swagger-ui-wrap kbd,
+.swagger-ui-wrap q,
+.swagger-ui-wrap s,
+.swagger-ui-wrap samp,
+.swagger-ui-wrap small,
+.swagger-ui-wrap strike,
+.swagger-ui-wrap strong,
+.swagger-ui-wrap sub,
+.swagger-ui-wrap sup,
+.swagger-ui-wrap tt,
+.swagger-ui-wrap var,
+.swagger-ui-wrap b,
+.swagger-ui-wrap u,
+.swagger-ui-wrap i,
+.swagger-ui-wrap center,
+.swagger-ui-wrap dl,
+.swagger-ui-wrap dt,
+.swagger-ui-wrap dd,
+.swagger-ui-wrap ol,
+.swagger-ui-wrap ul,
+.swagger-ui-wrap li,
+.swagger-ui-wrap fieldset,
+.swagger-ui-wrap form,
+.swagger-ui-wrap label,
+.swagger-ui-wrap legend,
+.swagger-ui-wrap table,
+.swagger-ui-wrap caption,
+.swagger-ui-wrap tbody,
+.swagger-ui-wrap tfoot,
+.swagger-ui-wrap thead,
+.swagger-ui-wrap tr,
+.swagger-ui-wrap th,
+.swagger-ui-wrap td,
+.swagger-ui-wrap article,
+.swagger-ui-wrap aside,
+.swagger-ui-wrap canvas,
+.swagger-ui-wrap details,
+.swagger-ui-wrap embed,
+.swagger-ui-wrap figure,
+.swagger-ui-wrap figcaption,
+.swagger-ui-wrap footer,
+.swagger-ui-wrap header,
+.swagger-ui-wrap hgroup,
+.swagger-ui-wrap menu,
+.swagger-ui-wrap nav,
+.swagger-ui-wrap output,
+.swagger-ui-wrap ruby,
+.swagger-ui-wrap section,
+.swagger-ui-wrap summary,
+.swagger-ui-wrap time,
+.swagger-ui-wrap mark,
+.swagger-ui-wrap audio,
+.swagger-ui-wrap video {
   margin: 0;
   padding: 0;
   border: 0;
@@ -88,38 +88,38 @@ video {
   vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
+.swagger-ui-wrap article,
+.swagger-ui-wrap aside,
+.swagger-ui-wrap details,
+.swagger-ui-wrap figcaption,
+.swagger-ui-wrap figure,
+.swagger-ui-wrap footer,
+.swagger-ui-wrap header,
+.swagger-ui-wrap hgroup,
+.swagger-ui-wrap menu,
+.swagger-ui-wrap nav,
+.swagger-ui-wrap section {
   display: block;
 }
-body {
+.swagger-ui-wrap body {
   line-height: 1;
 }
-ol,
-ul {
+.swagger-ui-wrap ol,
+.swagger-ui-wrap ul {
   list-style: none;
 }
-blockquote,
-q {
+.swagger-ui-wrap blockquote,
+.swagger-ui-wrap q {
   quotes: none;
 }
-blockquote:before,
-blockquote:after,
-q:before,
-q:after {
+.swagger-ui-wrap blockquote:before,
+.swagger-ui-wrap blockquote:after,
+.swagger-ui-wrap q:before,
+.swagger-ui-wrap q:after {
   content: '';
   content: none;
 }
-table {
+.swagger-ui-wrap table {
   border-collapse: collapse;
   border-spacing: 0;
 }
@@ -273,7 +273,7 @@ table {
   cursor: pointer;
 }
 .swagger-ui-wrap .info_title {
-  padding-bottom: 10px;
+  padding-bottom: 20px;
   font-weight: bold;
   font-size: 25px;
 }
@@ -299,10 +299,12 @@ table {
 }
 .swagger-ui-wrap .info_contact {
   padding-bottom: 5px;
+  font-size: 15px;
 }
 .swagger-ui-wrap .info_description {
   padding-bottom: 10px;
   font-size: 15px;
+  line-height: 1.4;
 }
 .swagger-ui-wrap .markdown ol li,
 .swagger-ui-wrap .markdown ul li {
@@ -557,6 +559,7 @@ table {
 .swagger-ui-wrap ul#resources {
   font-family: "Droid Sans", sans-serif;
   font-size: 0.9em;
+  margin-top: 20px;
 }
 .swagger-ui-wrap ul#resources li.resource {
   border-bottom: 1px solid #dddddd;
