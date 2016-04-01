@@ -425,16 +425,18 @@ class BaseMethodIntrospector(object):
         Builds form parameters from the serializer class
         """
         data = []
-        serializer = self.get_request_serializer_class()
+        serializer_class = self.get_request_serializer_class()
 
-        if serializer is None:
+        if serializer_class is None:
             return data
 
-        fields = serializer().get_fields()
+        serializer = serializer_class()
+        fields = serializer.get_fields()
+        read_only_fields = getattr(getattr(serializer, 'Meta', None), 'read_only_fields', [])
 
         for name, field in fields.items():
 
-            if getattr(field, 'read_only', False):
+            if getattr(field, 'read_only', False) or name in read_only_fields:
                 continue
 
             data_type, data_format = get_data_type(field) or ('string', 'string')
