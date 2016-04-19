@@ -694,7 +694,7 @@ var SwaggerOperation = function(nickname, path, method, parameters, summary, not
 
     // for 1.1 compatibility
     var type = param.type || param.dataType;
-    if(type === 'array') {
+    if(type === 'array' && 'items' in param) {
       type = 'array[' + (param.items.$ref ? param.items.$ref : param.items.type) + ']';
     }
     param.type = type;
