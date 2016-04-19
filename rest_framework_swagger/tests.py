@@ -1413,9 +1413,7 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual("string", properties["url"]["type"])
         self.assertNotIn("format", properties["url"])
         self.assertEqual("string", properties["slug"]["type"])
-        self.assertIn(
-            properties["choice"]["type"],
-            ["choice", "multiple choice"])
+        self.assertEqual("string", properties["choice"]["type"])
         self.assertIn("enum", properties["choice"].keys())
         self.assertEqual("string", properties["regex"]["type"])
         self.assertEqual("number", properties["float"]["type"])

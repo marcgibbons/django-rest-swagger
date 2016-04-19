@@ -446,6 +446,17 @@ class BaseMethodIntrospector(object):
             # if data_type in self.PRIMITIVES:
                 # data_format = self.PRIMITIVES.get(data_type)[0]
 
+            choices = []
+            if data_type in BaseMethodIntrospector.ENUMS:
+                if isinstance(field.choices, list):
+                    choices = [k for k, v in field.choices]
+                elif isinstance(field.choices, dict):
+                    choices = [k for k, v in field.choices.items()]
+
+            if choices:
+                # guest data type and format
+                data_type, data_format = get_primitive_type(choices[0]) or ('string', 'string')
+
             f = {
                 'paramType': 'form',
                 'name': name,
@@ -474,15 +485,25 @@ class BaseMethodIntrospector(object):
                 f['maximum'] = max_value
 
             # ENUM options
-            if data_type in BaseMethodIntrospector.ENUMS:
-                if isinstance(field.choices, list):
-                    f['enum'] = [k for k, v in field.choices]
-                elif isinstance(field.choices, dict):
-                    f['enum'] = [k for k, v in field.choices.items()]
+            if choices:
+                f['enum'] = choices
 
             data.append(f)
 
         return data
+
+
+def get_primitive_type(var):
+    if isinstance(var, bool):
+        return 'boolean', 'boolean'
+    elif isinstance(var, int):
+        return 'integer', 'int32'
+    elif isinstance(var, float):
+        return 'number', 'float'
+    elif isinstance(var, six.string_types):
+        return 'string', 'string'
+    else:
+        return 'string', 'string'  # 'default'
 
 
 def get_data_type(field):
