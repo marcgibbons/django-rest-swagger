@@ -1,10 +1,10 @@
 import re
 import os
 from importlib import import_module
-from urlparse import urljoin
 
 from django.conf import settings
 from django.utils import six
+from django.utils.six.moves.urllib_parse import urljoin
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
 
