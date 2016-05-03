@@ -119,6 +119,14 @@ class DocumentationGenerator(object):
             if produces:
                 operation['produces'] = produces
 
+            # Check if this method has been reported as returning an
+            # array response
+            if method_introspector.is_array_response:
+                operation['items'] = {
+                    '$ref': operation['type']
+                }
+                operation['type'] = 'array'
+
             operations.append(operation)
 
         return operations
