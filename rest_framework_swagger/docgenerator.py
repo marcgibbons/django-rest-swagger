@@ -383,8 +383,10 @@ class DocumentationGenerator(object):
 
             if isinstance(field, BaseSerializer) or has_many:
                 if isinstance(field, BaseSerializer):
-                    from rest_framework.serializers import ListSerializer
-                    if isinstance(field, ListSerializer) and not isinstance(field.child, BaseSerializer):
+                    if (rest_framework.VERSION >= '3.0.0' and
+                        isinstance(field, ListSerializer) and
+                        not isinstance(field.child, BaseSerializer)):
+
                         data_type, data_format = get_data_type(field.child)
                         field_serializer = None
                     else:
