@@ -277,6 +277,8 @@ class DocumentationGenerator(object):
 
         serializers_set = set()
         for serializer in serializers:
+            if not hasattr(serializer, 'get_fields'):
+                continue
             fields = serializer().get_fields()
             for name, field in fields.items():
                 if isinstance(field, BaseSerializer):
@@ -296,7 +298,9 @@ class DocumentationGenerator(object):
         if serializer is None:
             return
 
-        if hasattr(serializer, '__call__'):
+        if not hasattr(serializer, 'get_fields'):
+            fields = {}
+        elif callable(serializer):
             fields = serializer().get_fields()
         else:
             fields = serializer.get_fields()
