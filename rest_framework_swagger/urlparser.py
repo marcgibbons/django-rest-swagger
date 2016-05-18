@@ -4,17 +4,23 @@ from importlib import import_module
 
 from django.conf import settings
 from django.utils import six
+from django.utils.six.moves.urllib_parse import urljoin
 from django.core.urlresolvers import RegexURLResolver, RegexURLPattern
 from django.contrib.admindocs.views import simplify_regex
 
 from rest_framework.views import APIView
 
 from .apidocview import APIDocView
+from . import SWAGGER_SETTINGS
 
 
 class UrlParser(object):
 
-    def get_apis(self, patterns=None, urlconf=None, filter_path=None, exclude_url_names=[], exclude_namespaces=[]):
+    __relative_path_matcher__ = re.compile(
+        r'^%s(?P<relative>.*)' % SWAGGER_SETTINGS.get('api_path', ''))
+
+    def get_apis(self, patterns=None, urlconf=None, filter_path=None,
+                 exclude_url_names=None, exclude_namespaces=None):
         """
         Returns all the DRF APIViews found in the project URLs
 
@@ -22,6 +28,10 @@ class UrlParser(object):
         exclude_url_names -- list of url names to ignore (optional)
         exclude_namespaces -- list of namespaces to ignore (optional)
         """
+        exclude_url_names = exclude_url_names or []
+        exclude_namespaces = exclude_namespaces or []
+        filter_path = self.__make_absolute__(filter_path)
+
         if patterns is None and urlconf is not None:
             if isinstance(urlconf, six.string_types):
                 urls = import_module(urlconf)
@@ -39,6 +49,7 @@ class UrlParser(object):
             exclude_namespaces=exclude_namespaces,
         )
         if filter_path is not None:
+            filter_path = self.__make_relative__(filter_path, strip=True)
             return self.get_filtered_apis(apis, filter_path)
 
         return apis
@@ -115,6 +126,7 @@ class UrlParser(object):
                 return None
 
         path = path.replace('<', '{').replace('>', '}')
+        path = self.__make_relative__(path)
 
         if self.__exclude_format_endpoints__(path):
             return
@@ -125,18 +137,22 @@ class UrlParser(object):
             'callback': callback,
         }
 
-    def __flatten_patterns_tree__(self, patterns, prefix='', filter_path=None, exclude_url_names=[], exclude_namespaces=[]):
+    def __flatten_patterns_tree__(self, patterns, prefix='', filter_path=None,
+                                  exclude_url_names=None, exclude_namespaces=None):
         """
         Uses recursion to flatten url tree.
 
         patterns -- urlpatterns list
         prefix -- (optional) Prefix for URL pattern
         """
+        exclude_url_names = exclude_url_names or []
+        exclude_namespaces = exclude_namespaces or []
         pattern_list = []
 
         for pattern in patterns:
             if isinstance(pattern, RegexURLPattern):
-                endpoint_data = self.__assemble_endpoint_data__(pattern, prefix, filter_path=filter_path)
+                endpoint_data = self.__assemble_endpoint_data__(
+                    pattern, prefix, filter_path=filter_path)
 
                 if endpoint_data is None or pattern.name in exclude_url_names:
                     continue
@@ -145,7 +161,8 @@ class UrlParser(object):
 
             elif isinstance(pattern, RegexURLResolver):
 
-                if pattern.namespace is not None and pattern.namespace in exclude_namespaces:
+                if pattern.namespace is not None \
+                        and pattern.namespace in exclude_namespaces:
                     continue
 
                 pref = prefix + pattern.regex.pattern
@@ -196,3 +213,24 @@ class UrlParser(object):
             return True
 
         return False
+
+    def __make_relative__(self, path, strip=False):
+        """
+        When `relative_paths` is True, make path relative to API Path.
+        """
+        if path:
+            if SWAGGER_SETTINGS.get('relative_paths', False):
+                res = UrlParser.__relative_path_matcher__.match(path)
+                path = urljoin('/', res.groups()[0]) if res else path
+
+            return path.strip('/') if strip else path
+
+    def __make_absolute__(self, path):
+        """
+        When `relative_paths` is True, fully qualify path with API Path.
+        """
+        if path:
+            if SWAGGER_SETTINGS.get('relative_paths', False):
+                path = urljoin(SWAGGER_SETTINGS.get('api_path'), path)
+
+            return path
