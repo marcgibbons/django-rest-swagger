@@ -1,4 +1,4 @@
-VERSION = '0.3.6'
+VERSION = '0.3.7'
 
 DEFAULT_SWAGGER_SETTINGS = {
     'exclude_url_names': [],
