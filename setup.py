@@ -5,7 +5,7 @@ from setuptools import setup
 from rest_framework_swagger import VERSION
 
 if sys.argv[-1] == 'publish':
-    if os.system("pip freeze | grep wheel"):
+    if os.system("wheel version"):
         print("wheel not installed.\nUse `pip install wheel`.\nExiting.")
         sys.exit()
     if os.system("pip freeze | grep twine"):
