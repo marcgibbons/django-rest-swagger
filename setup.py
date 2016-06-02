@@ -32,7 +32,7 @@ From pip:
 pip install django-rest-swagger
 
 Project @ https://github.com/marcgibbons/django-rest-swagger
-Docs @ http://django-rest-swagger.readthedocs.org/
+Docs @ https://django-rest-swagger.readthedocs.io/
 """
 
 # allow setup.py to be run from any path
