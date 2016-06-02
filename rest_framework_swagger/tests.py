@@ -1432,6 +1432,10 @@ class BaseMethodIntrospectorTest(TestCase, DocumentationGeneratorMixin):
             content = serializers.CharField(
                 max_length=200, min_length=10, default="Vandalay Industries")
             a_read_only_field = serializers.BooleanField(read_only=True)
+            another_read_only_field = serializers.BooleanField()
+
+            class Meta:
+                read_only_fields = ('a_read_only_field', 'another_read_only_field')
 
         class MyAPIView(ListCreateAPIView):
             serializer_class = MySerializer
