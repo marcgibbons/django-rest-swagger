@@ -277,6 +277,8 @@ class DocumentationGenerator(object):
 
         serializers_set = set()
         for serializer in serializers:
+            if not hasattr(serializer, 'get_fields'):
+                continue
             fields = serializer().get_fields()
             for name, field in fields.items():
                 if isinstance(field, BaseSerializer):
@@ -296,7 +298,9 @@ class DocumentationGenerator(object):
         if serializer is None:
             return
 
-        if hasattr(serializer, '__call__'):
+        if not hasattr(serializer, 'get_fields'):
+            fields = {}
+        elif callable(serializer):
             fields = serializer().get_fields()
         else:
             fields = serializer.get_fields()
@@ -379,12 +383,19 @@ class DocumentationGenerator(object):
 
             if isinstance(field, BaseSerializer) or has_many:
                 if isinstance(field, BaseSerializer):
-                    field_serializer = IntrospectorHelper.get_serializer_name(field)
+                    if (rest_framework.VERSION >= '3.0.0' and
+                            isinstance(field, ListSerializer) and
+                            not isinstance(field.child, BaseSerializer)):
 
-                    if getattr(field, 'write_only', False):
-                        field_serializer = "Write{}".format(field_serializer)
+                        data_type, data_format = get_data_type(field.child)
+                        field_serializer = None
+                    else:
+                        field_serializer = IntrospectorHelper.get_serializer_name(field)
 
-                    f['type'] = field_serializer
+                        if getattr(field, 'write_only', False):
+                            field_serializer = "Write{}".format(field_serializer)
+
+                        f['type'] = field_serializer
                 else:
                     field_serializer = None
                     data_type = 'string'
