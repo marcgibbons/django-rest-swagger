@@ -68,7 +68,7 @@ setup(
     author_email='marc_gibbons@rogers.com',
     maintainer='Ellery Newcomer',
     maintainer_email='ellery-newcomer@utulsa.edu',
-    url='http://github.com/marcgibbons/django-rest-swagger',
+    url='https://github.com/marcgibbons/django-rest-swagger',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
