@@ -1,4 +1,11 @@
 language: python
+# This only controls the version of Python used to run tox, the
+# versions used for the tests are handled by tox itself. Python 3.5
+# is only installed if we explicitly request it, so we have to use
+# it as the base, so that it's available to tox. Python 2.7 and 3.4
+# are available in the Travis images by default. See:
+# https://github.com/travis-ci/travis-ci/issues/4794#issuecomment-143758799
+python: "3.5"
 
 sudo: false
 
@@ -21,11 +28,14 @@ env:
     - TOX_ENV=py34-django1.8-drf3.2
     - TOX_ENV=py34-django1.8-drf3.3
     - TOX_ENV=py34-django1.9-drf3.3
+    - TOX_ENV=py35-django1.8-drf3.3
+    - TOX_ENV=py35-django1.9-drf3.3
 
 matrix:
   allow_failures:
     - env: TOX_ENV=py27-django1.9-drf3.3
     - env: TOX_ENV=py34-django1.9-drf3.3
+    - env: TOX_ENV=py35-django1.9-drf3.3
   fast_finish: true
 
 install:
