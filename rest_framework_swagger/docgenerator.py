@@ -271,7 +271,7 @@ class DocumentationGenerator(object):
         def get_thing(field, key):
             if rest_framework.VERSION >= '3.0.0':
                 from rest_framework.serializers import ListSerializer
-                if isinstance(field, ListSerializer):
+                if isinstance(field, ListSerializer) and isinstance(field.child, BaseSerializer):
                     return key(field.child)
             return key(field)
 
