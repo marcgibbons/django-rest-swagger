@@ -1,5 +1,26 @@
 # Change Log
 
+## [Unreleased](https://github.com/marcgibbons/django-rest-swagger/tree/HEAD)
+
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.7...HEAD)
+
+**Closed issues:**
+
+- AssertionError: The `slug\_field` argument is required. [\#460](https://github.com/marcgibbons/django-rest-swagger/issues/460)
+- Errors with Django 1.10 [\#452](https://github.com/marcgibbons/django-rest-swagger/issues/452)
+- Opening the docs makes 2 requests for each endpoint [\#440](https://github.com/marcgibbons/django-rest-swagger/issues/440)
+- Serializer Meta option read\_only\_fields is not respected [\#424](https://github.com/marcgibbons/django-rest-swagger/issues/424)
+- django1.9 can not work in web browser [\#405](https://github.com/marcgibbons/django-rest-swagger/issues/405)
+
+**Merged pull requests:**
+
+- Fix child field instantiation with missing arguments [\#459](https://github.com/marcgibbons/django-rest-swagger/pull/459) ([daluege](https://github.com/daluege))
+- Fixed support for Django 1.10 [\#456](https://github.com/marcgibbons/django-rest-swagger/pull/456) ([tarkatronic](https://github.com/tarkatronic))
+- Update testing matrix [\#451](https://github.com/marcgibbons/django-rest-swagger/pull/451) ([edmorley](https://github.com/edmorley))
+- Respect serializer.Meta.read\_only\_fields in introspector [\#450](https://github.com/marcgibbons/django-rest-swagger/pull/450) ([maroux](https://github.com/maroux))
+- Convert readthedocs link for their .org -\> .io migration for hosted projects [\#449](https://github.com/marcgibbons/django-rest-swagger/pull/449) ([adamchainz](https://github.com/adamchainz))
+- Primitive list fields 413 [\#444](https://github.com/marcgibbons/django-rest-swagger/pull/444) ([Bakuutin](https://github.com/Bakuutin))
+
 ## [0.3.7](https://github.com/marcgibbons/django-rest-swagger/tree/0.3.7) (2016-05-18)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.6...0.3.7)
 
