@@ -47,7 +47,7 @@
         <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
 
         <script>
-            window.static_url = "{% static '' %}";
+            window.static_url = "{{ STATIC_URL }}";
         </script>
         <script src="{% static 'rest_framework_swagger/lib/shred.bundle.js' %}" type="text/javascript"></script>
         <script src="{% static 'rest_framework_swagger/lib/jquery-1.8.0.min.js' %}" type="text/javascript"></script>

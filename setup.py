@@ -32,23 +32,16 @@ From pip:
 pip install django-rest-swagger
 
 Project @ https://github.com/marcgibbons/django-rest-swagger
-Docs @ http://django-rest-swagger.readthedocs.org/
+Docs @ https://django-rest-swagger.readthedocs.io/
 """
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 install_requires = [
-    'Django>=1.5',
+    'Django>=1.8',
     'djangorestframework>=2.3.8',
     'PyYAML>=3.10',
 ]
-
-import platform
-
-version = platform.python_version_tuple()
-if version < ('2','7'):
-    install_requires.append('importlib>=1.0.1')
-    install_requires.append('ordereddict>=1.1')
 
 setup(
     name='django-rest-swagger',
@@ -68,18 +61,19 @@ setup(
     author_email='marc_gibbons@rogers.com',
     maintainer='Ellery Newcomer',
     maintainer_email='ellery-newcomer@utulsa.edu',
-    url='http://github.com/marcgibbons/django-rest-swagger',
+    url='https://github.com/marcgibbons/django-rest-swagger',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],

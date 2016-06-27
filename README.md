@@ -41,8 +41,8 @@ This project is built on the [Django REST Framework Docs](https://github.com/mar
 for more information, see the [documentation][docs].
 
 ## Requirements
-* Python (2.6.5+, 2.7, 3.2, 3.3, 3.4)
-* Django (1.5.5+, 1.6, 1.7, 1.8)
+* Python (2.7, 3.3, 3.4, 3.5)
+* Django (1.8)
 * Django REST framework (2.3.8+)
 * PyYAML (3.10+)
 
