@@ -25,7 +25,7 @@ if sys.argv[-1] == 'publish':
 README = """
 Django REST Swagger
 
-An API documentation generator for Swagger UI and Django REST Framework version 2.3.8+
+An API documentation generator for Swagger UI and Django REST Framework.
 
 Installation
 From pip:
@@ -42,6 +42,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django-rest-swagger',
     version=VERSION,
+    install_requires=['openapi-codec>=0.0.3', 'coreapi>=1.28.0'],
     packages=find_packages(),
     include_package_data=True,
     license='FreeBSD License',
