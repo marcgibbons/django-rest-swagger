@@ -1,7 +1,8 @@
+#!/usr/bin/python
 import os
 import sys
 import shutil
-from setuptools import setup
+from setuptools import find_packages, setup
 from rest_framework_swagger import VERSION
 
 if sys.argv[-1] == 'publish':
@@ -37,30 +38,18 @@ Docs @ https://django-rest-swagger.readthedocs.io/
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
-install_requires = [
-    'Django>=1.8',
-    'djangorestframework>=2.3.8',
-    'PyYAML>=3.10',
-]
 
 setup(
     name='django-rest-swagger',
     version=VERSION,
-    packages=['rest_framework_swagger'],
-    package_data={'rest_framework_swagger': ['rest_framework_swagger/templates/rest_framework_swagger/*', 'rest_framework_swagger/static/rest_framework_swagger/*']},
+    packages=find_packages(),
     include_package_data=True,
     license='FreeBSD License',
-    description='Swagger UI for Django REST Framework 2.3.8+',
+    description='Swagger UI for Django REST Framework 3.4+',
     long_description=README,
-    install_requires=install_requires,
-    extras_require = {
-        'reST': ['docutils>=0.8'],
-    },
 
     author='Marc Gibbons',
     author_email='marc_gibbons@rogers.com',
-    maintainer='Ellery Newcomer',
-    maintainer_email='ellery-newcomer@utulsa.edu',
     url='https://github.com/marcgibbons/django-rest-swagger',
     classifiers=[
         'Environment :: Web Environment',
@@ -68,11 +57,8 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
