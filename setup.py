@@ -47,7 +47,7 @@ setup(
     license='FreeBSD License',
     description='Swagger UI for Django REST Framework 3.4+',
     long_description=README,
-
+    test_suite='tests',
     author='Marc Gibbons',
     author_email='marc_gibbons@rogers.com',
     url='https://github.com/marcgibbons/django-rest-swagger',
