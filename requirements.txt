@@ -1,3 +1,3 @@
 Django==1.9.7
 coreapi==1.28.0
--e git+https://github.com/marcgibbons/openapi-codec.git@3a9006b1a7d68d609d419c4042021dfeae268719#egg=openapi_codec
+-e git+https://github.com/marcgibbons/openapi-codec.git@3d7738826f84972ad811fe2708d3047a9b0b09da#egg=openapi_codec
