@@ -2,7 +2,7 @@
 import os
 import sys
 import shutil
-from setuptools import find_packages, setup
+from setuptools import setup
 from rest_framework_swagger import VERSION
 
 if sys.argv[-1] == 'publish':
@@ -43,7 +43,7 @@ setup(
     name='django-rest-swagger',
     version=VERSION,
     install_requires=['openapi-codec>=0.0.3', 'coreapi>=1.28.0'],
-    packages=find_packages(),
+    packages=['rest_framework_swagger'],
     include_package_data=True,
     license='FreeBSD License',
     description='Swagger UI for Django REST Framework 3.4+',
