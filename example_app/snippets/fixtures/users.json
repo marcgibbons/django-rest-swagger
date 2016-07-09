@@ -1,0 +1,74 @@
+[
+    {
+        "pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "aziz",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-10-28T21:36:57.799Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$2x3LOiFCb9sq$3jiN4zgb3wYHQ9fpn/elUrcn1S1Bq/q0djZFBjb8Y2w=",
+            "email": "",
+            "date_joined": "2012-10-28T21:36:57.799Z"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "auth.user",
+        "fields": {
+            "username": "amy",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-10-28T21:42:34.081Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$wjy2WvTgw1Ro$oR8pVFHIBqZUmD9XEHdRl5m4TxWOF+qnvZn/q+npTlc=",
+            "email": "",
+            "date_joined": "2012-10-28T21:42:34.081Z"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "auth.user",
+        "fields": {
+            "username": "max",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-10-28T21:42:45.711Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$NhDNt8GNYfjC$0FlcsJxt8Sac0dvGv+xcaUVSUfh1UYZfWEq3C1WoHjc=",
+            "email": "",
+            "date_joined": "2012-10-28T21:42:45.711Z"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "auth.user",
+        "fields": {
+            "username": "jose",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-10-28T21:43:03.591Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$ibnHXtPQKwBN$Kab9tTROT6bpxnAI1imgb0kdlAmBuAQ5Z0fAzHbkL68=",
+            "email": "",
+            "date_joined": "2012-10-28T21:43:03.591Z"
+        }
+    }
+]

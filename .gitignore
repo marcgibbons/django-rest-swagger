@@ -86,3 +86,5 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+*.db
