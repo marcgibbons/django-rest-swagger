@@ -6,4 +6,4 @@ Markdown==2.6.3
 simplejson==3.8.2
 
 -e git+https://github.com/marcgibbons/openapi-codec.git@3d7738826f84972ad811fe2708d3047a9b0b09da#egg=openapi_codec
--e git+git://github.com/tomchristie/django-rest-framework.git@c21994e778401e9a82cd1bc0d3aeca5a46b8f432#egg=django-rest-framework
+-e git+git://github.com/tomchristie/django-rest-framework.git@c21994e778401e9a82cd1bc0d3aeca5a46b8f432#egg=djangorestframework
