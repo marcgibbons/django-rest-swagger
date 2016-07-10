@@ -40,10 +40,17 @@ $(function () {
   window.swaggerUi.load();
 
   function addCsrfTokenHeaders() {
-    var token = $('[name="csrfmiddlewaretoken"]')[0].value;
+    var token = $('[name="csrfmiddlewaretoken"]')[0];
+    if (!token) {
+      return;
+    }
     swaggerUi.api.clientAuthorizations.add(
       'csrf_token',
-      new SwaggerClient.ApiKeyAuthorization("X-CSRFToken", token, "header")
+      new SwaggerClient.ApiKeyAuthorization(
+        'X-CSRFToken',
+        token.value,
+        'header'
+      )
     );
   }
 

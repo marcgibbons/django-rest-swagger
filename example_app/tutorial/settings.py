@@ -157,6 +157,10 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': True,
+}
+
 LOGIN_URL = 'rest_framework:login'
 LOGOUT_URL = 'rest_framework:logout'
 
