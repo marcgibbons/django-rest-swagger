@@ -3,7 +3,7 @@ import os
 import sys
 import shutil
 from setuptools import setup
-from rest_framework_swagger import VERSION
+from rest_framework_swagger import __version__ as VERSION
 
 if sys.argv[-1] == 'publish':
     if os.system("wheel version"):
@@ -42,7 +42,11 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django-rest-swagger',
     version=VERSION,
-    install_requires=['openapi-codec>=0.0.3', 'coreapi>=1.28.0'],
+    install_requires=[
+        'coreapi'
+        'openapi-codec',
+        'simplejson'
+    ],
     packages=['rest_framework_swagger'],
     include_package_data=True,
     license='FreeBSD License',
