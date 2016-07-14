@@ -2,8 +2,6 @@
 
 [![build-status-badge]][build-status]
 [![pypi-version]][pypi]
-[![license-badge]][license]
-[![docs-badge]][docs]
 
 ####An API documentation generator for Swagger UI and Django REST Framework
 
@@ -64,4 +62,6 @@ Many thanks to Tom Christie & all the contributors who have developed [Django RE
 [build-status]: https://travis-ci.org/marcgibbons/django-rest-swagger
 [pypi-version]: https://img.shields.io/pypi/v/django-rest-swagger.svg
 [pypi]: https://pypi.python.org/pypi/django-rest-swagger
-[license-badge]: https://img.shields.io/pypi/l/django-
+[license]: https://pypi.python.org/pypi/django-rest-swagger/
+[docs-badge]: https://readthedocs.io/projects/django-rest-swagger/badge/
+[docs]: http://django-rest-swagger.readthedocs.io/
