@@ -1,7 +1,7 @@
 Django==1.9.7
-git+git://github.com/tomchristie/django-rest-framework.git@master#egg=djangorestframework
-coreapi==1.31.0
-openapi-codec==0.0.4
+djangorestframework==3.4.0
+coreapi==1.32.0
+openapi-codec==1.0.0
 tox==2.3.1
 Pygments==2.0.2
 Markdown==2.6.3

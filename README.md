@@ -47,7 +47,8 @@ def schema_view(request):
 ```
 
 ## Requirements
-* Django REST framework > 3.4
+* Django 1.8+
+* Django REST framework 3.4+
 * Python 2.7, 3.5
 
 ## Bugs & Contributions

@@ -48,7 +48,7 @@ generator = schemas.SchemaGenerator(title='Bookings API')
 @api_view()
 @renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
 def schema_view(request):
-    return generator.get_schema()
+    return generator.get_schema(request=request)
 
 
 ```
