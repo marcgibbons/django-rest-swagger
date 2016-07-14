@@ -1,0 +1,7 @@
+site_name: Django REST Swagger
+repo_url: https://github.com/marcgibbons/django-rest-swagger
+repo_name: GitHub
+site_description: Swagger UI / OpenAPI Documentation for Django REST Framework
+site_author: Marc Gibbons
+copyright: 2013-2016  Marc Gibbons
+theme: readthedocs

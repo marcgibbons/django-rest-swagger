@@ -88,3 +88,4 @@ ENV/
 .ropeproject
 
 *.db
+docs/site/
