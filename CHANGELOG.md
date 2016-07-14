@@ -1,8 +1,18 @@
 # Change Log
 
-## [Unreleased](https://github.com/marcgibbons/django-rest-swagger/tree/HEAD)
+## [2.0.0a0](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.0a0) (2016-07-14)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.8...2.0.0a0)
 
-[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.7...HEAD)
+**Closed issues:**
+
+- \#Not working on production deployed on aws. if debug is true works on localhost  else fails on localhost as well. [\#464](https://github.com/marcgibbons/django-rest-swagger/issues/464)
+
+**Merged pull requests:**
+
+- Release: 2.0.0a0 [\#470](https://github.com/marcgibbons/django-rest-swagger/pull/470) ([marcgibbons](https://github.com/marcgibbons))
+
+## [0.3.8](https://github.com/marcgibbons/django-rest-swagger/tree/0.3.8) (2016-06-27)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.7...0.3.8)
 
 **Closed issues:**
 
