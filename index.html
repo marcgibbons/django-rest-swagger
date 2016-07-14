@@ -157,15 +157,15 @@ the UI.</p>
 <h4 id="example">Example</h4>
 <p><strong>views.py</strong></p>
 <pre><code class="python">from rest_framework.decorators import api_view, renderer_classes
-from rest_framework import schemas
+from rest_framework import response, schemas
 from rest_framework_swagger import OpenAPIRenderer, SwaggerUIRenderer
 
-generator = schemas.SchemaGenerator(title='Bookings API')
 
 @api_view()
 @renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
 def schema_view(request):
-    return generator.get_schema(request=request)
+    generator = schemas.SchemaGenerator(title='Bookings API')
+    return response.Response(generator.get_schema(request=request))
 
 
 </code></pre>
@@ -269,5 +269,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-07-14 14:40:32.986586
+Build Date UTC : 2016-07-14 22:29:18.834995
 -->
