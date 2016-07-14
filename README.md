@@ -58,3 +58,10 @@ Contributions are welcome and are encouraged!
 
 ## Special Thanks
 Many thanks to Tom Christie & all the contributors who have developed [Django REST Framework](http://django-rest-framework.org/)
+
+
+[build-status-badge]: https://travis-ci.org/marcgibbons/django-rest-swagger.svg?branch=master
+[build-status]: https://travis-ci.org/marcgibbons/django-rest-swagger
+[pypi-version]: https://img.shields.io/pypi/v/django-rest-swagger.svg
+[pypi]: https://pypi.python.org/pypi/django-rest-swagger
+[license-badge]: https://img.shields.io/pypi/l/django-
