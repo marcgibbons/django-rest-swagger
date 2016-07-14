@@ -19,7 +19,11 @@ from django.contrib.admindocs.utils import trim_docstring
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.decorators import classonlymethod
-from django.utils.importlib import import_module
+try:
+    from django.utils.module_loading import import_module
+except ImportError:
+    from django.utils.importlib import import_module
+
 from django.views.generic import View
 import django_filters
 
