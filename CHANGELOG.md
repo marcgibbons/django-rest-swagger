@@ -1,8 +1,45 @@
 # Change Log
 
-## [Unreleased](https://github.com/marcgibbons/django-rest-swagger/tree/HEAD)
+## [0.3.9](https://github.com/marcgibbons/django-rest-swagger/tree/0.3.9) (2016-07-17)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.0...0.3.9)
 
-[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.7...HEAD)
+**Implemented enhancements:**
+
+- Add possibility of generating 'header' parameters [\#3](https://github.com/marcgibbons/django-rest-swagger/issues/3)
+- Add generic filtering parameters [\#2](https://github.com/marcgibbons/django-rest-swagger/issues/2)
+- Add permission classes as part of the implementation notes [\#1](https://github.com/marcgibbons/django-rest-swagger/issues/1)
+
+**Closed issues:**
+
+- ImportError: cannot import name 'OpenAPIRenderer' [\#478](https://github.com/marcgibbons/django-rest-swagger/issues/478)
+- Swagger UI doesn't work in 2.0.0 [\#477](https://github.com/marcgibbons/django-rest-swagger/issues/477)
+- Swagger 2.0 roadmap [\#443](https://github.com/marcgibbons/django-rest-swagger/issues/443)
+- CSRF cookie fails on HttpOnly [\#432](https://github.com/marcgibbons/django-rest-swagger/issues/432)
+
+**Merged pull requests:**
+
+- Release 0.3.9 [\#481](https://github.com/marcgibbons/django-rest-swagger/pull/481) ([marcgibbons](https://github.com/marcgibbons))
+
+## [2.0.0](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.0) (2016-07-14)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.0a0...2.0.0)
+
+**Closed issues:**
+
+- DRS docs break with CSP that blocks inline scripts [\#434](https://github.com/marcgibbons/django-rest-swagger/issues/434)
+
+## [2.0.0a0](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.0a0) (2016-07-14)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.8...2.0.0a0)
+
+**Closed issues:**
+
+- \#Not working on production deployed on aws. if debug is true works on localhost  else fails on localhost as well. [\#464](https://github.com/marcgibbons/django-rest-swagger/issues/464)
+
+**Merged pull requests:**
+
+- Release: 2.0.0a0 [\#470](https://github.com/marcgibbons/django-rest-swagger/pull/470) ([marcgibbons](https://github.com/marcgibbons))
+
+## [0.3.8](https://github.com/marcgibbons/django-rest-swagger/tree/0.3.8) (2016-06-27)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/0.3.7...0.3.8)
 
 **Closed issues:**
 
