@@ -42,8 +42,8 @@ for more information, see the [documentation][docs].
 
 ## Requirements
 * Python (2.7, 3.3, 3.4, 3.5)
-* Django (1.8)
-* Django REST framework (2.3.8+)
+* Django (1.8+)
+* Django REST framework (3.8+)
 * PyYAML (3.10+)
 
 ## Bugs & Contributions
