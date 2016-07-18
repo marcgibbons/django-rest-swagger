@@ -15,13 +15,23 @@ class OpenAPIRenderer(BaseRenderer):
     format = 'openapi'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
+        spec = self.get_openapi_specification(data)
+        self.add_security_definitions(spec)
+
+        return force_bytes(json.dumps(spec))
+
+    def get_openapi_specification(self, data):
+        """
+        Converts data into OpenAPI specification.
+        """
         codec = OpenAPICodec()
-        data = json.loads(codec.dump(data))
+        return json.loads(codec.dump(data))
 
-        if swagger_settings.SECURITY_DEFINITIONS:
-            data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
+    def add_security_definitions(self, data):
+        if not swagger_settings.SECURITY_DEFINITIONS:
+            return
 
-        return force_bytes(json.dumps(data))
+        data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
 
 
 class SwaggerUIRenderer(BaseRenderer):
