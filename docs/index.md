@@ -67,6 +67,28 @@ urlpatterns = [
 ![Screenshot](/img/ui-screenshot.png)
 
 
+## Example app
+An example based on the [Django REST Tutorial](http://www.django-rest-framework.org/tutorial/1-serialization/) 
+ships with the project and can be optionally run with the included
+[Docker](https://www.docker.com/) container.
+
+First, clone the repository:
+
+`$ git clone https://github.com/marcgibbons/django-rest-swagger`
+
+To quickly get up and running using the Docker image, simply run:
+
+`$ ./run_example.sh`
+
+The initial run may take several minutes to build. Once complete, the 
+application will be available at `http://localhost:8000`
+
+Log in credentials are:
+```
+username: amy
+password: amy
+```
+
 ## Changes in 2.0
 Version 2.0 is fundamentally different from previous versions and leverages the new schema generation features introduced in Django REST Framework 3.4. Introspection is performed by the framework and uses CoreAPI to store definitions. This is a breaking change from previous versions which were responsible for introspection as well as overrides.
 
