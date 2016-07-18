@@ -8,4 +8,5 @@ Markdown==2.6.3
 simplejson==3.8.2
 
 mkdocs==0.15.3
-pylint==1.6.1
+pylint==1.6.3
+coverage==4.1

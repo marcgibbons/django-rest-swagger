@@ -9,4 +9,7 @@ matrix:
 install:
   - pip install tox
 script:
-    - tox -e $TOX_ENV
+  - tox -e $TOX_ENV
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
