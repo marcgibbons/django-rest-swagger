@@ -27,7 +27,7 @@ INSTALLED_APPS = [
 
 ## Quick start
 
-To render the Swagger UI, set the Django REST Framework schema view rendere classes to include
+To render the Swagger UI, set the Django REST Framework schema view renderer classes to include
 `OpenAPIRenderer` and the `SwaggerUIRenderer` classes from `rest_framework_swagger.renderers`.
 
 The `OpenAPIRenderer` is responsible for generating the JSON spec, while the `SwaggerUIRenderer` renders
