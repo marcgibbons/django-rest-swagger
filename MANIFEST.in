@@ -1,2 +1,9 @@
+include README.md
+include LICENSE
+
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude *.pyo
+
 recursive-include rest_framework_swagger/static *
 recursive-include rest_framework_swagger/templates *
