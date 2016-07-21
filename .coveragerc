@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = rest_framework_swagger
+
+[report]
+exclude_lines =
+    pragma: no cover

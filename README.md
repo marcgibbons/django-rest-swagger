@@ -1,6 +1,7 @@
 # Django REST Swagger
 
 [![build-status-badge]][build-status]
+[![codecov](https://codecov.io/gh/marcgibbons/django-rest-swagger/branch/master/graph/badge.svg)](https://codecov.io/gh/marcgibbons/django-rest-swagger)
 [![pypi-version]][pypi]
 
 ####An API documentation generator for Swagger UI and Django REST Framework

@@ -4,9 +4,13 @@ sudo: false
 env:
     - TOX_ENV=py27
     - TOX_ENV=py35
+    - TOX_ENV=lint
 matrix:
   fast_finish: true
 install:
   - pip install tox
 script:
-    - tox -e $TOX_ENV
+  - tox -e $TOX_ENV
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
