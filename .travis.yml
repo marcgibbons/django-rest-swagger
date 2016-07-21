@@ -12,5 +12,5 @@ install:
 script:
   - tox -e $TOX_ENV
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  codecov
 
