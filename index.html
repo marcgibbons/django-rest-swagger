@@ -121,6 +121,8 @@
         
             <li><a href="#quick-start">Quick start</a></li>
         
+            <li><a href="#example-app">Example app</a></li>
+        
             <li><a href="#changes-in-20">Changes in 2.0</a></li>
         
             <li><a href="#license">License</a></li>
@@ -182,6 +184,21 @@ urlpatterns = [
 
 <h4 id="view-in-the-browser">View in the browser</h4>
 <p><img alt="Screenshot" src="./img/ui-screenshot.png" /></p>
+<h2 id="example-app">Example app</h2>
+<p>An example based on the <a href="http://www.django-rest-framework.org/tutorial/1-serialization/">Django REST Tutorial</a> 
+ships with the project and can be optionally run with the included
+<a href="https://www.docker.com/">Docker</a> container.</p>
+<p>First, clone the repository:</p>
+<p><code>$ git clone https://github.com/marcgibbons/django-rest-swagger</code></p>
+<p>To quickly get up and running using the Docker image, simply run:</p>
+<p><code>$ ./run_example.sh</code></p>
+<p>The initial run may take several minutes to build. Once complete, the 
+application will be available at <code>http://localhost:8000</code></p>
+<p>Log in credentials are:</p>
+<pre><code>username: amy
+password: amy
+</code></pre>
+
 <h2 id="changes-in-20">Changes in 2.0</h2>
 <p>Version 2.0 is fundamentally different from previous versions and leverages the new schema generation features introduced in Django REST Framework 3.4. Introspection is performed by the framework and uses CoreAPI to store definitions. This is a breaking change from previous versions which were responsible for introspection as well as overrides.</p>
 <p>New:</p>
@@ -269,5 +286,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-07-18 12:27:59.888688
+Build Date UTC : 2016-07-21 11:38:19.901545
 -->
