@@ -14,10 +14,13 @@ class OpenAPIRenderer(BaseRenderer):
     format = 'openapi'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        spec = self.get_openapi_specification(data)
-        self.add_security_definitions(spec)
+        data = self.get_openapi_specification(data)
+        self.add_customizations(data)
 
-        return force_bytes(json.dumps(spec))
+        return self.dump(data)
+
+    def dump(self, data):
+        return force_bytes(json.dumps(data))
 
     def get_openapi_specification(self, data):
         """
@@ -25,6 +28,12 @@ class OpenAPIRenderer(BaseRenderer):
         """
         codec = OpenAPICodec()
         return json.loads(codec.dump(data))
+
+    def add_customizations(self, data):
+        """
+        Adds settings, overrides, etc. to the specification.
+        """
+        self.add_security_definitions(data)
 
     def add_security_definitions(self, data):
         if not swagger_settings.SECURITY_DEFINITIONS:
