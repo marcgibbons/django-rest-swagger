@@ -158,11 +158,11 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
+    'LOGIN_URL': 'rest_framework:login',
+    'LOGOUT_URL': 'rest_framework:logout',
     'USE_SESSION_AUTH': True,
 }
 
-LOGIN_URL = 'rest_framework:login'
-LOGOUT_URL = 'rest_framework:logout'
 
 import os
 if os.environ.get('HEROKU'):  # heroku config:set HEROKU=1

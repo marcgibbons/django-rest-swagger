@@ -9,12 +9,6 @@ class TestSwaggerUIRenderer(TestCase):
         self.sut = SwaggerUIRenderer()
         self.renderer_context = {'request': MagicMock()}
 
-        django_settings_patcher = patch(
-            'rest_framework_swagger.renderers.settings',
-        )
-        self.django_settings = django_settings_patcher.start()
-        self.addCleanup(django_settings_patcher.stop)
-
         swagger_settings_patcher = patch(
             'rest_framework_swagger.renderers.swagger_settings',
         )
@@ -82,8 +76,8 @@ class TestSwaggerUIRenderer(TestCase):
     def test_get_auth_url_settings(self):
         self.assertDictEqual(
             {
-                'LOGIN_URL': self.django_settings.LOGIN_URL,
-                'LOGOUT_URL': self.django_settings.LOGOUT_URL
+                'LOGIN_URL': self.swagger_settings.LOGIN_URL,
+                'LOGOUT_URL': self.swagger_settings.LOGOUT_URL
             },
             self.sut.get_auth_url_settings()
         )

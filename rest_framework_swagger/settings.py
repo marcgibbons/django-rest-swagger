@@ -9,8 +9,11 @@ DEFAULTS = {
         'basic': {
             'type': 'basic'
         }
-    }
+    },
+    'LOGIN_URL': getattr(settings, 'LOGIN_URL', None),
+    'LOGOUT_URL': getattr(settings, 'LOGOUT_URL', None)
 }
+
 IMPORT_STRINGS = []
 
 swagger_settings = APISettings(
@@ -20,7 +23,7 @@ swagger_settings = APISettings(
 )
 
 
-def reload_settings(*args, **kwargs):
+def reload_settings(*args, **kwargs):  # pragma: no cover
     """
     Reloads settings during unit tests if override_settings decorator
     is used. (Taken from DRF)

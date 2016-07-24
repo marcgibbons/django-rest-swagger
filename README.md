@@ -8,7 +8,7 @@
 
 Full documentation: http://marcgibbons.github.io/django-rest-swagger/
 
-**Note:** you are viewing documentation for version 2, using Django REST Framework 3.4+ and CoreAPI. Documentation for previous versions is available [here](http://django-rest-swagger.readthedocs.io/en/0.3.8/).
+**Note:** you are viewing documentation for version 2, using Django REST Framework 3.4+ and CoreAPI. Documentation for previous versions is available [here](http://django-rest-swagger.readthedocs.io/en/stable-0.3.x/).
 
 
 ## Installation
