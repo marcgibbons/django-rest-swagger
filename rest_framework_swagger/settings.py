@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.test.signals import setting_changed
 from rest_framework.settings import APISettings
 
 
@@ -10,7 +11,6 @@ DEFAULTS = {
         }
     }
 }
-
 IMPORT_STRINGS = []
 
 swagger_settings = APISettings(
@@ -18,3 +18,23 @@ swagger_settings = APISettings(
     defaults=DEFAULTS,
     import_strings=IMPORT_STRINGS
 )
+
+
+def reload_settings(*args, **kwargs):
+    """
+    Reloads settings during unit tests if override_settings decorator
+    is used. (Taken from DRF)
+    """
+    if kwargs['setting'] != 'SWAGGER_SETTINGS':
+        return
+
+    # pylint: disable=W0603
+    global swagger_settings
+    swagger_settings = APISettings(
+        kwargs['value'],
+        DEFAULTS,
+        IMPORT_STRINGS
+    )
+
+
+setting_changed.connect(reload_settings)
