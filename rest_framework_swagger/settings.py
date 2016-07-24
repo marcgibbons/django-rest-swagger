@@ -9,8 +9,11 @@ DEFAULTS = {
         'basic': {
             'type': 'basic'
         }
-    }
+    },
+    'LOGIN_URL': getattr(settings, 'LOGIN_URL', None),
+    'LOGOUT_URL': getattr(settings, 'LOGOUT_URL', None)
 }
+
 IMPORT_STRINGS = []
 
 swagger_settings = APISettings(

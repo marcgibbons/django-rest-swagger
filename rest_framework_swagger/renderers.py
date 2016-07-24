@@ -1,5 +1,4 @@
 from coreapi.compat import force_bytes
-from django.conf import settings
 from django.shortcuts import render, resolve_url
 from openapi_codec import OpenAPICodec
 from rest_framework.renderers import BaseRenderer
@@ -73,8 +72,8 @@ class SwaggerUIRenderer(BaseRenderer):
         from settings.
         """
         return {
-            'LOGIN_URL': settings.LOGIN_URL,
-            'LOGOUT_URL': settings.LOGOUT_URL
+            'LOGIN_URL': swagger_settings.LOGIN_URL,
+            'LOGOUT_URL': swagger_settings.LOGOUT_URL
         }
 
     def add_next_to_url(self, url, request):
