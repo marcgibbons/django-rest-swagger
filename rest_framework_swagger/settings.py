@@ -23,7 +23,7 @@ swagger_settings = APISettings(
 )
 
 
-def reload_settings(*args, **kwargs):
+def reload_settings(*args, **kwargs):  # pragma: no cover
     """
     Reloads settings during unit tests if override_settings decorator
     is used. (Taken from DRF)
