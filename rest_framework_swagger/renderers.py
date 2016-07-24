@@ -59,15 +59,26 @@ class SwaggerUIRenderer(BaseRenderer):
     def set_context(self, renderer_context):
         renderer_context['USE_SESSION_AUTH'] = \
             swagger_settings.USE_SESSION_AUTH
-        self.set_session_auth_urls(renderer_context)
+        renderer_context.update(self.get_auth_urls(renderer_context))
 
-    def set_session_auth_urls(self, renderer_context):
-        path = renderer_context['request'].path
-        urls = {
+    def get_auth_urls(self, renderer_context):
+        return {
+            setting: self.add_next_to_url(url, renderer_context['request'])
+            for setting, url in self.get_auth_url_settings().items()
+        }
+
+    def get_auth_url_settings(self):
+        """
+        Returns a dictionary containing LOGIN_URL and LOGOUT_URL
+        from settings.
+        """
+        return {
             'LOGIN_URL': settings.LOGIN_URL,
             'LOGOUT_URL': settings.LOGOUT_URL
         }
-        renderer_context.update({
-            key: '%s?next=%s' % (resolve_url(val), path)
-            for key, val in urls.items()
-        })
+
+    def add_next_to_url(self, url, request):
+        """
+        Appends the current request.path as querystring to the current path.
+        """
+        return '%s?next=%s' % (resolve_url(url), request.path)
