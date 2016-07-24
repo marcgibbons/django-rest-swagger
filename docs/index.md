@@ -95,7 +95,7 @@ Version 2.0 is fundamentally different from previous versions and leverages the 
 New:
 
 - SwaggerUI and the OpenAPI spec are renderer classes (simpler configuration)
-- SwaggerUI 2.1.4
+- SwaggerUI 2.1.6
 - Improved performance
 - Allow multiple instances of Swagger UI in a single Django project
 - Allow rendering the OpenAPI JSON spec independently
