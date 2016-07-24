@@ -133,16 +133,17 @@
         'basic': {
             'type': 'basic'
         }
-    }
+    },
+    ...
 }
 </code></pre>
 
 <h2 id="authentication">Authentication</h2>
-<h4 id="use_session_auth">USE_SESSION_AUTH</h4>
+<h3 id="use_session_auth">USE_SESSION_AUTH</h3>
 <p>Toggles the use of Django Auth as an authentication mechanism. Setting it to <code>True</code> will display
 a login/logout button on the Swagger UI and post csrf_tokens to the API.</p>
-<p>Default: <code>True</code></p>
-<p><strong>Note:</strong> The login/logout button relies on Django's <code>LOGIN_URL</code> and <code>LOGOUT_URL</code> settings which defaults to <code>/accounts/login</code>. Here's an example of how to configure using DRF's authentication endpoints.</p>
+<p><strong>Default:</strong> <code>True</code></p>
+<p><strong>Note:</strong> The login/logout button relies on the <code>LOGIN_URL</code> and <code>LOGOUT_URL</code> settings which default to <code>/accounts/login</code>. These can either be configured under <code>SWAGGER_SETTINGS</code> or Django settings.</p>
 <p><strong>urls.py</strong></p>
 <pre><code class="python">urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
@@ -154,10 +155,16 @@ a login/logout button on the Swagger UI and post csrf_tokens to the API.</p>
 LOGOUT_URL = 'rest_framework:logout'
 </code></pre>
 
-<h4 id="security_definitions">SECURITY_DEFINITIONS</h4>
+<h3 id="login_url">LOGIN_URL</h3>
+<p>The URL to use to log in session authentication. Accepts named URL patterns.</p>
+<p><strong>Default:</strong> <code>django.conf.settings.LOGIN_URL</code></p>
+<h3 id="logout_url">LOGOUT_URL</h3>
+<p>The URL to use to log out of session authentication. Accepts named URL patterns.</p>
+<p><strong>Default:</strong> <code>django.conf.settings.LOGOUT_URL</code></p>
+<h3 id="security_definitions">SECURITY_DEFINITIONS</h3>
 <p>The security definitions configures which authentication methods can be used by Swagger. The schemes types currently supported by the OpenAPI 2.0 spec are <code>basic</code>, <code>apiKey</code> and <code>oauth2</code>.</p>
-<p>For more information on available options, please consult the OpenAPI <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-definitions-object">Security Object Definition</a></p>
-<p>Default: </p>
+<p>For more information on available options, please consult the OpenAPI <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-definitions-object">Security Object Definition</a>.</p>
+<p><strong>Default:</strong> </p>
 <pre><code class="python">{
     'basic': {
         'type': 'basic'
