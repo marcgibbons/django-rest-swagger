@@ -12,3 +12,4 @@ pylint==1.6.4
 coverage==4.2
 ipdb==0.10.1
 gunicorn==19.6.0
+dj_database_url==0.3.0
