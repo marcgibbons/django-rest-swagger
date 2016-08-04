@@ -8,6 +8,6 @@
     "DISABLE_COLLECTSTATIC": "1"
   },
   "scripts": {
-    "postdeploy": "python example_app/manage.py migrate --noinput"
+    "postdeploy": "python example_app/manage.py migrate --noinput && python example_app/manage.py loaddata users"
   }
 }
