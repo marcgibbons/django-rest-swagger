@@ -5,6 +5,10 @@
 [![pypi-version]][pypi]
 [![Dependency Status](https://www.versioneye.com/user/projects/579cb582aa78d50051183c0e/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/579cb582aa78d50051183c0e)
 
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+
 ####An API documentation generator for Swagger UI and Django REST Framework
 
 Full documentation: http://marcgibbons.github.io/django-rest-swagger/
