@@ -5,7 +5,7 @@
   "keywords": ["django", "swagger", "rest", "framework"],
   "env": {
     "HEROKU": "1",
-    "DISABLE_COLLECTSTATIC": 1
+    "DISABLE_COLLECTSTATIC": "1"
   },
   "scripts": {
     "postdeploy": "python example_app/manage.py migrate --noinput"
