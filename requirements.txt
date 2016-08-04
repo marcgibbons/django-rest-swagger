@@ -1,13 +1,18 @@
-Django==1.9.7
-djangorestframework==3.4.0
+Django==1.9.8
+djangorestframework==3.4.1
 coreapi==1.32.0
 openapi-codec==1.0.0
-tox==2.3.1
-Pygments==2.0.2
-Markdown==2.6.3
 simplejson==3.8.2
 
-mkdocs==0.15.3
-pylint==1.6.3
-coverage==4.1
+# Testing
+tox==2.3.1
+pylint==1.6.4
+coverage==4.2
 ipdb==0.10.1
+
+# Docs
+mkdocs==0.15.3
+
+# Heroku
+dj_database_url==0.4.1
+psycopg2==2.6.1

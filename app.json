@@ -1,0 +1,13 @@
+{
+  "name": "Django REST Swagger Example",
+  "description": "An example of Django REST Swagger using the Django REST Framework Tutorial app",
+  "repository": "https://github.com/marcgibbons/django-rest-swagger",
+  "keywords": ["django", "swagger", "rest", "framework"],
+  "env": {
+    "HEROKU": "1",
+    "DISABLE_COLLECTSTATIC": "1"
+  },
+  "scripts": {
+    "postdeploy": "python example_app/manage.py migrate --noinput && python example_app/manage.py loaddata users"
+  }
+}

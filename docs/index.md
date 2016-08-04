@@ -68,9 +68,20 @@ urlpatterns = [
 
 
 ## Example app
-An example based on the [Django REST Tutorial](http://www.django-rest-framework.org/tutorial/1-serialization/) 
-ships with the project and can be optionally run with the included
-[Docker](https://www.docker.com/) container.
+An example based on the [Django REST Tutorial](http://www.django-rest-framework.org/tutorial/1-serialization/) ships with the project. It and can be optionally locally using Docker, or deployed for free on heroku.
+
+### Deploy with Heroku
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/marcgibbons/django-rest-framework)
+
+Log in credentials are:
+```
+username: amy
+password: amy
+```
+
+### Docker Instructions
+
+Ensure [Docker](https://www.docker.com/) Docker is installed on your system.
 
 First, clone the repository:
 
