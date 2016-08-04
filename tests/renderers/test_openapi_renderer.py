@@ -28,6 +28,7 @@ class TestOpenAPIRenderer(TestCase):
 
     def test_render(self):
         data = MagicMock()
+        renderer_context = {'request': MagicMock()}
 
         with patch.multiple(
             self.sut,
@@ -35,11 +36,14 @@ class TestOpenAPIRenderer(TestCase):
             add_customizations=DEFAULT,
             dump=DEFAULT
         ) as values:
-            self.sut.render(data)
+            self.sut.render(data, renderer_context=renderer_context)
 
         values['get_openapi_specification'].assert_called_once_with(data)
         data = values['get_openapi_specification'].return_value
-        values['add_customizations'].assert_called_once_with(data)
+        values['add_customizations'].assert_called_once_with(
+            data,
+            renderer_context
+        )
         values['dump'].assert_called_once_with(data)
 
     @patch('rest_framework_swagger.renderers.force_bytes')
@@ -68,8 +72,9 @@ class TestOpenAPIRenderer(TestCase):
 
     def test_add_customizations(self):
         data = MagicMock()
+        renderer_context = {'request': MagicMock()}
         with patch.object(self.sut, 'add_security_definitions') as mock:
-            self.sut.add_customizations(data)
+            self.sut.add_customizations(data, renderer_context)
 
         mock.assert_called_once_with(data)
 
