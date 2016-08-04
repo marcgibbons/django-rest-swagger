@@ -1,0 +1,6 @@
+{
+  "name": "Django REST Swagger Example",
+  "description": "An example of Django REST Swagger using the Django REST Framework Tutorial app",
+  "repository": "https://github.com/marcgibbons/django-rest-swagger",
+  "keywords": ["django", "swagger", "rest", "framework"]
+}
