@@ -1,16 +1,12 @@
 language: python
 python: "3.5"
 sudo: false
-env:
-    - TOX_ENV=py27
-    - TOX_ENV=py35
-    - TOX_ENV=lint
 matrix:
   fast_finish: true
 install:
   - pip install tox codecov
 script:
-  - tox -e $TOX_ENV
+  - tox
 after_success:
   codecov
 
