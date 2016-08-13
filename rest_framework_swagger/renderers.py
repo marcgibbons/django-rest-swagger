@@ -96,7 +96,9 @@ class SwaggerUIRenderer(BaseRenderer):
             'jsonEditor': swagger_settings.JSON_EDITOR,
             'operationsSorter': swagger_settings.OPERATIONS_SORTER,
             'showRequestHeaders': swagger_settings.SHOW_REQUEST_HEADERS,
-            'validatorUrl': swagger_settings.VALIDATOR_URL,
             'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS
         }
+        if swagger_settings.VALIDATOR_URL != '':
+            drs_settings['validatorUrl'] = swagger_settings.VALIDATOR_URL
+
         return json.dumps(drs_settings)
