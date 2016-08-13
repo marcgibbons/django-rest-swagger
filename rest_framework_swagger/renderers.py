@@ -33,7 +33,8 @@ class OpenAPIRenderer(BaseRenderer):
         Adds settings, overrides, etc. to the specification.
         """
         self.add_security_definitions(data)
-        data['host'] = self.get_host(renderer_context['request'])
+        if not data.get('host'):
+            data['host'] = self.get_host(renderer_context)
 
     def add_security_definitions(self, data):
         if not swagger_settings.SECURITY_DEFINITIONS:
@@ -41,8 +42,8 @@ class OpenAPIRenderer(BaseRenderer):
 
         data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
 
-    def get_host(self, request):
-        return request.get_host()
+    def get_host(self, renderer_context):
+        return renderer_context['request'].get_host()
 
 
 class SwaggerUIRenderer(BaseRenderer):

@@ -8,12 +8,6 @@ class TestOpenAPIRenderer(TestCase):
     def setUp(self):
         self.sut = renderers.OpenAPIRenderer()
 
-        settings_patcher = patch(
-            'rest_framework_swagger.renderers.swagger_settings'
-        )
-        self.swagger_settings = settings_patcher.start()
-        self.addCleanup(settings_patcher.stop)
-
     def test_media_type(self):
         self.assertEqual(
             'application/openapi+json',
@@ -70,7 +64,18 @@ class TestOpenAPIRenderer(TestCase):
         codec_mock.assert_called_once_with(data)
         json_mock.assert_called_once_with(codec_mock.return_value)
 
-    def test_add_customizations(self):
+
+class TestAddSecurityDefinitons(TestCase):
+    def setUp(self):
+        self.sut = renderers.OpenAPIRenderer()
+
+        settings_patcher = patch(
+            'rest_framework_swagger.renderers.swagger_settings'
+        )
+        self.swagger_settings = settings_patcher.start()
+        self.addCleanup(settings_patcher.stop)
+
+    def test_add_customizations_adds_security_definitions(self):
         data = MagicMock()
         renderer_context = {'request': MagicMock()}
         with patch.object(self.sut, 'add_security_definitions') as mock:
@@ -102,3 +107,42 @@ class TestOpenAPIRenderer(TestCase):
             {'securityDefinitions': expected},
             data
         )
+
+
+class TestAddRequestHost(TestCase):
+    def setUp(self):
+        self.sut = renderers.OpenAPIRenderer()
+
+    def test_add_customizations_sets_hosts_when_falsey(self):
+        """
+        Given that the `host` on the OpenAPI spec is falsey,
+        the host from the renderer's view request should be used as
+        the value for this property.
+        """
+        data = {'host': ''}
+        with patch.object(self.sut, 'get_host') as mock:
+            self.sut.add_customizations(data, renderer_context=MagicMock())
+
+        self.assertEqual(mock.return_value, data['host'])
+
+    def test_add_customizations_preserves_host_when_truthy(self):
+        """
+        Given that the `host` is already specified on the OpenAPI spec,
+        this value should be preserved.
+        """
+        data = {'host': 'vandelayindustries.com'}
+        with patch.object(self.sut, 'get_host') as mock:
+            self.sut.add_customizations(data, renderer_context=MagicMock())
+        mock.assert_not_called()
+
+        self.assertEqual('vandelayindustries.com', data['host'])
+
+    def test_get_host(self):
+        expected = 'kramerica.org'
+        request = MagicMock()
+        request.get_host.return_value = expected
+
+        renderer_context = {'request': request}
+        result = self.sut.get_host(renderer_context)
+
+        self.assertEqual(expected, result)
