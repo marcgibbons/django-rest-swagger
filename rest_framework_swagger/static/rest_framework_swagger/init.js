@@ -7,10 +7,9 @@ $(function () {
   if(window.SwaggerTranslator) {
     window.SwaggerTranslator.translate();
   }
-  window.swaggerUi = new SwaggerUi({
+  var settings = {
     url: window.location.pathname + '?format=openapi',
     dom_id: "swagger-ui-container",
-    supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
     onComplete: function(swaggerApi, swaggerUi){
       if(typeof initOAuth == "function") {
         initOAuth({
@@ -31,11 +30,10 @@ $(function () {
     onFailure: function(data) {
       log("Unable to Load SwaggerUI");
     },
-    docExpansion: "none",
-    jsonEditor: false,
-    defaultModelRendering: 'schema',
-    showRequestHeaders: false
-  });
+  };
+  $.extend(settings, JSON.parse($('#drs-settings').html()));
+
+  window.swaggerUi = new SwaggerUi(settings);
 
   window.swaggerUi.load();
 
