@@ -14,7 +14,7 @@ class OpenAPIRenderer(BaseRenderer):
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
         data = self.get_openapi_specification(data)
-        self.add_customizations(data)
+        self.add_customizations(data, renderer_context)
 
         return self.dump(data)
 
@@ -28,17 +28,22 @@ class OpenAPIRenderer(BaseRenderer):
         codec = OpenAPICodec()
         return json.loads(codec.dump(data))
 
-    def add_customizations(self, data):
+    def add_customizations(self, data, renderer_context):
         """
         Adds settings, overrides, etc. to the specification.
         """
         self.add_security_definitions(data)
+        if not data.get('host'):
+            data['host'] = self.get_host(renderer_context)
 
     def add_security_definitions(self, data):
         if not swagger_settings.SECURITY_DEFINITIONS:
             return
 
         data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
+
+    def get_host(self, renderer_context):
+        return renderer_context['request'].get_host()
 
 
 class SwaggerUIRenderer(BaseRenderer):
