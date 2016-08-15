@@ -1,4 +1,6 @@
 from unittest import TestCase
+
+import simplejson as json
 from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 from ..compat.mock import patch, MagicMock
@@ -61,6 +63,16 @@ class TestSwaggerUIRenderer(TestCase):
 
         self.assertDictContainsSubset(urls, self.renderer_context)
 
+    def test_set_context_sets_ui_esttings(self):
+        with patch.object(self.sut, 'get_ui_settings') as mock:
+            mock.return_value = {'foo': 'bar'}
+            self.sut.set_context(self.renderer_context)
+
+        self.assertEqual(
+            json.dumps(mock.return_value),
+            self.renderer_context['drs_settings']
+        )
+
     def test_get_auth_urls(self):
         key = 'LOGIN_URL'
         value = '/foo?next=bar'
@@ -81,6 +93,38 @@ class TestSwaggerUIRenderer(TestCase):
             },
             self.sut.get_auth_url_settings()
         )
+
+    def test_get_ui_settings_without_validator_url(self):
+        expected = {
+            'apisSorter': self.swagger_settings.APIS_SORTER,
+            'docExpansion': self.swagger_settings.DOC_EXPANSION,
+            'jsonEditor': self.swagger_settings.JSON_EDITOR,
+            'operationsSorter': self.swagger_settings.OPERATIONS_SORTER,
+            'showRequestHeaders': self.swagger_settings.SHOW_REQUEST_HEADERS,
+            'supportedSubmitMethods':
+            self.swagger_settings.SUPPORTED_SUBMIT_METHODS,
+            'validatorUrl': self.swagger_settings.VALIDATOR_URL
+        }
+        result = self.sut.get_ui_settings()
+
+        self.assertDictEqual(expected, result)
+
+    def test_validator_url_none_when_set(self):
+        self.swagger_settings.VALIDATOR_URL = None
+        result = self.sut.get_ui_settings()
+
+        self.assertDictContainsSubset({'validatorUrl': None}, result)
+
+    def test_validator_url_not_present_when_empty_string(self):
+        """
+        Given the validator URL is unspecified (empty string, not null),
+        the validatorUrl should not be present. SwaggerUI will use
+        swagger.io as the default.
+        """
+        self.swagger_settings.VALIDATOR_URL = ''
+        result = self.sut.get_ui_settings()
+
+        self.assertNotIn('validatorUrl', result)
 
     @patch('rest_framework_swagger.renderers.resolve_url')
     def test_add_next_to_url(self, mock):

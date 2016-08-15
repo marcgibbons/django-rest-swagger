@@ -65,7 +65,7 @@ class SwaggerUIRenderer(BaseRenderer):
             swagger_settings.USE_SESSION_AUTH
         renderer_context.update(self.get_auth_urls(renderer_context))
 
-        renderer_context['drs_settings'] = self.get_ui_settings()
+        renderer_context['drs_settings'] = json.dumps(self.get_ui_settings())
 
     def get_auth_urls(self, renderer_context):
         return {
@@ -90,7 +90,7 @@ class SwaggerUIRenderer(BaseRenderer):
         return '%s?next=%s' % (resolve_url(url), request.path)
 
     def get_ui_settings(self):
-        drs_settings = {
+        data = {
             'apisSorter': swagger_settings.APIS_SORTER,
             'docExpansion': swagger_settings.DOC_EXPANSION,
             'jsonEditor': swagger_settings.JSON_EDITOR,
@@ -99,6 +99,6 @@ class SwaggerUIRenderer(BaseRenderer):
             'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS
         }
         if swagger_settings.VALIDATOR_URL != '':
-            drs_settings['validatorUrl'] = swagger_settings.VALIDATOR_URL
+            data['validatorUrl'] = swagger_settings.VALIDATOR_URL
 
-        return json.dumps(drs_settings)
+        return data
