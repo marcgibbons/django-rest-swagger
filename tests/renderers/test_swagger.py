@@ -85,6 +85,14 @@ class TestSwaggerUIRenderer(TestCase):
 
         self.assertDictContainsSubset({key: value}, self.renderer_context)
 
+    def test_get_auth_urls_when_none(self):
+        with patch.object(
+            self.sut,
+            'get_auth_url_settings',
+            return_value={'LOGIN_URL': None, 'LOGOUT_URL': None}
+        ):
+            self.assertEqual({}, self.sut.get_auth_urls(self.renderer_context))
+
     def test_get_auth_url_settings(self):
         self.assertDictEqual(
             {

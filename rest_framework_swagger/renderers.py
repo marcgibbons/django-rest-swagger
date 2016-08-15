@@ -71,6 +71,7 @@ class SwaggerUIRenderer(BaseRenderer):
         return {
             setting: self.add_next_to_url(url, renderer_context['request'])
             for setting, url in self.get_auth_url_settings().items()
+            if url is not None
         }
 
     def get_auth_url_settings(self):
