@@ -15,4 +15,4 @@ mkdocs==0.15.3
 
 # Heroku
 dj_database_url==0.4.1
-psycopg2==2.6.1
+psycopg2==2.6.2

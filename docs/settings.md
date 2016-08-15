@@ -62,3 +62,49 @@ For more information on available options, please consult the OpenAPI [Security 
     }
 }
 ```
+## SwaggerUI Settings
+Below are some basic configuration settings for SwaggerUI. Note that for more advanced use cases, you may wish to write your own `rest_framework_swagger/static/init.js` file.
+
+### APIS_SORTER
+Set to `alpha` to enable alphabetical sorting.
+
+**Default:** `None`
+
+### DOC_EXPANSION
+Controls how the API listing is displayed. It can be set to:
+
+- `None`: All operations are collapsed
+- `"list"`: Lists all the operations
+- `"full"`: Expands all the operations
+
+**Default:** `None`
+
+### JSON_EDITOR
+Enables a graphical view for editing complex bodies.
+
+**Default:** `False`
+
+### OPERATIONS_SORTER
+Sorts the operation list of each API. It can be set to:
+
+- `alpha`: Sort alphabetically
+- `method`: Sort by HTTP method
+
+**Default:** `None`
+
+### SHOW_REQUEST_HEADERS
+Set to `True` to display the request headers.
+
+**Default:** `False`
+
+### SUPPORTED_SUBMIT_METHOD
+A list of HTTP methods can be interacted with using the "Try it out!" button.
+
+**Default:** `['get', 'post', 'put', 'delete', 'patch']`
+
+
+### VALIDATOR_URL
+URL to swagger.io's online schema validator. Can be modified to point to a local
+install, or set to `None` to disable.
+
+**Default:** `https://online.swagger.io/validator/`

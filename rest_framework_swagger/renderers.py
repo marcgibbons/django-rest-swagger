@@ -65,6 +65,8 @@ class SwaggerUIRenderer(BaseRenderer):
             swagger_settings.USE_SESSION_AUTH
         renderer_context.update(self.get_auth_urls(renderer_context))
 
+        renderer_context['drs_settings'] = json.dumps(self.get_ui_settings())
+
     def get_auth_urls(self, renderer_context):
         return {
             setting: self.add_next_to_url(url, renderer_context['request'])
@@ -86,3 +88,17 @@ class SwaggerUIRenderer(BaseRenderer):
         Appends the current request.path as querystring to the current path.
         """
         return '%s?next=%s' % (resolve_url(url), request.path)
+
+    def get_ui_settings(self):
+        data = {
+            'apisSorter': swagger_settings.APIS_SORTER,
+            'docExpansion': swagger_settings.DOC_EXPANSION,
+            'jsonEditor': swagger_settings.JSON_EDITOR,
+            'operationsSorter': swagger_settings.OPERATIONS_SORTER,
+            'showRequestHeaders': swagger_settings.SHOW_REQUEST_HEADERS,
+            'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS
+        }
+        if swagger_settings.VALIDATOR_URL != '':
+            data['validatorUrl'] = swagger_settings.VALIDATOR_URL
+
+        return data

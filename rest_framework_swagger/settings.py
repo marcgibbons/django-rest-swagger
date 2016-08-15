@@ -11,7 +11,20 @@ DEFAULTS = {
         }
     },
     'LOGIN_URL': getattr(settings, 'LOGIN_URL', None),
-    'LOGOUT_URL': getattr(settings, 'LOGOUT_URL', None)
+    'LOGOUT_URL': getattr(settings, 'LOGOUT_URL', None),
+    'DOC_EXPANSION': None,
+    'APIS_SORTER': None,
+    'OPERATIONS_SORTER': None,
+    'JSON_EDITOR': False,
+    'SHOW_REQUEST_HEADERS': False,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+    'VALIDATOR_URL': '',
 }
 
 IMPORT_STRINGS = []
