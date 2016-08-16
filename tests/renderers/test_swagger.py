@@ -75,14 +75,12 @@ class TestSwaggerUIRenderer(TestCase):
     def test_get_auth_urls(self):
         self.swagger_settings.LOGIN_URL = '/my-login'
         self.swagger_settings.LOGOUT_URL = '/my-logout'
-
-        with patch.object(self.sut, 'add_next_to_url') as mock:
-            result = self.sut.get_auth_urls(self.renderer_context)
+        result = self.sut.get_auth_urls()
 
         self.assertDictEqual(
             {
-                'LOGIN_URL': mock.return_value,
-                'LOGOUT_URL': mock.return_value
+                'LOGIN_URL': self.swagger_settings.LOGIN_URL,
+                'LOGOUT_URL': self.swagger_settings.LOGOUT_URL,
             },
             result
         )
@@ -91,7 +89,7 @@ class TestSwaggerUIRenderer(TestCase):
         self.swagger_settings.LOGIN_URL = None
         self.swagger_settings.LOGOUT_URL = None
 
-        self.assertEqual({}, self.sut.get_auth_urls(self.renderer_context))
+        self.assertEqual({}, self.sut.get_auth_urls())
 
     def test_get_ui_settings_without_validator_url(self):
         expected = {
@@ -124,12 +122,3 @@ class TestSwaggerUIRenderer(TestCase):
         result = self.sut.get_ui_settings()
 
         self.assertNotIn('validatorUrl', result)
-
-    @patch('rest_framework_swagger.renderers.resolve_url')
-    def test_add_next_to_url(self, mock):
-        path = 'industries'
-        url = '/vandelay'
-        expected = '%s?next=%s' % (mock.return_value, path)
-
-        self.assertEqual(expected, self.sut.add_next_to_url(url, path))
-        mock.assert_called_once_with(url)
