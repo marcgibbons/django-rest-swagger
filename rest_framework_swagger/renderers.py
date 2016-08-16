@@ -14,7 +14,8 @@ class OpenAPIRenderer(BaseRenderer):
     format = 'openapi'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        if renderer_context['response'].status_code != status.HTTP_200_OK:
+        if ('response' in renderer_context and
+                ['response'].status_code != status.HTTP_200_OK):
             return {}
         data = self.get_openapi_specification(data)
         self.add_customizations(data, renderer_context)
