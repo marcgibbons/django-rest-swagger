@@ -1,7 +1,6 @@
-from unittest import TestCase
-
-import simplejson as json
+from django.test import TestCase
 from rest_framework_swagger.renderers import SwaggerUIRenderer
+import simplejson as json
 
 from ..compat.mock import patch, MagicMock
 
@@ -74,25 +73,23 @@ class TestSwaggerUIRenderer(TestCase):
         )
 
     def test_get_auth_urls(self):
-        key = 'LOGIN_URL'
-        value = '/foo?next=bar'
-        with patch.multiple(
-            self.sut,
-            get_auth_url_settings=lambda *args: {key: ''},
-            add_next_to_url=lambda *args: value
-        ):
-            self.sut.set_context(self.renderer_context)
+        self.swagger_settings.LOGIN_URL = '/my-login'
+        self.swagger_settings.LOGOUT_URL = '/my-logout'
+        result = self.sut.get_auth_urls()
 
-        self.assertDictContainsSubset({key: value}, self.renderer_context)
-
-    def test_get_auth_url_settings(self):
         self.assertDictEqual(
             {
                 'LOGIN_URL': self.swagger_settings.LOGIN_URL,
-                'LOGOUT_URL': self.swagger_settings.LOGOUT_URL
+                'LOGOUT_URL': self.swagger_settings.LOGOUT_URL,
             },
-            self.sut.get_auth_url_settings()
+            result
         )
+
+    def test_get_auth_urls_when_none(self):
+        self.swagger_settings.LOGIN_URL = None
+        self.swagger_settings.LOGOUT_URL = None
+
+        self.assertEqual({}, self.sut.get_auth_urls())
 
     def test_get_ui_settings_without_validator_url(self):
         expected = {
@@ -125,12 +122,3 @@ class TestSwaggerUIRenderer(TestCase):
         result = self.sut.get_ui_settings()
 
         self.assertNotIn('validatorUrl', result)
-
-    @patch('rest_framework_swagger.renderers.resolve_url')
-    def test_add_next_to_url(self, mock):
-        request = MagicMock(path='industries')
-        url = '/vandelay'
-        expected = '%s?next=%s' % (mock.return_value, request.path)
-
-        self.assertEqual(expected, self.sut.add_next_to_url(url, request))
-        mock.assert_called_once_with(url)

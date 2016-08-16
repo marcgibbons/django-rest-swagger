@@ -45,9 +45,9 @@
         {% csrf_token %}
         {% if request.user.is_authenticated %}
           <div class="input">Hello, {{ request.user }}</div>
-          <div class='input'><a id="auth" class="header__btn" href="{{ LOGOUT_URL }}" data-sw-translate>Django Logout</a></div>
+          <div class='input'><a id="auth" class="header__btn" href="{{ LOGOUT_URL }}?next={{ request.path }}" data-sw-translate>Django Logout</a></div>
         {% else %}
-          <div class='input'><a id="auth" class="header__btn" href="{{ LOGIN_URL }}" data-sw-translate>Django Login</a></div>
+        <div class='input'><a id="auth" class="header__btn" href="{{ LOGIN_URL }}?next={{ request.path }}" data-sw-translate>Django Login</a></div>
         {% endif %}
       {% endif %}
       <div id='auth_container'></div>
