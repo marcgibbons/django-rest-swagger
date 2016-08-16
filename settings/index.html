@@ -119,6 +119,8 @@
         
             <li><a href="#authentication">Authentication</a></li>
         
+            <li><a href="#swaggerui-settings">SwaggerUI Settings</a></li>
+        
     
     </ul>
 </div></div>
@@ -170,7 +172,41 @@ LOGOUT_URL = 'rest_framework:logout'
         'type': 'basic'
     }
 }
-</code></pre></div>
+</code></pre>
+
+<h2 id="swaggerui-settings">SwaggerUI Settings</h2>
+<p>Below are some basic configuration settings for SwaggerUI. Note that for more advanced use cases, you may wish to write your own <code>rest_framework_swagger/static/init.js</code> file.</p>
+<h3 id="apis_sorter">APIS_SORTER</h3>
+<p>Set to <code>alpha</code> to enable alphabetical sorting.</p>
+<p><strong>Default:</strong> <code>None</code></p>
+<h3 id="doc_expansion">DOC_EXPANSION</h3>
+<p>Controls how the API listing is displayed. It can be set to:</p>
+<ul>
+<li><code>None</code>: All operations are collapsed</li>
+<li><code>"list"</code>: Lists all the operations</li>
+<li><code>"full"</code>: Expands all the operations</li>
+</ul>
+<p><strong>Default:</strong> <code>None</code></p>
+<h3 id="json_editor">JSON_EDITOR</h3>
+<p>Enables a graphical view for editing complex bodies.</p>
+<p><strong>Default:</strong> <code>False</code></p>
+<h3 id="operations_sorter">OPERATIONS_SORTER</h3>
+<p>Sorts the operation list of each API. It can be set to:</p>
+<ul>
+<li><code>alpha</code>: Sort alphabetically</li>
+<li><code>method</code>: Sort by HTTP method</li>
+</ul>
+<p><strong>Default:</strong> <code>None</code></p>
+<h3 id="show_request_headers">SHOW_REQUEST_HEADERS</h3>
+<p>Set to <code>True</code> to display the request headers.</p>
+<p><strong>Default:</strong> <code>False</code></p>
+<h3 id="supported_submit_method">SUPPORTED_SUBMIT_METHOD</h3>
+<p>A list of HTTP methods can be interacted with using the "Try it out!" button.</p>
+<p><strong>Default:</strong> <code>['get', 'post', 'put', 'delete', 'patch']</code></p>
+<h3 id="validator_url">VALIDATOR_URL</h3>
+<p>URL to swagger.io's online schema validator. Can be modified to point to a local
+install, or set to <code>None</code> to disable.</p>
+<p><strong>Default:</strong> <code>https://online.swagger.io/validator/</code></p></div>
             
         </div>
 
