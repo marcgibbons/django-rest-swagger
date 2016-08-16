@@ -68,27 +68,29 @@ class SwaggerUIRenderer(BaseRenderer):
         renderer_context['drs_settings'] = json.dumps(self.get_ui_settings())
 
     def get_auth_urls(self, renderer_context):
-        return {
-            setting: self.add_next_to_url(url, renderer_context['request'])
-            for setting, url in self.get_auth_url_settings().items()
-            if url is not None
-        }
+        urls = {}
+        path = renderer_context['request'].path
 
-    def get_auth_url_settings(self):
-        """
-        Returns a dictionary containing LOGIN_URL and LOGOUT_URL
-        from settings.
-        """
-        return {
-            'LOGIN_URL': swagger_settings.LOGIN_URL,
-            'LOGOUT_URL': swagger_settings.LOGOUT_URL
-        }
+        if swagger_settings.LOGIN_URL is not None:
+            urls['LOGIN_URL'] = self.add_next_to_url(
+                swagger_settings.LOGIN_URL,
+                path
+            )
+        if swagger_settings.LOGOUT_URL is not None:
+            urls['LOGOUT_URL'] = self.add_next_to_url(
+                swagger_settings.LOGOUT_URL,
+                path
+            )
 
-    def add_next_to_url(self, url, request):
+        return urls
+
+    def add_next_to_url(self, url, path):
         """
         Appends the current request.path as querystring to the current path.
         """
-        return '%s?next=%s' % (resolve_url(url), request.path)
+        if url is None:
+            return
+        return '%s?next=%s' % (resolve_url(url), path)
 
     def get_ui_settings(self):
         data = {
