@@ -41,6 +41,9 @@ def reload_settings(*args, **kwargs):  # pragma: no cover
     Reloads settings during unit tests if override_settings decorator
     is used. (Taken from DRF)
     """
+    # pylint: disable=W0603
+    global swagger_settings
+
     if kwargs['setting'] == 'LOGIN_URL':
         swagger_settings.LOGIN_URL = kwargs['value']
     if kwargs['setting'] == 'LOGOUT_URL':
@@ -48,8 +51,6 @@ def reload_settings(*args, **kwargs):  # pragma: no cover
     if kwargs['setting'] != 'SWAGGER_SETTINGS':
         return
 
-    # pylint: disable=W0603
-    global swagger_settings
     swagger_settings = APISettings(
         kwargs['value'],
         DEFAULTS,
