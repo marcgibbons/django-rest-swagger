@@ -1,3 +1,4 @@
+import coreapi
 from django.test import TestCase
 from rest_framework_swagger import renderers
 
@@ -22,8 +23,10 @@ class TestOpenAPIRenderer(TestCase):
 
     def test_render(self):
         data = MagicMock()
-        renderer_context = {'request': MagicMock()}
-
+        renderer_context = {
+            'request': MagicMock(),
+            'response': MagicMock(status_code=200)
+        }
         with patch.multiple(
             self.sut,
             get_openapi_specification=DEFAULT,
@@ -39,6 +42,19 @@ class TestOpenAPIRenderer(TestCase):
             renderer_context
         )
         values['dump'].assert_called_once_with(data)
+
+    def test_render_if_response_is_not_200(self):
+        """
+        Given the response returned in the renderer_context has a status
+        code other than 200, the data should be dumped.
+        """
+        data = {'error': 'fizz buzz'}
+        renderer_context = {'response': MagicMock(status_code=403)}
+        with patch('simplejson.dumps') as mock:
+            result = self.sut.render(data, renderer_context=renderer_context)
+
+        mock.assert_called_once_with(data)
+        self.assertEqual(mock.return_value, result)
 
     @patch('rest_framework_swagger.renderers.force_bytes')
     @patch('simplejson.dumps')
@@ -58,11 +74,26 @@ class TestOpenAPIRenderer(TestCase):
         Asserts that the returned value is a Python representation
         of the OpenAPICodec's `dump` method.
         """
-        data = {'foo': 'bar'}
+        data = coreapi.Document()
         self.sut.get_openapi_specification(data)
 
         codec_mock.assert_called_once_with(data)
         json_mock.assert_called_once_with(codec_mock.return_value)
+
+    def test_get_openapi_specification_raises_assertion_error(self):
+        """
+        Given that the data is not a CoreAPI Document instance,
+        an assertion error should be raised.
+        """
+        with self.assertRaises(AssertionError) as cx:
+            data = MagicMock()
+            self.sut.get_openapi_specification(data)
+
+        expected = (
+            'Expected a coreapi.Document, but received %s instead.' %
+            type(data)
+        )
+        self.assertEqual(expected, str(cx.exception))
 
 
 class TestAddSecurityDefinitons(TestCase):
