@@ -6,5 +6,4 @@ ADD . /code
 WORKDIR /code/example_app
 VOLUME /code
 
-RUN python manage.py migrate --noinput && python manage.py loaddata users && python manage.py migrate --noinput
-CMD python manage.py runserver 0.0.0.0:8000
+ENTRYPOINT bash -c "python manage.py migrate --noinput && python manage.py loaddata users && python manage.py runserver 0.0.0.0:8000"
