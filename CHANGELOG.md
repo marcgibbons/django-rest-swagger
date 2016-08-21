@@ -1,5 +1,24 @@
 # Change Log
 
+## [2.0.5](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.5) (2016-08-21)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.4...2.0.5)
+
+**Implemented enhancements:**
+
+- Add template blocks to allow customization [\#526](https://github.com/marcgibbons/django-rest-swagger/issues/526)
+
+**Closed issues:**
+
+- Should be a way to customize request serializer field type [\#355](https://github.com/marcgibbons/django-rest-swagger/issues/355)
+
+**Merged pull requests:**
+
+- Use entrypoint for Dockerfile \#524. [\#532](https://github.com/marcgibbons/django-rest-swagger/pull/532) ([marcgibbons](https://github.com/marcgibbons))
+- Feature/526 template overrides [\#531](https://github.com/marcgibbons/django-rest-swagger/pull/531) ([marcgibbons](https://github.com/marcgibbons))
+- run\_example: fix "docker build" command [\#527](https://github.com/marcgibbons/django-rest-swagger/pull/527) ([blueyed](https://github.com/blueyed))
+- Feature: exception handling [\#523](https://github.com/marcgibbons/django-rest-swagger/pull/523) ([marcgibbons](https://github.com/marcgibbons))
+- Release/2.0.4 [\#521](https://github.com/marcgibbons/django-rest-swagger/pull/521) ([marcgibbons](https://github.com/marcgibbons))
+
 ## [2.0.4](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.4) (2016-08-16)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.3...2.0.4)
 
