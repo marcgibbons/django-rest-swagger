@@ -54,7 +54,7 @@ The security definitions configures which authentication methods can be used by 
 
 For more information on available options, please consult the OpenAPI [Security Object Definition](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-definitions-object).
 
-**Default:** 
+**Default:**
 ```python
 {
     'basic': {
@@ -97,7 +97,7 @@ Set to `True` to display the request headers.
 
 **Default:** `False`
 
-### SUPPORTED_SUBMIT_METHOD
+### SUPPORTED_SUBMIT_METHODS
 A list of HTTP methods can be interacted with using the "Try it out!" button.
 
 **Default:** `['get', 'post', 'put', 'delete', 'patch']`
