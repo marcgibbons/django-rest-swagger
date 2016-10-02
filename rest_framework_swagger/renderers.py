@@ -1,8 +1,8 @@
+
 import coreapi
-from coreapi.compat import force_bytes
 from django.shortcuts import render, resolve_url
 from openapi_codec import OpenAPICodec
-from rest_framework.renderers import BaseRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework import status
 import simplejson as json
 
@@ -16,18 +16,23 @@ class OpenAPIRenderer(BaseRenderer):
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if renderer_context['response'].status_code != status.HTTP_200_OK:
-            return self.dump(data)
+            return JSONRenderer().render(data)
 
         assert isinstance(data, coreapi.Document), (
             'Expected a coreapi.Document, but received %s instead.' %
             type(data)
         )
+        document = self.get_document(data, renderer_context)
+
+        return OpenAPICodec().encode(document)
+
+    def get_document(self, data, renderer_context):
         title = data.title
         url = data.url
         content = dict(data)
         self.add_customizations(content, renderer_context)
-        doc = coreapi.Document(title=title, url=url, content=content)
-        return OpenAPICodec().encode(doc)
+
+        return coreapi.Document(title=title, url=url, content=content)
 
     def add_customizations(self, data, renderer_context):
         """

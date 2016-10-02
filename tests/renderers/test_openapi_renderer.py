@@ -2,7 +2,7 @@ import coreapi
 from django.test import TestCase
 from rest_framework_swagger import renderers
 
-from ..compat.mock import DEFAULT, MagicMock, patch
+from ..compat.mock import MagicMock, patch
 
 
 class TestOpenAPIRenderer(TestCase):
@@ -21,27 +21,19 @@ class TestOpenAPIRenderer(TestCase):
     def test_format(self):
         self.assertEqual('openapi', self.sut.format)
 
-    def test_render(self):
-        data = MagicMock()
+    @patch('openapi_codec.OpenAPICodec.encode')
+    def test_render(self, encode_mock):
+        data = coreapi.Document()
         renderer_context = {
             'request': MagicMock(),
             'response': MagicMock(status_code=200)
         }
-        with patch.multiple(
-            self.sut,
-            get_openapi_specification=DEFAULT,
-            add_customizations=DEFAULT,
-            dump=DEFAULT
-        ) as values:
-            self.sut.render(data, renderer_context=renderer_context)
+        with patch.object(self.sut, 'get_document') as mock:
+            result = self.sut.render(data, renderer_context=renderer_context)
 
-        values['get_openapi_specification'].assert_called_once_with(data)
-        data = values['get_openapi_specification'].return_value
-        values['add_customizations'].assert_called_once_with(
-            data,
-            renderer_context
-        )
-        values['dump'].assert_called_once_with(data)
+        mock.assert_called_once_with(data, renderer_context)
+        encode_mock.assert_called_once_with(mock.return_value)
+        self.assertEqual(result, encode_mock.return_value)
 
     def test_render_if_response_is_not_200(self):
         """
@@ -50,44 +42,23 @@ class TestOpenAPIRenderer(TestCase):
         """
         data = {'error': 'fizz buzz'}
         renderer_context = {'response': MagicMock(status_code=403)}
-        with patch('simplejson.dumps') as mock:
-            result = self.sut.render(data, renderer_context=renderer_context)
+        result = self.sut.render(data, renderer_context=renderer_context)
+        expected = renderers.JSONRenderer().render(data)
 
-        mock.assert_called_once_with(data)
-        self.assertEqual(mock.return_value, result)
+        self.assertEqual(expected, result)
 
-    @patch('rest_framework_swagger.renderers.force_bytes')
-    @patch('simplejson.dumps')
-    def test_dump(self, json_mock, bytes_mock):
-        data = MagicMock()
-        result = self.sut.dump(data)
-
-        json_mock.assert_called_once_with(data)
-        bytes_mock.assert_called_once_with(json_mock.return_value)
-
-        self.assertEqual(bytes_mock.return_value, result)
-
-    @patch('openapi_codec.OpenAPICodec.dump')
-    @patch('simplejson.loads')
-    def test_get_openapi_specification(self, json_mock, codec_mock):
-        """
-        Asserts that the returned value is a Python representation
-        of the OpenAPICodec's `dump` method.
-        """
-        data = coreapi.Document()
-        self.sut.get_openapi_specification(data)
-
-        codec_mock.assert_called_once_with(data)
-        json_mock.assert_called_once_with(codec_mock.return_value)
-
-    def test_get_openapi_specification_raises_assertion_error(self):
+    def test_render_raises_assertion_error(self):
         """
         Given that the data is not a CoreAPI Document instance,
         an assertion error should be raised.
         """
+        renderer_context = {
+            'request': MagicMock(),
+            'response': MagicMock(status_code=200)
+        }
         with self.assertRaises(AssertionError) as cx:
             data = MagicMock()
-            self.sut.get_openapi_specification(data)
+            self.sut.render(data, renderer_context=renderer_context)
 
         expected = (
             'Expected a coreapi.Document, but received %s instead.' %
