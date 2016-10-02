@@ -1,5 +1,50 @@
 # Change Log
 
+## [2.0.6](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.6) (2016-10-02)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.5...2.0.6)
+
+**Implemented enhancements:**
+
+- UI Config Settings / Theming [\#347](https://github.com/marcgibbons/django-rest-swagger/issues/347)
+
+**Closed issues:**
+
+- Fail to parse urls correctly [\#551](https://github.com/marcgibbons/django-rest-swagger/issues/551)
+- Swagger file [\#546](https://github.com/marcgibbons/django-rest-swagger/issues/546)
+- Django 1.10 problem url [\#544](https://github.com/marcgibbons/django-rest-swagger/issues/544)
+- No module named 'rest\_framework\_swagger.views' [\#543](https://github.com/marcgibbons/django-rest-swagger/issues/543)
+- No module named 'rest\_framework\_swagger.views' [\#542](https://github.com/marcgibbons/django-rest-swagger/issues/542)
+- How to use the new version \(2+\) with TokenAuthentication? [\#535](https://github.com/marcgibbons/django-rest-swagger/issues/535)
+- OpenAPIRenderer raises AttributeError when the response object is not a Document [\#534](https://github.com/marcgibbons/django-rest-swagger/issues/534)
+- Only one endpoint is shown in app [\#533](https://github.com/marcgibbons/django-rest-swagger/issues/533)
+- run\_example.sh doesn't work without tweaking [\#524](https://github.com/marcgibbons/django-rest-swagger/issues/524)
+- Group list\_route with viewset base path [\#515](https://github.com/marcgibbons/django-rest-swagger/issues/515)
+- ReStructuredText - Summary breaks down when there's a class reference. [\#472](https://github.com/marcgibbons/django-rest-swagger/issues/472)
+- API under / is not rendered properly  [\#446](https://github.com/marcgibbons/django-rest-swagger/issues/446)
+- GeoDjango fields declared as string when type is GeoJSON [\#429](https://github.com/marcgibbons/django-rest-swagger/issues/429)
+- docstring for nested JSON custom response [\#416](https://github.com/marcgibbons/django-rest-swagger/issues/416)
+- reStructuredText docs not rendering [\#407](https://github.com/marcgibbons/django-rest-swagger/issues/407)
+- displayed endpoint url list is not sorted [\#401](https://github.com/marcgibbons/django-rest-swagger/issues/401)
+- Not able to show array with limited length info. [\#400](https://github.com/marcgibbons/django-rest-swagger/issues/400)
+- custom RelatedField serializers shown as string [\#389](https://github.com/marcgibbons/django-rest-swagger/issues/389)
+- Unable to navigate APis [\#384](https://github.com/marcgibbons/django-rest-swagger/issues/384)
+- Unable to introspect fields.ListField [\#367](https://github.com/marcgibbons/django-rest-swagger/issues/367)
+- Nested serializers: when combining form parameters and body, only body is sent. [\#360](https://github.com/marcgibbons/django-rest-swagger/issues/360)
+- parameters\_strategy: replace fails with paramType: body [\#349](https://github.com/marcgibbons/django-rest-swagger/issues/349)
+- Unable to POST on serializer fields  [\#346](https://github.com/marcgibbons/django-rest-swagger/issues/346)
+- Nested many=True serializers? [\#335](https://github.com/marcgibbons/django-rest-swagger/issues/335)
+- consumes/produces mieme types  [\#308](https://github.com/marcgibbons/django-rest-swagger/issues/308)
+- Question: Does django-rest-swagger support complex response types?  [\#305](https://github.com/marcgibbons/django-rest-swagger/issues/305)
+- Swagger not displaying fields when using get\_serializer\_class\(\) to return different serializers for different URL's [\#290](https://github.com/marcgibbons/django-rest-swagger/issues/290)
+
+**Merged pull requests:**
+
+- Add testing instructions \(Closes \#503\) [\#558](https://github.com/marcgibbons/django-rest-swagger/pull/558) ([marcgibbons](https://github.com/marcgibbons))
+- PR \#554 [\#557](https://github.com/marcgibbons/django-rest-swagger/pull/557) ([marcgibbons](https://github.com/marcgibbons))
+- Update dependency versions to latest. [\#556](https://github.com/marcgibbons/django-rest-swagger/pull/556) ([marcgibbons](https://github.com/marcgibbons))
+- Docs fixup: METHOD -\> METHODS [\#550](https://github.com/marcgibbons/django-rest-swagger/pull/550) ([lwm](https://github.com/lwm))
+- Use minified swagger-ui.min.js [\#545](https://github.com/marcgibbons/django-rest-swagger/pull/545) ([coagulant](https://github.com/coagulant))
+
 ## [2.0.5](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.5) (2016-08-21)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.4...2.0.5)
 
