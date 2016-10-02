@@ -58,6 +58,12 @@ def schema_view(request):
 * Django REST framework 3.4+
 * Python 2.7, 3.5
 
+
+## Testing
+
+- Run `$ tox` to execute the test suite against all supported environments.
+- Run `./runtests.py` to run the test suite within the current environment.
+
 ## Bugs & Contributions
 Please report bugs by opening an issue
 
