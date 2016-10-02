@@ -67,6 +67,46 @@ class TestOpenAPIRenderer(TestCase):
         self.assertEqual(expected, str(cx.exception))
 
 
+class TestGetDocument(TestCase):
+    def setUp(self):
+        self.data = coreapi.Document(
+            title='Vandelay Inustries',
+            url='http://seinfeld.wikia.com/wiki/Vandelay_Industries',
+            content={'fizz': 'buzz'}
+        )
+        self.renderer_context = MagicMock()
+
+        self.customizations = {'foo': 'bar'}
+
+        def add_customizations(data, renderer_context):
+            data.update(self.customizations)
+
+        with patch.object(
+            renderers.OpenAPIRenderer,
+            'add_customizations',
+            side_effect=add_customizations
+        ) as self.add_customizations_mock:
+            self.sut = renderers.OpenAPIRenderer().get_document(
+                data=self.data,
+                renderer_context=self.renderer_context
+            )
+
+    def test_document_title(self):
+        self.assertEqual(self.data.title, self.sut.title)
+
+    def test_document_url(self):
+        self.assertEqual(self.data.url, self.sut.url)
+
+    def test_add_customizations_called(self):
+        expected = dict(self.data, **self.customizations)
+        self.add_customizations_mock.assert_called_once_with(
+            expected,
+            self.renderer_context
+        )
+
+        self.assertDictEqual(expected, dict(self.sut.data))
+
+
 class TestAddSecurityDefinitons(TestCase):
     def setUp(self):
         self.sut = renderers.OpenAPIRenderer()
