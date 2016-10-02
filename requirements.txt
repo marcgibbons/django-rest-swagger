@@ -1,7 +1,7 @@
 Django==1.10
-djangorestframework==3.4.4
-coreapi==1.32.0
-openapi-codec==1.0.0
+djangorestframework==3.4.7
+coreapi==2.0.8
+openapi-codec==1.1.3
 simplejson==3.8.2
 
 # Testing

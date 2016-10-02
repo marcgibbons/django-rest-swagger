@@ -43,8 +43,8 @@ setup(
     name='django-rest-swagger',
     version=VERSION,
     install_requires=[
-        'coreapi',
-        'openapi-codec',
+        'coreapi>=2.0.8',
+        'openapi-codec>=1.1.3',
         'simplejson'
     ],
     packages=['rest_framework_swagger'],
