@@ -44,7 +44,7 @@ setup(
     version=VERSION,
     install_requires=[
         'coreapi>=2.0.8',
-        'openapi-codec>=1.1.3',
+        'openapi-codec>=1.1.5',
         'simplejson'
     ],
     packages=['rest_framework_swagger'],
