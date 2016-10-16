@@ -1,12 +1,25 @@
-
 import coreapi
+from coreapi.compat import force_bytes
 from django.shortcuts import render, resolve_url
-from openapi_codec import OpenAPICodec
+from openapi_codec import OpenAPICodec as _OpenAPICodec
+from openapi_codec.encode import generate_swagger_object
 from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework import status
 import simplejson as json
 
 from .settings import swagger_settings
+
+
+class OpenAPICodec(_OpenAPICodec):
+    def encode(self, document, extra=None, **options):
+        if not isinstance(document, coreapi.Document):
+            raise TypeError('Expected a `coreapi.Document` instance')
+
+        data = generate_swagger_object(document)
+        if isinstance(extra, dict):
+            data.update(extra)
+
+        return force_bytes(json.dumps(data))
 
 
 class OpenAPIRenderer(BaseRenderer):
@@ -17,39 +30,19 @@ class OpenAPIRenderer(BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if renderer_context['response'].status_code != status.HTTP_200_OK:
             return JSONRenderer().render(data)
+        extra = self.get_customizations()
 
-        assert isinstance(data, coreapi.Document), (
-            'Expected a coreapi.Document, but received %s instead.' %
-            type(data)
-        )
-        document = self.get_document(data, renderer_context)
+        return OpenAPICodec().encode(data, extra=extra)
 
-        return OpenAPICodec().encode(document)
-
-    def get_document(self, data, renderer_context):
-        title = data.title
-        url = data.url
-        content = dict(data)
-        self.add_customizations(content, renderer_context)
-
-        return coreapi.Document(title=title, url=url, content=content)
-
-    def add_customizations(self, data, renderer_context):
+    def get_customizations(self):
         """
         Adds settings, overrides, etc. to the specification.
         """
-        self.add_security_definitions(data)
-        if not data.get('host'):
-            data['host'] = self.get_host(renderer_context)
+        data = {}
+        if swagger_settings.SECURITY_DEFINITIONS:
+            data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
 
-    def add_security_definitions(self, data):
-        if not swagger_settings.SECURITY_DEFINITIONS:
-            return
-
-        data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
-
-    def get_host(self, renderer_context):
-        return renderer_context['request'].get_host()
+        return data
 
 
 class SwaggerUIRenderer(BaseRenderer):
