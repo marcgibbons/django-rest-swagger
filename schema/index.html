@@ -4,17 +4,17 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Swagger UI / OpenAPI Documentation for Django REST Framework">
+        
         <meta name="author" content="Marc Gibbons">
         
-        <link rel="shortcut icon" href="./img/favicon.ico">
+        <link rel="shortcut icon" href="../img/favicon.ico">
 
-	<title>Django REST Swagger</title>
+	<title>Rendering the Schema - Django REST Swagger</title>
 
-        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="./css/font-awesome-4.5.0.css" rel="stylesheet">
-        <link href="./css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="./css/highlight.css">
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -53,7 +53,7 @@
             
 
             <!-- Main title -->
-            <a class="navbar-brand" href=".">Django REST Swagger</a>
+            <a class="navbar-brand" href="..">Django REST Swagger</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -64,25 +64,25 @@
                 
                 
                     <li >
-                        <a href=".">Home</a>
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li class="active">
+                        <a href="./">Rendering the Schema</a>
                     </li>
                 
                 
                 
                     <li >
-                        <a href="schema/">Rendering the Schema</a>
+                        <a href="../settings/">Settings</a>
                     </li>
                 
                 
                 
                     <li >
-                        <a href="settings/">Settings</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="customization/">UI Customization</a>
+                        <a href="../customization/">UI Customization</a>
                     </li>
                 
                 
@@ -96,13 +96,13 @@
                     </a>
                 </li>
                 
-                    <li class="disabled">
-                        <a rel="next" >
+                    <li >
+                        <a rel="next" href="..">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li class="disabled">
-                        <a rel="prev" >
+                    <li >
+                        <a rel="prev" href="../settings/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -124,15 +124,78 @@
 
         <div class="container">
             
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#rendering-the-schema">Rendering the Schema</a></li>
+        
+            <li><a href="#the-get_swagger_view-shortcut">The get_swagger_view shortcut</a></li>
+        
+            <li><a href="#advanced-usage">Advanced Usage</a></li>
+        
+    
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
 
-    <div class="row-fluid">
-      <div id="main-content" class="span12">
-        <h1 id="404-page-not-found" style="text-align: center">404</h1>
-        <p style="text-align: center"><strong>Page not found</strong></p>
-      </div>
-    </div>
+<h1 id="rendering-the-schema">Rendering the Schema</h1>
+<p>Django REST Swagger includes two renderers; the <code>OpenAPIRenderer</code> and the 
+<code>SwaggerUIRenderer</code>.</p>
+<p>The <code>OpenAPIRenderer</code> is responsible for generating the JSON spec, while the <code>SwaggerUIRenderer</code> renders
+renderers the UI (HTML/JS/CSS).</p>
+<p><strong>Note:</strong> to render the UI, both renderers must be included. The <code>OpenAPIRenderer</code> may be used on its own if you wish to host the UI independently.</p>
+<h3 id="the-get_swagger_view-shortcut">The get_swagger_view shortcut</h3>
+<p>As a convenience, a shortcut method with sensible default configurations is provided  to generate SwaggerUI documentation for your API. This view features the following:</p>
+<ul>
+<li>Enforces the DRF permission classes and user context. This means that anonymous users may not see the full endpoint list should views require authentication.</li>
+<li>Anyone can view the docs, however, documentation will only be generated for endpoints which are publicly available.</li>
+<li>Renders CoreJSON</li>
+</ul>
+<p>Parameters:</p>
+<p><code>title</code>: The title of the documentation (Default: <code>None</code>)</p>
+<p><code>url</code>: The URL to the documentation (if not on the same host or path). Can be a relative path or  can be an absolute URL. (Default: <code>None</code>)</p>
+<h4 id="example">Example:</h4>
+<pre><code class="python">from rest_framework_swagger.views import get_swagger_view
 
+schema_view = get_swagger_view(title='My great API', url='/a-different-path')
+</code></pre>
 
+<h3 id="advanced-usage">Advanced Usage</h3>
+<p>For finer control of the documentation, create your own schema view by using a function based or class-based view. This can be useful if you want to produce documentation for specific URL patterns, or URL confs.</p>
+<p>For more detailed documentation on the schema generator, see:</p>
+<p><a href="http://www.django-rest-framework.org/api-guide/schemas/#schemagenerator">http://www.django-rest-framework.org/api-guide/schemas/</a></p>
+<p>Example: Class-based view</p>
+<pre><code class="python">from rest_framework.permissions import Allowany
+from rest_framework.response import Response
+from rest_framework.schemas import SchemaGenerator
+from rest_framework.views import APIView
+
+class SwaggerSchemaView(APIView):
+    permission_classes = [AllowAny]
+    renderer_classes = [
+        renderers.OpenAPIRenderer,
+        renderers.SwaggerUIRenderer
+    ]
+
+    def get(self, request):
+        generator = SchemaGenerator()
+        schema = generator.get_schema(request=request)
+
+        return Response(schema)
+</code></pre>
+
+<p>Example: function based view</p>
+<pre><code class="python">from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework import response, schemas
+
+@api_view()
+@renderer_classes([SwaggerUIRenderer, OpenAPIRenderer])
+def schema_view(request):
+    generator = schemas.SchemaGenerator(title='Pastebin API')
+    return response.Response(generator.get_schema(request=request))
+</code></pre></div>
+            
         </div>
 
         <footer class="col-md-12">
@@ -143,12 +206,12 @@
             <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
 
-        <script src="./js/jquery-1.10.2.min.js"></script>
-        <script src="./js/bootstrap-3.0.3.min.js"></script>
-        <script src="./js/highlight.pack.js"></script>
-        <script>var base_url = '.';</script>
-        <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
-        <script src="./js/base.js"></script>
+        <script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
             <div class="modal-dialog">

@@ -4,15 +4,15 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2016-09-22</lastmod>
+     <lastmod>2016-10-16</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/customization/</loc>
-     <lastmod>2016-09-22</lastmod>
+     <loc>None/schema/</loc>
+     <lastmod>2016-10-16</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -20,7 +20,15 @@
     
     <url>
      <loc>None/settings/</loc>
-     <lastmod>2016-09-22</lastmod>
+     <lastmod>2016-10-16</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>None/customization/</loc>
+     <lastmod>2016-10-16</lastmod>
      <changefreq>daily</changefreq>
     </url>
     

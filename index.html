@@ -70,13 +70,19 @@
                 
                 
                     <li >
-                        <a href="customization/">Customization</a>
+                        <a href="schema/">Rendering the Schema</a>
                     </li>
                 
                 
                 
                     <li >
                         <a href="settings/">Settings</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="customization/">UI Customization</a>
                     </li>
                 
                 
@@ -96,7 +102,7 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="customization/">
+                        <a rel="prev" href="schema/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -157,34 +163,18 @@
 </code></pre>
 
 <h2 id="quick-start">Quick start</h2>
-<p>To render the Swagger UI, set the Django REST Framework schema view renderer classes to include
-<code>OpenAPIRenderer</code> and the <code>SwaggerUIRenderer</code> classes from <code>rest_framework_swagger.renderers</code>.</p>
-<p>The <code>OpenAPIRenderer</code> is responsible for generating the JSON spec, while the <code>SwaggerUIRenderer</code> renders
-the UI.</p>
-<p><strong>Note:</strong> to render the UI, both renderers must be included. The <code>OpenAPIRenderer</code> may be used on its own if you wish to host the UI independently.</p>
+<p>To quickly get started, use the <code>get_swagger_view</code> shortcut. This will produce
+a schema view which uses common settings. For more advanced usage, please see
+the schemas section.</p>
 <h4 id="example">Example</h4>
 <p><strong>views.py</strong></p>
-<pre><code class="python">from rest_framework.decorators import api_view, renderer_classes
-from rest_framework import response, schemas
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
-
-
-@api_view()
-@renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-def schema_view(request):
-    generator = schemas.SchemaGenerator(title='Bookings API')
-    return response.Response(generator.get_schema(request=request))
-
-
-</code></pre>
-
-<p><strong>urls.py</strong></p>
 <pre><code class="python">from django.conf.urls import url
-from views import schema_view
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Pastebin API')
 
 urlpatterns = [
-    url('/', schema_view),
-    ...
+    url(r'^$', schema_view)
 ]
 </code></pre>
 
@@ -299,5 +289,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-09-22 13:20:46.089153
+Build Date UTC : 2016-10-16 20:16:37.604129
 -->
