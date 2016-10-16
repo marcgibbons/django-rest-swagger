@@ -39,18 +39,16 @@ This package ships with two renderer classes:
 2. `SwaggerUIRenderer` generates the Swagger UI and requires the `OpenAPIRenderer`
 
 
-### Example: DRF Schema View
+### Quick Start Example:
 ```python
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework import response, schemas
+from django.conf.urls import url
+from rest_framework_swagger.views import get_swagger_view
 
-@api_view()
-@renderer_classes([SwaggerUIRenderer, OpenAPIRenderer])
-def schema_view(request):
-    generator = schemas.SchemaGenerator(title='Pastebin API')
-    return response.Response(generator.get_schema(request=request))
+schema_view = get_swagger_view(title='Pastebin API')
 
+urlpatterns = [
+    url(r'^$', schema_view)
+]
 ```
 
 ## Requirements
