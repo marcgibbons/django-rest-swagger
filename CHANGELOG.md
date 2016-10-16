@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.0.7](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.7) (2016-10-16)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.6...2.0.7)
+
+**Closed issues:**
+
+- All urls are not mapped by swagger [\#562](https://github.com/marcgibbons/django-rest-swagger/issues/562)
+- Annotation order breaks doc generation [\#560](https://github.com/marcgibbons/django-rest-swagger/issues/560)
+- Getting AssertionError: Expected a coreapi.Document when using format=openapi [\#547](https://github.com/marcgibbons/django-rest-swagger/issues/547)
+
+**Merged pull requests:**
+
+- Swagger doc view shortcut [\#564](https://github.com/marcgibbons/django-rest-swagger/pull/564) ([marcgibbons](https://github.com/marcgibbons))
+- Extend OpenAPI codec to accept extra dict [\#563](https://github.com/marcgibbons/django-rest-swagger/pull/563) ([marcgibbons](https://github.com/marcgibbons))
+
 ## [2.0.6](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.6) (2016-10-02)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.5...2.0.6)
 
@@ -43,6 +57,7 @@
 - PR \#554 [\#557](https://github.com/marcgibbons/django-rest-swagger/pull/557) ([marcgibbons](https://github.com/marcgibbons))
 - Update dependency versions to latest. [\#556](https://github.com/marcgibbons/django-rest-swagger/pull/556) ([marcgibbons](https://github.com/marcgibbons))
 - Docs fixup: METHOD -\> METHODS [\#550](https://github.com/marcgibbons/django-rest-swagger/pull/550) ([lwm](https://github.com/lwm))
+- Release 2.0.6 [\#559](https://github.com/marcgibbons/django-rest-swagger/pull/559) ([marcgibbons](https://github.com/marcgibbons))
 - Use minified swagger-ui.min.js [\#545](https://github.com/marcgibbons/django-rest-swagger/pull/545) ([coagulant](https://github.com/coagulant))
 
 ## [2.0.5](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.5) (2016-08-21)
