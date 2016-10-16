@@ -27,39 +27,21 @@ INSTALLED_APPS = [
 
 ## Quick start
 
-To render the Swagger UI, set the Django REST Framework schema view renderer classes to include
-`OpenAPIRenderer` and the `SwaggerUIRenderer` classes from `rest_framework_swagger.renderers`.
-
-The `OpenAPIRenderer` is responsible for generating the JSON spec, while the `SwaggerUIRenderer` renders
-the UI.
-
-**Note:** to render the UI, both renderers must be included. The `OpenAPIRenderer` may be used on its own if you wish to host the UI independently.
+To quickly get started, use the `get_swagger_view` shortcut. This will produce
+a schema view which uses common settings. For more advanced usage, please see
+the schemas section.
 
 #### Example
 
 **views.py**
 ```python
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework import response, schemas
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
-
-
-@api_view()
-@renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-def schema_view(request):
-    generator = schemas.SchemaGenerator(title='Bookings API')
-    return response.Response(generator.get_schema(request=request))
-
-
-```
-**urls.py**
-```python
 from django.conf.urls import url
-from views import schema_view
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Pastebin API')
 
 urlpatterns = [
-    url('/', schema_view),
-    ...
+    url(r'^$', schema_view)
 ]
 ```
 
