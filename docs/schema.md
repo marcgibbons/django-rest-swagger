@@ -9,7 +9,7 @@ renderers the UI (HTML/JS/CSS).
 **Note:** to render the UI, both renderers must be included. The `OpenAPIRenderer` may be used on its own if you wish to host the UI independently.
 
 
-### The get_swagger_view shortcut
+### The `get_swagger_view` shortcut
 
 As a convenience, a shortcut method with sensible default configurations is provided  to generate SwaggerUI documentation for your API. This view features the following:
 
@@ -42,10 +42,12 @@ For more detailed documentation on the schema generator, see:
 
 Example: Class-based view
 ```python
-from rest_framework.permissions import Allowany
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
+from rest_framework_swagger import renderers
+
 
 class SwaggerSchemaView(APIView):
     permission_classes = [AllowAny]
