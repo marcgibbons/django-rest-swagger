@@ -34,7 +34,8 @@ class SnippetViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-    
+
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This endpoint presents the users in the system.

@@ -44,7 +44,8 @@ setup(
     version=VERSION,
     install_requires=[
         'coreapi>=2.0.8',
-        'openapi-codec>=1.1.5',
+        'openapi-codec>=1.1.7',
+        'djangorestframework>=3.5.1',
         'simplejson'
     ],
     packages=['rest_framework_swagger'],
