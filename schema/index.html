@@ -144,7 +144,7 @@
 <p>The <code>OpenAPIRenderer</code> is responsible for generating the JSON spec, while the <code>SwaggerUIRenderer</code> renders
 renderers the UI (HTML/JS/CSS).</p>
 <p><strong>Note:</strong> to render the UI, both renderers must be included. The <code>OpenAPIRenderer</code> may be used on its own if you wish to host the UI independently.</p>
-<h3 id="the-get_swagger_view-shortcut">The get_swagger_view shortcut</h3>
+<h3 id="the-get_swagger_view-shortcut">The <code>get_swagger_view</code> shortcut</h3>
 <p>As a convenience, a shortcut method with sensible default configurations is provided  to generate SwaggerUI documentation for your API. This view features the following:</p>
 <ul>
 <li>Enforces the DRF permission classes and user context. This means that anonymous users may not see the full endpoint list should views require authentication.</li>
@@ -165,10 +165,12 @@ schema_view = get_swagger_view(title='My great API', url='/a-different-path')
 <p>For more detailed documentation on the schema generator, see:</p>
 <p><a href="http://www.django-rest-framework.org/api-guide/schemas/#schemagenerator">http://www.django-rest-framework.org/api-guide/schemas/</a></p>
 <p>Example: Class-based view</p>
-<pre><code class="python">from rest_framework.permissions import Allowany
+<pre><code class="python">from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
+from rest_framework_swagger import renderers
+
 
 class SwaggerSchemaView(APIView):
     permission_classes = [AllowAny]
