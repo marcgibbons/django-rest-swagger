@@ -1,5 +1,24 @@
 # Change Log
 
+## [2.1.0](https://github.com/marcgibbons/django-rest-swagger/tree/2.1.0) (2016-10-29)
+[Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.7...2.1.0)
+
+**Closed issues:**
+
+- How to force a DictField to be documented as an object, not a string? [\#568](https://github.com/marcgibbons/django-rest-swagger/issues/568)
+- Load UI from a Swagger definition file [\#567](https://github.com/marcgibbons/django-rest-swagger/issues/567)
+- Endpoint grouping/sorting is broken [\#536](https://github.com/marcgibbons/django-rest-swagger/issues/536)
+- can't exclude urls in latest version? [\#530](https://github.com/marcgibbons/django-rest-swagger/issues/530)
+- Issues with Schemas Generation [\#525](https://github.com/marcgibbons/django-rest-swagger/issues/525)
+- URLs by router are not detected by swagger [\#479](https://github.com/marcgibbons/django-rest-swagger/issues/479)
+
+**Merged pull requests:**
+
+- simple fix in schema documentation [\#575](https://github.com/marcgibbons/django-rest-swagger/pull/575) ([drgarcia1986](https://github.com/drgarcia1986))
+- 2.1.0: Make DRF 3.5 minimum version, use get\_schema\_view shortcut [\#570](https://github.com/marcgibbons/django-rest-swagger/pull/570) ([marcgibbons](https://github.com/marcgibbons))
+- Minimum DRF version to 3.4.1 [\#566](https://github.com/marcgibbons/django-rest-swagger/pull/566) ([vinodc](https://github.com/vinodc))
+- Release/2.0.7 [\#565](https://github.com/marcgibbons/django-rest-swagger/pull/565) ([marcgibbons](https://github.com/marcgibbons))
+
 ## [2.0.7](https://github.com/marcgibbons/django-rest-swagger/tree/2.0.7) (2016-10-16)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.0.6...2.0.7)
 
