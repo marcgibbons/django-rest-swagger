@@ -4,7 +4,7 @@ from rest_framework.renderers import CoreJSONRenderer
 from . import renderers
 
 
-def get_swagger_view(title=None, url=None):
+def get_swagger_view(title=None, url=None, urlconf=None):
     """
     Returns schema view which renders Swagger/OpenAPI.
     """
@@ -15,5 +15,6 @@ def get_swagger_view(title=None, url=None):
             CoreJSONRenderer,
             renderers.OpenAPIRenderer,
             renderers.SwaggerUIRenderer
-        ]
+        ],
+        urlconf=urlconf
     )
