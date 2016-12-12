@@ -19,13 +19,25 @@ class TestGetSwaggerView(TestCase):
     def test_title_and_urlpassed_to_schema_generator(self):
         title = 'Vandelay'
         url = 'https://github.com/marcgibbons/django-rest-swagger'
-        view = self.sut(title=title, url=url)
+        urlconf = 'fizz'
+        patterns = []
+        view = self.sut(
+            title=title,
+            url=url,
+            patterns=patterns,
+            urlconf=urlconf
+        )
 
         with patch('rest_framework_swagger.views.SchemaGenerator') as mock:
             request = self.factory.get('/')
             view(request=request)
 
-        mock.assert_called_once_with(title=title, url=url)
+        mock.assert_called_once_with(
+            title=title,
+            url=url,
+            patterns=patterns,
+            urlconf=urlconf
+        )
 
     def test_ignore_model_permissions_true(self):
         self.assertTrue(self.view_class._ignore_model_permissions)
