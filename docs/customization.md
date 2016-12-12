@@ -11,6 +11,8 @@ Here are a few basic areas which can be customized:
 - `{% block user_context_message %}` Customize the "Hello, user" message (Django session only)
 - `{% block extra_nav %}` Placeholder for additional content in the nav bar.
 
+
+## Version Headers
 The following would append a version number to every request, which is required
 with `rest_framework.versioning.AcceptHeaderVersioning`.
 This should go into `rest_framework_swagger/index.html` in your template path.
@@ -26,8 +28,10 @@ This should go into `rest_framework_swagger/index.html` in your template path.
       obj.headers['Accept'] += '; version=1.0';
       return true;
     };
-    swaggerUi.api.clientAuthorizations.add('api_version',
-                                           new ApiVersionAuthorization());
+    swaggerUi.api.clientAuthorizations.add(
+        'api_version',
+        new ApiVersionAuthorization()
+    );
   });
 </script>
 {% endblock extra_scripts %}
