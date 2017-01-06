@@ -157,7 +157,7 @@
         },
         {
             "location": "/customization/",
-            "text": "Customization\n\n\nTemplate\n\n\nThe template used for the SwaggerUIRenderer can be customized by writing overriding\n\nrest_framework_swagger/index.html\n.\n\n\nHere are a few basic areas which can be customized:\n\n\n\n\n{% block extra_styles %}\n Add additional stylsheets\n\n\n{% block extra_scripts %}\n Add additional scripts.\n\n\n{% block user_context_message %}\n Customize the \"Hello, user\" message (Django session only)\n\n\n{% block extra_nav %}\n Placeholder for additional content in the nav bar.",
+            "text": "Customization\n\n\nTemplate\n\n\nThe template used for the SwaggerUIRenderer can be customized by overriding\n\nrest_framework_swagger/index.html\n.\n\n\nHere are a few basic areas which can be customized:\n\n\n\n\n{% block extra_styles %}\n Add additional stylsheets\n\n\n{% block extra_scripts %}\n Add additional scripts.\n\n\n{% block user_context_message %}\n Customize the \"Hello, user\" message (Django session only)\n\n\n{% block extra_nav %}\n Placeholder for additional content in the nav bar.\n\n\n\n\nVersion Headers\n\n\nThe following would append a version number to every request, which is required\nwith \nrest_framework.versioning.AcceptHeaderVersioning\n.\nThis should go into \nrest_framework_swagger/index.html\n in your template path.\n\n\n{% extends \"rest_framework_swagger/base.html\" %}\n\n{% block extra_scripts %}\n<script type=\"text/javascript\">\n  $(function () {\n    var ApiVersionAuthorization = function () {};\n    ApiVersionAuthorization.prototype.apply = function (obj) {\n      obj.headers['Accept'] += '; version=1.0';\n      return true;\n    };\n    swaggerUi.api.clientAuthorizations.add(\n        'api_version',\n        new ApiVersionAuthorization()\n    );\n  });\n</script>\n{% endblock extra_scripts %}",
             "title": "UI Customization"
         },
         {
@@ -167,8 +167,13 @@
         },
         {
             "location": "/customization/#template",
-            "text": "The template used for the SwaggerUIRenderer can be customized by writing overriding rest_framework_swagger/index.html .  Here are a few basic areas which can be customized:   {% block extra_styles %}  Add additional stylsheets  {% block extra_scripts %}  Add additional scripts.  {% block user_context_message %}  Customize the \"Hello, user\" message (Django session only)  {% block extra_nav %}  Placeholder for additional content in the nav bar.",
+            "text": "The template used for the SwaggerUIRenderer can be customized by overriding rest_framework_swagger/index.html .  Here are a few basic areas which can be customized:   {% block extra_styles %}  Add additional stylsheets  {% block extra_scripts %}  Add additional scripts.  {% block user_context_message %}  Customize the \"Hello, user\" message (Django session only)  {% block extra_nav %}  Placeholder for additional content in the nav bar.",
             "title": "Template"
+        },
+        {
+            "location": "/customization/#version-headers",
+            "text": "The following would append a version number to every request, which is required\nwith  rest_framework.versioning.AcceptHeaderVersioning .\nThis should go into  rest_framework_swagger/index.html  in your template path.  {% extends \"rest_framework_swagger/base.html\" %}\n\n{% block extra_scripts %}\n<script type=\"text/javascript\">\n  $(function () {\n    var ApiVersionAuthorization = function () {};\n    ApiVersionAuthorization.prototype.apply = function (obj) {\n      obj.headers['Accept'] += '; version=1.0';\n      return true;\n    };\n    swaggerUi.api.clientAuthorizations.add(\n        'api_version',\n        new ApiVersionAuthorization()\n    );\n  });\n</script>\n{% endblock extra_scripts %}",
+            "title": "Version Headers"
         }
     ]
 }
