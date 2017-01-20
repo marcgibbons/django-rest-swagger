@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+
+- Confirmed support for Django 1.11.
+
 ## [2.1.1](https://github.com/marcgibbons/django-rest-swagger/tree/2.1.1) (2017-01-06)
 [Full Changelog](https://github.com/marcgibbons/django-rest-swagger/compare/2.1.0...2.1.1)
 
