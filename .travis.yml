@@ -1,10 +1,13 @@
 language: python
-python: "3.5"
+python: 
+  - "3.6"
+  - "3.5"
+  - "2.7"
 sudo: false
 matrix:
   fast_finish: true
 install:
-  - pip install tox codecov
+  - pip install tox tox-travis codecov
 script:
   - tox
 after_success:
