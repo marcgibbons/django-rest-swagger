@@ -10,6 +10,7 @@ Here are a few basic areas which can be customized:
 - `{% block extra_scripts %}` Add additional scripts.
 - `{% block user_context_message %}` Customize the "Hello, user" message (Django session only)
 - `{% block extra_nav %}` Placeholder for additional content in the nav bar.
+- `{% block logo %}` Logo area of the nav bar.
 
 
 ## Version Headers
