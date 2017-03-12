@@ -52,7 +52,7 @@ urlpatterns = [
 ## Requirements
 * Django 1.8+
 * Django REST framework 3.5.1+
-* Python 2.7, 3.5
+* Python 2.7, 3.5, 3.6
 
 
 ## Testing
