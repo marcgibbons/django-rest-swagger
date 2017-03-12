@@ -43,9 +43,9 @@ setup(
     name='django-rest-swagger',
     version=VERSION,
     install_requires=[
-        'coreapi>=2.1.1',
-        'openapi-codec>=1.2.1',
-        'djangorestframework>=3.5.3',
+        'coreapi>=2.3.0',
+        'openapi-codec>=1.3.1',
+        'djangorestframework>=3.5.4',
         'simplejson'
     ],
     packages=['rest_framework_swagger'],
@@ -72,6 +72,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
