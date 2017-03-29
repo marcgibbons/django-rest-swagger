@@ -1,3 +1,23 @@
+window.onload = function() {
+  // Build a system
+  const ui = SwaggerUIBundle({
+    //url: "http://petstore.swagger.io/v2/swagger.json",
+    url: window.location.pathname + '?format=openapi',
+    dom_id: '#swagger-ui',
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      // yay ES6 modules ↘
+      Array.isArray(SwaggerUIStandalonePreset) ? SwaggerUIStandalonePreset : SwaggerUIStandalonePreset.default
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  })
+
+  window.ui = ui
+};
+/*
 $(function () {
   hljs.configure({
     highlightSizeThreshold: 5000
@@ -8,7 +28,6 @@ $(function () {
     window.SwaggerTranslator.translate();
   }
   var settings = {
-    url: window.location.pathname + '?format=openapi',
     dom_id: "swagger-ui-container",
     onComplete: function(swaggerApi, swaggerUi){
       if(typeof initOAuth == "function") {
@@ -58,3 +77,4 @@ $(function () {
     }
   }
 });
+*/
