@@ -89,3 +89,5 @@ ENV/
 *.db
 site/
 src/
+
+.idea
