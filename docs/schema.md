@@ -3,8 +3,7 @@
 Django REST Swagger includes two renderers; the `OpenAPIRenderer` and the 
 `SwaggerUIRenderer`.
 
-The `OpenAPIRenderer` is responsible for generating the JSON spec, while the `SwaggerUIRenderer` renders
-renderers the UI (HTML/JS/CSS).
+The `OpenAPIRenderer` is responsible for generating the JSON spec, while the `SwaggerUIRenderer` renders the UI (HTML/JS/CSS).
 
 **Note:** to render the UI, both renderers must be included. The `OpenAPIRenderer` may be used on its own if you wish to host the UI independently.
 
