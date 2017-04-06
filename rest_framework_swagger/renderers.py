@@ -44,6 +44,11 @@ class OpenAPIRenderer(BaseRenderer):
         if swagger_settings.SECURITY:
             data['security'] = swagger_settings.SECURITY
 
+        for user_setting in ['info', 'host', 'schemes', 'basePath']:
+            uc_setting = user_setting.upper()
+            if uc_setting in swagger_settings._user_settings:
+                data[user_setting] = swagger_settings._user_settings[uc_setting]
+
         return data
 
 
