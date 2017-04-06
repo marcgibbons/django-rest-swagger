@@ -41,6 +41,8 @@ class OpenAPIRenderer(BaseRenderer):
         data = {}
         if swagger_settings.SECURITY_DEFINITIONS:
             data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
+        if swagger_settings.SECURITY:
+            data['security'] = swagger_settings.SECURITY
 
         return data
 
