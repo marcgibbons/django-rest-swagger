@@ -15,6 +15,6 @@ mkdocs==0.15.3
 
 # Heroku
 dj_database_url==0.4.1
-psycopg2==2.6.2
+psycopg2==2.7.1
 gunicorn==19.7.0
 whitenoise==3.3.0
