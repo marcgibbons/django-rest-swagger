@@ -53,7 +53,7 @@ urlpatterns = [
 An example based on the [Django REST Tutorial](http://www.django-rest-framework.org/tutorial/1-serialization/) ships with the project. It and can be optionally locally using Docker, or deployed for free on heroku.
 
 ### Deploy with Heroku
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/marcgibbons/django-rest-framework)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/marcgibbons/django-rest-swagger)
 
 Log in credentials are:
 ```
