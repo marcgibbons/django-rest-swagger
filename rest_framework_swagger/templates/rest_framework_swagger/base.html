@@ -7,7 +7,8 @@
   <meta charset="UTF-8">
   <title>Swagger UI</title>
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
-  <link href="{% static 'rest_framework_swagger/dist/main.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'rest_framework_swagger/dist/vendors.bundle.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'rest_framework_swagger/dist/app.bundle.css' %}" rel="stylesheet" type="text/css">
   {% block extra_styles %}
   {# -- Add any additional CSS scripts here -- #}
   {% endblock %}
@@ -38,7 +39,8 @@
   window.drsSettings = {{ drs_settings|safe }};
   window.drsSpec = {{ spec|safe }};
 </script>
-<script src="{% static 'rest_framework_swagger/dist/django-rest-swagger.bundle.js' %}"></script>
+<script src="{% static 'rest_framework_swagger/dist/vendors.bundle.js' %}"></script>
+<script src="{% static 'rest_framework_swagger/dist/app.bundle.js' %}"></script>
 </body>
 
 </html>

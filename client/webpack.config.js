@@ -1,5 +1,6 @@
-const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const path = require('path');
+const webpack = require('webpack');
 
 const distPath = path.resolve(
   __dirname,
@@ -7,10 +8,12 @@ const distPath = path.resolve(
 )
 
 module.exports = {
-  entry: './index.js',
+  entry: {
+    app: './index.js',
+  },
   output: {
-    path: path.resolve(distPath),
-    filename: 'django-rest-swagger.bundle.js'
+    path: distPath,
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [
@@ -25,7 +28,18 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].css',
-    })
-  ]
+      filename: '[name].bundle.css',
+    }),
+  ],
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+         commons: {
+           test: /[\\/]node_modules[\\/]/,
+           name: "vendors",
+           chunks: "all"
+         }
+      }
+    }
+  }
 };
