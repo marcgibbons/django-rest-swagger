@@ -52,19 +52,24 @@ class SwaggerUIRenderer(BaseRenderer):
     charset = 'utf-8'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        self.set_context(renderer_context)
+        self.set_context(data, renderer_context)
         return render(
             renderer_context['request'],
             self.template,
             renderer_context
         )
 
-    def set_context(self, renderer_context):
+    def set_context(self, data, renderer_context):
         renderer_context['USE_SESSION_AUTH'] = \
             swagger_settings.USE_SESSION_AUTH
         renderer_context.update(self.get_auth_urls())
 
-        renderer_context['drs_settings'] = json.dumps(self.get_ui_settings())
+        drs_settings = self.get_ui_settings()
+        renderer_context['drs_settings'] = json.dumps(drs_settings)
+        renderer_context['spec'] = OpenAPIRenderer().render(
+            data=data,
+            renderer_context=renderer_context
+        )
 
     def get_auth_urls(self):
         urls = {}
@@ -82,7 +87,7 @@ class SwaggerUIRenderer(BaseRenderer):
             'jsonEditor': swagger_settings.JSON_EDITOR,
             'operationsSorter': swagger_settings.OPERATIONS_SORTER,
             'showRequestHeaders': swagger_settings.SHOW_REQUEST_HEADERS,
-            'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS
+            'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS,
         }
         if swagger_settings.VALIDATOR_URL != '':
             data['validatorUrl'] = swagger_settings.VALIDATOR_URL
