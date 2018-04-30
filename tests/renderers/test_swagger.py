@@ -12,7 +12,7 @@ class TestSwaggerUIRenderer(TestCase):
         self.renderer_context = {'request': MagicMock()}
 
         swagger_settings_patcher = patch(
-            'rest_framework_swagger.renderers.swagger_settings',
+            'rest_framework_swagger.renderers.settings',
         )
         self.swagger_settings = swagger_settings_patcher.start()
         self.addCleanup(swagger_settings_patcher.stop)
@@ -94,7 +94,7 @@ class TestSwaggerUIRenderer(TestCase):
         )
 
         self.assertEqual(
-            openapi_render.return_value,
+            openapi_render.return_value.decode.return_value,
             self.renderer_context['spec']
         )
 

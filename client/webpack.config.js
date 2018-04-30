@@ -6,7 +6,7 @@ const devMode = process.env.NODE_ENV === 'dev';
 
 const distPath = path.resolve(
   __dirname,
-  '../rest_framework_swagger/static/rest_framework_swagger/dist/'
+  '../rest_framework_swagger/static/rest_framework_swagger/bundles/'
 )
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
   output: {
     path: distPath,
     filename: '[name].bundle.js',
-    publicPath: '/static/rest_framework_swagger/dist/',
+    publicPath: '/static/rest_framework_swagger/bundles/',
   },
   module: {
     rules: [
@@ -37,7 +37,11 @@ module.exports = {
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(distPath),
+    new CleanWebpackPlugin(
+      distPath, {
+        root: distPath
+      }
+    ),
     new MiniCssExtractPlugin({
       filename: '[name].bundle.css',
     })

@@ -89,9 +89,7 @@ class TestGetCustomizations(TestCase):
     def setUp(self):
         self.sut = renderers.OpenAPIRenderer().get_customizations
 
-        settings_patcher = patch(
-            'rest_framework_swagger.renderers.swagger_settings'
-        )
+        settings_patcher = patch('rest_framework_swagger.renderers.settings')
         self.swagger_settings = settings_patcher.start()
         self.addCleanup(settings_patcher.stop)
 
