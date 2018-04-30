@@ -9,7 +9,7 @@
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 
-####An API documentation generator for Swagger UI and Django REST Framework
+#### An API documentation generator for Swagger UI and Django REST Framework
 
 Full documentation: http://marcgibbons.github.io/django-rest-swagger/
 
