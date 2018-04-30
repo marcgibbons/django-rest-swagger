@@ -1,6 +1,5 @@
+{% load i18n %}
 {% load staticfiles %}
-
-<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,31 +15,53 @@
 
 <body>
   <div class="swagger-ui">
-    {% if USE_SESSION_AUTH %}
-      <div class="topbar">
-        <div class="wrapper">
-          <div class="topbar-wrapper">
-            <div class="download-url-wrapper">
-              {% if request.user.is_authenticated %}
-                <a class="download-url-button button" href="{{ LOGOUT_URL }}?next={{ request.path }}">Session Logout</a>
-              {% else %}
-                <a class="download-url-button button" href="{{ LOGIN_URL }}?next={{ request.path }}">Session Login</a>
-              {% endif %}
-            </div>
+    <div class="topbar">
+      <div class="wrapper">
+        <div class="topbar-wrapper">
+          <a href="#" class="link">
+            <img src="{% static 'rest_framework_swagger/logo_small.png' %}" alt="Swagger Logo">
+            <span>swagger</span>
+          </a>
+          {% if USE_SESSION_AUTH %}
+          <div class="download-url-wrapper">
+            {% if request.user.is_authenticated %}
+            <a class="download-url-button button" href="{{ LOGOUT_URL }}?next={{ request.path }}">{% trans "Session Logout" %}</a>
+            {% else %}
+            <a class="download-url-button button" href="{{ LOGIN_URL }}?next={{ request.path }}">{% trans "Session Login" %}</a>
+            {% endif %}
           </div>
+          {% endif %}
         </div>
       </div>
+    </div>
+    {% if USE_SESSION_AUTH %}
+    <div class="user-context wrapper">
+      {% block user_context_message %}
+        {% if request.user.is_authenticated %}
+          {% trans "You are logged in as: " %} {{ request.get_username }}
+        {% else %}
+           {% trans "Viewing as an anoymous user" %}
+       {% endif %}
+      {% endblock %}
+    </div>
     {% endif %}
   </div>
-<div id="rest-swagger-ui"></div>
-{% csrf_token %}
 
-<script>
-  window.drsSettings = {{ drs_settings|safe }};
-  window.drsSpec = {{ spec|safe }};
-</script>
-<script src="{% static 'rest_framework_swagger/dist/vendors.bundle.js' %}"></script>
-<script src="{% static 'rest_framework_swagger/dist/app.bundle.js' %}"></script>
+  <div id="rest-swagger-ui"></div>
+  {% csrf_token %}
+
+  <footer class="swagger-ui">
+    <div class="wrapper">
+      {% trans "Powered by "%}<a href="https://github.com/marcgibbons/django-rest-swagger" target="_new">Django REST Swagger</a>
+    </div>
+  </footer>
+
+  <script>
+    window.drsSettings = {{ drs_settings|safe }};
+    window.drsSpec = {{ spec|safe }};
+  </script>
+  <script src="{% static 'rest_framework_swagger/dist/vendors.bundle.js' %}"></script>
+  <script src="{% static 'rest_framework_swagger/dist/app.bundle.js' %}"></script>
 </body>
 
 </html>
