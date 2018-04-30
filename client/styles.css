@@ -20,7 +20,7 @@ body {
 footer.swagger-ui {
   box-shadow: inset 1px 2px 0 rgba(0,0,0,.15);
   font-size: 0.7rem;
-  margin-top: 2rem;
+  margin: 2rem 0 1rem;
   padding-top: 1rem;
   text-align: right;
 }

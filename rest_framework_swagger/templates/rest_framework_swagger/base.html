@@ -25,7 +25,7 @@
           {% if USE_SESSION_AUTH %}
           <div class="download-url-wrapper">
             {% if request.user.is_authenticated %}
-            <a class="download-url-button button" href="{{ LOGOUT_URL }}?next={{ request.path }}">{% trans "Session Logout" %}</a>
+            <a class="download-url-button button" href="{{ LOGOUT_URL }}?next={{ request.path }}">{% trans "Logout" %}</a>
             {% else %}
             <a class="download-url-button button" href="{{ LOGIN_URL }}?next={{ request.path }}">{% trans "Session Login" %}</a>
             {% endif %}
@@ -38,7 +38,7 @@
     <div class="user-context wrapper">
       {% block user_context_message %}
         {% if request.user.is_authenticated %}
-          {% trans "You are logged in as: " %} {{ request.get_username }}
+          {% trans "You are logged in as: " %} {{ request.user }}
         {% else %}
            {% trans "Viewing as an anoymous user" %}
        {% endif %}

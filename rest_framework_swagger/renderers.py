@@ -7,7 +7,7 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework import status
 import simplejson as json
 
-from .settings import swagger_settings
+from .settings import swagger_settings as settings
 
 
 class OpenAPICodec(_OpenAPICodec):
@@ -39,8 +39,8 @@ class OpenAPIRenderer(BaseRenderer):
         Adds settings, overrides, etc. to the specification.
         """
         data = {}
-        if swagger_settings.SECURITY_DEFINITIONS:
-            data['securityDefinitions'] = swagger_settings.SECURITY_DEFINITIONS
+        if settings.SECURITY_DEFINITIONS:
+            data['securityDefinitions'] = settings.SECURITY_DEFINITIONS
 
         return data
 
@@ -61,7 +61,7 @@ class SwaggerUIRenderer(BaseRenderer):
 
     def set_context(self, data, renderer_context):
         renderer_context['USE_SESSION_AUTH'] = \
-            swagger_settings.USE_SESSION_AUTH
+            settings.USE_SESSION_AUTH
         renderer_context.update(self.get_auth_urls())
 
         drs_settings = self.get_ui_settings()
@@ -69,27 +69,27 @@ class SwaggerUIRenderer(BaseRenderer):
         renderer_context['spec'] = OpenAPIRenderer().render(
             data=data,
             renderer_context=renderer_context
-        )
+        ).decode()
 
     def get_auth_urls(self):
         urls = {}
-        if swagger_settings.LOGIN_URL is not None:
-            urls['LOGIN_URL'] = resolve_url(swagger_settings.LOGIN_URL)
-        if swagger_settings.LOGOUT_URL is not None:
-            urls['LOGOUT_URL'] = resolve_url(swagger_settings.LOGOUT_URL)
+        if settings.LOGIN_URL is not None:
+            urls['LOGIN_URL'] = resolve_url(settings.LOGIN_URL)
+        if settings.LOGOUT_URL is not None:
+            urls['LOGOUT_URL'] = resolve_url(settings.LOGOUT_URL)
 
         return urls
 
     def get_ui_settings(self):
         data = {
-            'apisSorter': swagger_settings.APIS_SORTER,
-            'docExpansion': swagger_settings.DOC_EXPANSION,
-            'jsonEditor': swagger_settings.JSON_EDITOR,
-            'operationsSorter': swagger_settings.OPERATIONS_SORTER,
-            'showRequestHeaders': swagger_settings.SHOW_REQUEST_HEADERS,
-            'supportedSubmitMethods': swagger_settings.SUPPORTED_SUBMIT_METHODS,
+            'apisSorter': settings.APIS_SORTER,
+            'docExpansion': settings.DOC_EXPANSION,
+            'jsonEditor': settings.JSON_EDITOR,
+            'operationsSorter': settings.OPERATIONS_SORTER,
+            'showRequestHeaders': settings.SHOW_REQUEST_HEADERS,
+            'supportedSubmitMethods': settings.SUPPORTED_SUBMIT_METHODS,
         }
-        if swagger_settings.VALIDATOR_URL != '':
-            data['validatorUrl'] = swagger_settings.VALIDATOR_URL
+        if settings.VALIDATOR_URL != '':
+            data['validatorUrl'] = settings.VALIDATOR_URL
 
         return data
