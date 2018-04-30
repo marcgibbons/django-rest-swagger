@@ -39,7 +39,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(
       distPath, {
-        root: distPath
+        root: path.resolve(__dirname, '../')
       }
     ),
     new MiniCssExtractPlugin({
