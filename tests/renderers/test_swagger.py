@@ -1,8 +1,7 @@
-
 from django.test import TestCase
-from rest_framework_swagger.renderers import SwaggerUIRenderer
 import simplejson as json
 
+from rest_framework_swagger.renderers import SwaggerUIRenderer
 from ..compat.mock import patch, MagicMock
 
 

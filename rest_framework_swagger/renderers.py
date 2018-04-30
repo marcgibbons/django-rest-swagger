@@ -11,13 +11,12 @@ from .settings import swagger_settings as settings
 
 
 class OpenAPICodec(_OpenAPICodec):
-    def encode(self, document, extra=None, **options):
+    def encode(self, document, **options):
         if not isinstance(document, coreapi.Document):
             raise TypeError('Expected a `coreapi.Document` instance')
 
         data = generate_swagger_object(document)
-        if isinstance(extra, dict):
-            data.update(extra)
+        data.update(**options)
 
         return force_bytes(json.dumps(data))
 
@@ -30,9 +29,9 @@ class OpenAPIRenderer(BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if renderer_context['response'].status_code != status.HTTP_200_OK:
             return JSONRenderer().render(data)
-        extra = self.get_customizations()
+        options = self.get_customizations()
 
-        return OpenAPICodec().encode(data, extra=extra)
+        return OpenAPICodec().encode(data, **options)
 
     def get_customizations(self):
         """
