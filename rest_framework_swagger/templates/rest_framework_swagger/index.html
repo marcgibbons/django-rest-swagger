@@ -1,1 +1,70 @@
-{% extends "rest_framework_swagger/base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+  <link href="{% static 'rest_framework_swagger/bundles/vendors.bundle.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'rest_framework_swagger/bundles/app.bundle.css' %}" rel="stylesheet" type="text/css">
+  {% block extra_styles %}
+  {# -- Add any additional CSS scripts here -- #}
+  {% endblock %}
+</head>
+
+<body>
+  <div class="swagger-ui">
+    <div class="topbar">
+      <div class="wrapper">
+        <div class="topbar-wrapper">
+          <a href="#" class="link">
+            <img src="{% static 'rest_framework_swagger/logo_small.png' %}" alt="Swagger Logo">
+            <span>swagger</span>
+          </a>
+          <div class="download-url-wrapper">
+          {% if USE_SESSION_AUTH %}
+            {% if request.user.is_authenticated %}
+            <a class="download-url-button button" href="{{ LOGOUT_URL }}?next={{ request.path }}">{% trans "Logout" %}</a>
+            {% else %}
+            <a class="download-url-button button" href="{{ LOGIN_URL }}?next={{ request.path }}">{% trans "Session Login" %}</a>
+            {% endif %}
+          {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if USE_SESSION_AUTH %}
+    <div class="user-context wrapper">
+      {% block user_context_message %}
+        {% if request.user.is_authenticated %}
+          {% trans "You are logged in as: " %}<strong>{{ request.user }}</strong>
+        {% else %}
+           {% trans "Viewing as an anoymous user" %}
+       {% endif %}
+      {% endblock %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div id="rest-swagger-ui"></div>
+  {% csrf_token %}
+
+  <footer class="swagger-ui">
+    <div class="wrapper">
+      {% trans "Powered by "%}<a href="https://github.com/marcgibbons/django-rest-swagger" target="_new">Django REST Swagger</a>
+    </div>
+  </footer>
+
+  <script>
+    window.drsSettings = {{ drs_settings|safe }};
+    window.drsSpec = {{ spec|safe }};
+  </script>
+  <script src="{% static 'rest_framework_swagger/bundles/vendors.bundle.js' %}"></script>
+  <script src="{% static 'rest_framework_swagger/bundles/app.bundle.js' %}"></script>
+  {% block extra_scripts %}
+  {# -- Add any additional scripts here -- #}
+  {% endblock %}
+</body>
+
+</html>

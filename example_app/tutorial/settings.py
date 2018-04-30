@@ -83,10 +83,10 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '98s9du5ruv!j%shx0udb#uz1g@v^xl65zm1l-_5%8cs6%c*qm$'
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -170,6 +170,7 @@ LOGGING = {
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination'
 }
 
 SWAGGER_SETTINGS = {
@@ -177,7 +178,8 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': 'rest_framework:logout',
     'USE_SESSION_AUTH': True,
     'DOC_EXPANSION': 'list',
-    'APIS_SORTER': 'alpha'
+    'APIS_SORTER': 'alpha',
+    'SECURITY_DEFINITIONS': None,
 }
 
 

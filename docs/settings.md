@@ -62,6 +62,27 @@ For more information on available options, please consult the OpenAPI [Security 
     }
 }
 ```
+
+## Headers
+### ACCEPT_HEADER_VERSION
+Use this setting if you are using the `AcceptHeaderVersioning` version scheme
+and require a value to interact with the API.
+
+**Default**: `None`
+
+E.g.: Setting to `1.0` will modify the HTTP Accept header from
+`application/json` to `application/json; version=1.0`.
+
+For further customization, use the `CUSTOM_HEADERS`.
+
+#### CUSTOM_HEADERS
+Define a dictionary of values to be passed as HTTP headers in all API requests.
+
+**Default**: `{}`
+
+All key/val provided in this dictionary will be set on the request headers for
+all API requests.
+
 ## SwaggerUI Settings
 Below are some basic configuration settings for SwaggerUI. Note that for more advanced use cases, you may wish to write your own `rest_framework_swagger/static/init.js` file.
 
