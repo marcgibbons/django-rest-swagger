@@ -87,6 +87,8 @@ class SwaggerUIRenderer(BaseRenderer):
             'operationsSorter': settings.OPERATIONS_SORTER,
             'showRequestHeaders': settings.SHOW_REQUEST_HEADERS,
             'supportedSubmitMethods': settings.SUPPORTED_SUBMIT_METHODS,
+            'acceptHeaderVersion': settings.ACCEPT_HEADER_VERSION,
+            'customHeaders': settings.CUSTOM_HEADERS,
         }
         if settings.VALIDATOR_URL != '':
             data['validatorUrl'] = settings.VALIDATOR_URL

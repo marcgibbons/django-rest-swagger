@@ -125,7 +125,9 @@ class TestSwaggerUIRenderer(TestCase):
             'showRequestHeaders': self.swagger_settings.SHOW_REQUEST_HEADERS,
             'supportedSubmitMethods':
             self.swagger_settings.SUPPORTED_SUBMIT_METHODS,
-            'validatorUrl': self.swagger_settings.VALIDATOR_URL
+            'validatorUrl': self.swagger_settings.VALIDATOR_URL,
+            'acceptHeaderVersion': self.swagger_settings.ACCEPT_HEADER_VERSION,
+            'customHeaders': self.swagger_settings.CUSTOM_HEADERS
         }
         result = self.sut.get_ui_settings()
 
