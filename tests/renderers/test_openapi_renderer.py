@@ -1,9 +1,9 @@
 import coreapi
 from coreapi.compat import force_bytes
 from django.test import TestCase
-from rest_framework_swagger import renderers
 import simplejson as json
 
+from rest_framework_swagger import renderers
 from ..compat.mock import MagicMock, patch
 
 
@@ -39,7 +39,7 @@ class TestOpenAPICodec(TestCase):
             'rest_framework_swagger.renderers.generate_swagger_object',
             return_value={}
         ):
-            result = self.sut(coreapi.Document(), extra=expected)
+            result = self.sut(coreapi.Document(), **expected)
 
         self.assertEqual(force_bytes(json.dumps(expected)), result)
 
@@ -70,7 +70,7 @@ class TestOpenAPIRenderer(TestCase):
         with patch.object(self.sut, 'get_customizations') as mock:
             self.sut.render(data, renderer_context=renderer_context)
 
-        encode_mock.assert_called_once_with(data, extra=mock.return_value)
+        encode_mock.assert_called_once_with(data, **mock.return_value)
 
     def test_render_if_response_is_not_200(self):
         """
@@ -89,9 +89,7 @@ class TestGetCustomizations(TestCase):
     def setUp(self):
         self.sut = renderers.OpenAPIRenderer().get_customizations
 
-        settings_patcher = patch(
-            'rest_framework_swagger.renderers.swagger_settings'
-        )
+        settings_patcher = patch('rest_framework_swagger.renderers.settings')
         self.swagger_settings = settings_patcher.start()
         self.addCleanup(settings_patcher.stop)
 

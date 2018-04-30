@@ -1,8 +1,7 @@
-
 from django.test import TestCase
-from rest_framework_swagger.renderers import SwaggerUIRenderer
 import simplejson as json
 
+from rest_framework_swagger.renderers import SwaggerUIRenderer
 from ..compat.mock import patch, MagicMock
 
 
@@ -12,10 +11,16 @@ class TestSwaggerUIRenderer(TestCase):
         self.renderer_context = {'request': MagicMock()}
 
         swagger_settings_patcher = patch(
-            'rest_framework_swagger.renderers.swagger_settings',
+            'rest_framework_swagger.renderers.settings',
         )
         self.swagger_settings = swagger_settings_patcher.start()
         self.addCleanup(swagger_settings_patcher.stop)
+
+        openapi_patcher = patch(
+            'rest_framework_swagger.renderers.OpenAPIRenderer'
+        )
+        self.openapi_mock = openapi_patcher.start()
+        self.addCleanup(openapi_patcher.stop)
 
     def test_media_type(self):
         self.assertEqual('text/html', self.sut.media_type)
@@ -34,14 +39,15 @@ class TestSwaggerUIRenderer(TestCase):
 
     @patch('rest_framework_swagger.renderers.render')
     def test_render(self, render_mock):
+        data = MagicMock()
         with patch.object(self.sut, 'set_context') as context_mock:
             self.sut.render(
-                data=None,
+                data=data,
                 accepted_media_type=None,
                 renderer_context=self.renderer_context
             )
 
-        context_mock.assert_called_once_with(self.renderer_context)
+        context_mock.assert_called_once_with(data, self.renderer_context)
         render_mock.assert_called_once_with(
             self.renderer_context['request'],
             self.sut.template,
@@ -49,7 +55,8 @@ class TestSwaggerUIRenderer(TestCase):
         )
 
     def test_set_context_use_session_auth(self):
-        self.sut.set_context(self.renderer_context)
+        data = {}
+        self.sut.set_context(data, self.renderer_context)
 
         self.assertEqual(
             self.renderer_context['USE_SESSION_AUTH'],
@@ -57,20 +64,37 @@ class TestSwaggerUIRenderer(TestCase):
         )
 
     def test_set_context_sets_auth_urls(self):
+        data = MagicMock()
         urls = {'fizz': 'buzz'}
         with patch.object(self.sut, 'get_auth_urls', return_value=urls):
-            self.sut.set_context(self.renderer_context)
+            self.sut.set_context(data, self.renderer_context)
 
         self.assertDictContainsSubset(urls, self.renderer_context)
 
-    def test_set_context_sets_ui_esttings(self):
+    def test_set_context_sets_ui_settings(self):
+        data = MagicMock()
         with patch.object(self.sut, 'get_ui_settings') as mock:
             mock.return_value = {'foo': 'bar'}
-            self.sut.set_context(self.renderer_context)
+            self.sut.set_context(data, self.renderer_context)
 
         self.assertEqual(
             json.dumps(mock.return_value),
             self.renderer_context['drs_settings']
+        )
+
+    def test_openapi_spec_is_added_to_context(self):
+        data = MagicMock()
+        self.sut.set_context(data, self.renderer_context)
+
+        openapi_render = self.openapi_mock.return_value.render
+        openapi_render.assert_called_once_with(
+            data=data,
+            renderer_context=self.renderer_context
+        )
+
+        self.assertEqual(
+            openapi_render.return_value.decode.return_value,
+            self.renderer_context['spec']
         )
 
     def test_get_auth_urls(self):
@@ -101,7 +125,9 @@ class TestSwaggerUIRenderer(TestCase):
             'showRequestHeaders': self.swagger_settings.SHOW_REQUEST_HEADERS,
             'supportedSubmitMethods':
             self.swagger_settings.SUPPORTED_SUBMIT_METHODS,
-            'validatorUrl': self.swagger_settings.VALIDATOR_URL
+            'validatorUrl': self.swagger_settings.VALIDATOR_URL,
+            'acceptHeaderVersion': self.swagger_settings.ACCEPT_HEADER_VERSION,
+            'customHeaders': self.swagger_settings.CUSTOM_HEADERS
         }
         result = self.sut.get_ui_settings()
 

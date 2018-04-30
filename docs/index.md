@@ -73,7 +73,7 @@ To quickly get up and running using the Docker image, simply run:
 
 `$ ./run_example.sh`
 
-The initial run may take several minutes to build. Once complete, the 
+The initial run may take several minutes to build. Once complete, the
 application will be available at `http://localhost:8000`
 
 Log in credentials are:
@@ -101,7 +101,7 @@ Deprecated:
 
 ## License
 ```text
-Copyright (c) 2013-2016, Marc Gibbons
+Copyright (c) 2013-2018, Marc Gibbons
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
