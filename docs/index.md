@@ -63,7 +63,7 @@ password: amy
 
 ### Docker Instructions
 
-Ensure [Docker](https://www.docker.com/) Docker is installed on your system.
+Ensure [Docker](https://www.docker.com/) is installed on your system.
 
 First, clone the repository:
 
