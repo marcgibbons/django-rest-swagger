@@ -14,6 +14,15 @@
 Full documentation: http://marcgibbons.github.io/django-rest-swagger/
 
 
+# Help Wanted!
+
+As you may have noticed, I have not been keeping up with pull requests and issues and am looking for help maintaining this project! Between working fulltime, having 2 kids (3 and under), teaching Python and running for political office, I can't possibly keep up. So, if you like this project and want to help out, I'm specifically looking for:
+
+  * Issue triage (separating how-to-use from bugs and feature requests)
+  * Pull request review & triage
+  
+Please contact me on Twitter @marcgibb or at marcgbbns at gmail dot com if you are interested!
+
 ## Installation
 
 1. `pip install django-rest-swagger`
