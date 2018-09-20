@@ -40,7 +40,7 @@
         {% if request.user.is_authenticated %}
           {% trans "You are logged in as: " %}<strong>{{ request.user }}</strong>
         {% else %}
-           {% trans "Viewing as an anoymous user" %}
+           {% trans "Viewing as an anonymous user" %}
        {% endif %}
       {% endblock %}
     </div>
