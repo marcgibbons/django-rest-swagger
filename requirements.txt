@@ -1,5 +1,5 @@
-Django==2.0.4
-djangorestframework==3.8.2
+Django==2.1.3
+djangorestframework==3.9.0
 coreapi==2.3.3
 openapi-codec==1.3.2
 simplejson==3.9.0
