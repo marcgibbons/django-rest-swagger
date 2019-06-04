@@ -1,9 +1,16 @@
-# Django REST Swagger
+# Django REST Swagger: deprecated (2019-06-04)
+
+This project is no longer being maintained. Please consider **drf-yasg** as an alternative/successor. I haven't personally used it, but it looks feature-complete and is actively maintained.
+
+### https://github.com/axnsan12/drf-yasg
+
+Thanks for all the support and contributions over the years. Special thanks to [Lights on Software](https://lightsonsoftware.com/), [Lincoln Loop](https://lincolnloop.com/) and BNOTIONS for generously donating time to work on this project :heart:.
+
+---
 
 [![build-status-badge]][build-status]
 [![codecov](https://codecov.io/gh/marcgibbons/django-rest-swagger/branch/master/graph/badge.svg)](https://codecov.io/gh/marcgibbons/django-rest-swagger)
 [![pypi-version]][pypi]
-[![Dependency Status](https://www.versioneye.com/user/projects/579cb582aa78d50051183c0e/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/579cb582aa78d50051183c0e)
 
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
@@ -13,15 +20,6 @@
 
 Full documentation: http://marcgibbons.github.io/django-rest-swagger/
 
-
-# Help Wanted!
-
-As you may have noticed, I have not been keeping up with pull requests and issues and am looking for help maintaining this project! Between working fulltime, having 2 kids (3 and under), teaching Python and running for political office, I can't possibly keep up. So, if you like this project and want to help out, I'm specifically looking for:
-
-  * Issue triage (separating how-to-use from bugs and feature requests)
-  * Pull request review & triage
-  
-Please contact me on Twitter @marcgibb or at marcgbbns at gmail dot com if you are interested!
 
 ## Installation
 
